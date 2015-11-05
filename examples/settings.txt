@@ -1,0 +1,4 @@
+root: C:\Users\Corey\AppData\Roaming\jvms
+path: C:\Program Files\jdk
+arch: 64
+proxy: none
