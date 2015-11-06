@@ -55,37 +55,18 @@ func Download(url string, target string) bool {
   return true
 }
 
-func GetNodeJS(root string, v string, a string) bool {
+func GetJDK(root string, v string, url string, a string) bool {
 
   a = arch.Validate(a)
 
-  vpre := ""
-  vers := strings.Fields(strings.Replace(v,"."," ",-1))
-  main, _ := strconv.ParseInt(vers[0],0,0)
-
-  if a == "32" {
-    if main > 0 {
-      vpre = "win-x86/"
-    } else {
-      vpre = ""
-    }
-  } else if a == "64" {
-    if main > 0 {
-      vpre = "win-x64/"
-    } else {
-      vpre = "x64/"
-    }
-  }
-  
-  url := getNodeUrl ( v, vpre );
-
   if url == "" {
     //No url should mean this version/arch isn't available
-    fmt.Println("Node.js v"+v+" " + a + "bit isn't available right now.")
+    fmt.Println("JDK v"+v+" " + a + "bit isn't available right now.")
   } else {
-   fileName := root+"\\v"+v+"\\node"+a+".exe"
+    //jdk1.7.0_67.zip
+    fileName := root + "\\download\\" + file.GenJDKZipFileName(v,a)
 
-    fmt.Printf("Downloading node.js version "+v+" ("+a+"-bit)... ")
+    fmt.Printf("\nDownloading jdk version "+v+" ("+a+"-bit)... ")
 
     if Download(url,fileName) {
       fmt.Printf("Complete\n")

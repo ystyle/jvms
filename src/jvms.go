@@ -14,12 +14,13 @@ import (
 	"./jvms/arch"
 	"./jvms/file"
 	"./jvms/node"
+	"./jvms/jdk"
 	"./jvms/web"
 	//  "./ansi"
 )
 
 const (
-	JvmsVersion = "1.1.0"
+	JvmsVersion = "0.0.1"
 )
 
 type Environment struct {
@@ -46,7 +47,6 @@ func main() {
 	args := os.Args
 	detail := ""
 	procarch := arch.Validate(env.arch)
-
 	Setup()
 
 	// Capture any additional arguments
@@ -174,44 +174,79 @@ func install(version string, cpuarch string) {
 	}
 
 	if CheckVersionExceedsLatest(version) {
-		fmt.Println("Node.js v" + version + " is not yet released or available.")
+		fmt.Println("JDK v" + version + " is not yet released or available.")
 		return
 	}
 
 	if cpuarch == "64" && !web.IsNode64bitAvailable(version) {
-		fmt.Println("Node.js v" + version + " is only available in 32-bit.")
+		fmt.Println("JDK v" + version + " is only available in 32-bit.")
 		return
 	}
 
 	// Check to see if the version is already installed
 	if !node.IsVersionInstalled(env.root, version, cpuarch) {
 
-		if !node.IsVersionAvailable(version) {
-			fmt.Println("Version " + version + " is not available. If you are attempting to download a \"just released\" version,")
-			fmt.Println("it may not be recognized by the jvms service yet (updated hourly). If you feel this is in error and")
-			fmt.Println("you know the version exists, please visit http://github.com/ystyle/jvms and submit a PR.")
-			return
-		}
+		// if !node.IsVersionAvailable(version) {
+		// 	fmt.Println("Version " + version + " is not available. If you are attempting to download a \"just released\" version,")
+		// 	fmt.Println("it may not be recognized by the jvms service yet (updated hourly). If you feel this is in error and")
+		// 	fmt.Println("you know the version exists, please visit http://github.com/ystyle/jvms and submit a PR.")
+		// 	return
+		// }
 
 		// Make the output directories
-		os.Mkdir(env.root+"\\v"+version, os.ModeDir)
-		os.Mkdir(env.root+"\\v"+version+"\\jdk_modules", os.ModeDir)
+		os.Mkdir(env.root+"\\download", os.ModeDir)
+		fmt.Println(env.root)
+		fmt.Println( os.ModeDir)
+
+		jdkdownloadURL := getJDKDownloadURL(version)
 
 		// Download node
 		if (cpuarch == "32" || cpuarch == "all") && !node.IsVersionInstalled(env.root, version, "32") {
-			success := web.GetNodeJS(env.root, version, "32")
+			success := web.GetJDK(env.root, version, jdkdownloadURL, "32")
 			if !success {
-				os.RemoveAll(env.root + "\\v" + version + "\\jdk_modules")
-				fmt.Println("Could not download node.js v" + version + " 32-bit executable.")
+				os.RemoveAll(env.root+"\\download")
+				fmt.Println("Could not download JDK v" + version + " 32-bit executable.")
 				return
+			}else {
+				fmt.Printf("Installing JDK v"+version+"...")
+				// new temp directory under the nvm root
+				tempDir := env.root + "\\temp"
+
+				// Extract npm to the temp directory
+				file.Unzip(env.root+"\\download\\"+file.GenJDKZipFileName(version,"32"),tempDir+"\\jdk")
+
+				// Copy the npm and npm.cmd files to the installation directory
+				os.Rename(tempDir+"\\jdk",env.root+"\\v"+version+"_x86")
+
+				// Remove the temp directory
+				// may consider keep the temp files here
+				os.RemoveAll(tempDir)
+
+				fmt.Println("\n\nInstallation complete. If you want to use this version, type\n\njvms use "+version)
 			}
 		}
 		if (cpuarch == "64" || cpuarch == "all") && !node.IsVersionInstalled(env.root, version, "64") {
-			success := web.GetNodeJS(env.root, version, "64")
+			success := web.GetJDK(env.root, version, jdkdownloadURL, "64")
 			if !success {
-				os.RemoveAll(env.root + "\\v" + version + "\\jdk_modules")
+				os.RemoveAll(env.root+"\\download")
 				fmt.Println("Could not download JDK v" + version + " 64-bit executable.")
 				return
+			}else {
+				fmt.Printf("Installing JDK v"+version+"...")
+				// new temp directory under the nvm root
+				tempDir := env.root + "\\temp"
+
+				// Extract npm to the temp directory
+				file.Unzip(env.root+"\\download\\"+file.GenJDKZipFileName(version,"64"),tempDir+"\\jdk")
+
+				// Copy the npm and npm.cmd files to the installation directory
+				os.Rename(tempDir+"\\jdk",env.root+"\\v"+version+"_x64")
+
+				// Remove the temp directory
+				// may consider keep the temp files here
+				os.RemoveAll(tempDir)
+
+				fmt.Println("\n\nInstallation complete. If you want to use this version, type\n\njvms use "+version)
 			}
 		}
 
@@ -259,22 +294,22 @@ func use(version string, cpuarch string) {
 
 	if version == "32" || version == "64" {
 		cpuarch = version
-		v, _ := node.GetCurrentVersion()
+		v, _ := jdk.GetCurrentVersion()
 		version = v
 	}
 
 	cpuarch = arch.Validate(cpuarch)
 
 	// Make sure the version is installed. If not, warn.
-	if !node.IsVersionInstalled(env.root, version, cpuarch) {
+	if !jdk.IsVersionInstalled(env.root, version, cpuarch) {
 		fmt.Println("jdk v" + version + " (" + cpuarch + "-bit) is not installed.")
 		if cpuarch == "32" {
-			if node.IsVersionInstalled(env.root, version, "64") {
+			if jdk.IsVersionInstalled(env.root, version, "64") {
 				fmt.Println("\nDid you mean jdk v" + version + " (64-bit)?\nIf so, type \"jvms use " + version + " 64\" to use it.")
 			}
 		}
 		if cpuarch == "64" {
-			if node.IsVersionInstalled(env.root, version, "64") {
+			if jdk.IsVersionInstalled(env.root, version, "64") {
 				fmt.Println("\nDid you mean jdk v" + version + " (64-bit)?\nIf so, type \"jvms use " + version + " 64\" to use it.")
 			}
 		}
@@ -283,6 +318,7 @@ func use(version string, cpuarch string) {
 
 	// Create or update the symlink
 	sym, _ := os.Stat(env.symlink)
+
 	if sym != nil {
 		cmd := exec.Command(env.root+"\\elevate.cmd", "cmd", "/C", "rmdir", env.symlink)
 		var output bytes.Buffer
@@ -295,8 +331,8 @@ func use(version string, cpuarch string) {
 			return
 		}
 	}
-
-	c := exec.Command(env.root+"\\elevate.cmd", "cmd", "/C", "mklink", "/D", env.symlink, env.root+"\\v"+version)
+	fileName := file.GenJDKFileName(version,cpuarch)
+	c := exec.Command(env.root+"\\elevate.cmd", "cmd", "/C", "mklink", "/D", env.symlink, env.root+"\\v"+fileName)
 	var out bytes.Buffer
 	var stderr bytes.Buffer
 	c.Stdout = &out
@@ -307,24 +343,6 @@ func use(version string, cpuarch string) {
 		return
 	}
 
-	// Use the assigned CPU architecture
-	cpuarch = arch.Validate(cpuarch)
-	e32 := file.Exists(env.root + "\\v" + version + "\\node32.exe")
-	e64 := file.Exists(env.root + "\\v" + version + "\\node64.exe")
-	used := file.Exists(env.root + "\\v" + version + "\\node.exe")
-	if e32 || e64 {
-		if used {
-			if e32 {
-				os.Rename(env.root+"\\v"+version+"\\node.exe", env.root+"\\v"+version+"\\node64.exe")
-				os.Rename(env.root+"\\v"+version+"\\node32.exe", env.root+"\\v"+version+"\\node.exe")
-			} else {
-				os.Rename(env.root+"\\v"+version+"\\node.exe", env.root+"\\v"+version+"\\node32.exe")
-				os.Rename(env.root+"\\v"+version+"\\node64.exe", env.root+"\\v"+version+"\\node.exe")
-			}
-		} else if e32 || e64 {
-			os.Rename(env.root+"\\v"+version+"\\node"+cpuarch+".exe", env.root+"\\v"+version+"\\node.exe")
-		}
-	}
 	fmt.Println("Now using node v" + version + " (" + cpuarch + "-bit)")
 }
 
@@ -354,12 +372,13 @@ func list(listtype string) {
 
 	if listtype == "installed" {
 		fmt.Println("")
-		inuse, a := node.GetCurrentVersion()
+		inuse, a := jdk.GetCurrentVersion()
 
-		v := node.GetInstalled(env.root)
+		v := jdk.GetInstalled(env.root)
 		for i := 0; i < len(v); i++ {
 			version := v[i]
 			isnode, _ := regexp.MatchString("v", version)
+
 			str := ""
 			if isnode {
 				if "v"+inuse == version {
@@ -453,20 +472,18 @@ func help() {
 	fmt.Println(" ")
 }
 
-// Given a node.js version, returns the associated npm version
-func getNpmVersion(nodeversion string) string {
+// Given a jdk version, returns the associated jdk download url
+func getJDKDownloadURL(jdkversion string) string {
 
 	// Get raw text
-	text := web.GetRemoteTextFile("https://raw.githubusercontent.com/coreybutler/nodedistro/master/nodeversions.json")
+	text := web.GetRemoteTextFile("https://raw.githubusercontent.com/ystyle/jvms/master/jdkversions.json")
 
 	// Parse
 	var data interface{}
 	json.Unmarshal([]byte(text), &data)
 	body := data.(map[string]interface{})
-	all := body["all"]
-	npm := all.(map[string]interface{})
 
-	return npm[nodeversion].(string)
+	return body[jdkversion].(string)
 }
 
 func updateRootDir(path string) {

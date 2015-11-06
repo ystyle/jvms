@@ -29,3 +29,15 @@ bin/*.exe
 !bin/buildtools/*
 bin/*.zip
 bin/jvms/*
+
+# test file
+out
+.idea
+src/download
+src/v*
+src/*.txt
+src/*.exe~
+src/elevate.*
+src/install.cmd
+path.txt
+*.iml

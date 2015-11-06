@@ -86,7 +86,7 @@ func GetInstalled(root string) []string {
   files, _ := ioutil.ReadDir(root)
   for i := len(files) - 1; i >= 0; i-- {
     if files[i].IsDir() {
-      isnode, _ := regexp.MatchString("v",files[i].Name())
+      isnode, _ := regexp.MatchString("^v",files[i].Name())
       if isnode {
         list = append(list,files[i].Name())
       }

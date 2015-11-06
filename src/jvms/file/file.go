@@ -8,6 +8,7 @@ import(
   "os"
   "path/filepath"
   "strings"
+  "../arch"
 )
 
 // Function courtesy http://stackoverflow.com/users/1129149/swtdrgn
@@ -72,4 +73,26 @@ func ReadLines(path string) ([]string, error) {
 func Exists(filename string) bool {
   _, err := os.Stat(filename);
   return err == nil
+}
+
+func GenJDKZipFileName(v string,a string) string{
+  vpre := ""
+
+  if a == "32" {
+    vpre = "x86"
+  } else if a == "64" {
+    vpre = "x64"
+  }
+  return  "jdk" + v + vpre + ".zip"
+}
+
+func GenJDKFileName(v string,a string) string{
+  vpre := ""
+  a = arch.Validate(a)
+  if a == "32" {
+    vpre = "x86"
+  } else if a == "64" {
+    vpre = "x64"
+  }
+  return  v +"_"+ vpre
 }
