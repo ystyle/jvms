@@ -7,7 +7,7 @@
 Manage multiple installations of JDK on a Windows computer.
 **tl;dr** [JVMS](https://github.com/ystyle/jvms), but for Windows, with an installer. [Download Now](https://github.com/ystyle/jvms/releases)!
 
-![NVM for Windows](http://coreybutler.github.io/nvm-windows/images/installlatest.jpg)
+![NVM for Windows](dist/images/installlatest.png)
 
 There are situations where the ability to switch between different versions of JDK can be very
 useful. For example, if you want to test a project you're developing with the latest

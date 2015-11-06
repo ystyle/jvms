@@ -343,7 +343,7 @@ func use(version string, cpuarch string) {
 		return
 	}
 
-	fmt.Println("Now using node v" + version + " (" + cpuarch + "-bit)")
+	fmt.Println("Now using JDK v" + version + " (" + cpuarch + "-bit)")
 }
 
 func useArchitecture(a string) {
