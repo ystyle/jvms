@@ -66,7 +66,7 @@ func GetJDK(root string, v string, url string, a string) bool {
     //jdk1.7.0_67.zip
     fileName := root + "\\download\\" + file.GenJDKZipFileName(v,a)
 
-    fmt.Printf("\nDownloading jdk version "+v+" ("+a+"-bit)... ")
+    fmt.Printf("Downloading jdk version "+v+" ("+a+"-bit)... ")
 
     if Download(url,fileName) {
       fmt.Printf("Complete\n")

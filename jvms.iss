@@ -131,38 +131,6 @@ var
   ResultCode: integer;
   msg1, msg2, msg3, dir1: Boolean;
 begin
-  // Create a file to check for Node.JS
-  TmpJS := ExpandConstant('{tmp}') + '\jvms_check.js';
-  SaveStringToFile(TmpJS, 'console.log(require("path").dirname(process.execPath));', False);
-
-  // Execute the node file and save the output temporarily
-  TmpResultFile := ExpandConstant('{tmp}') + '\jvms_jdk_check.txt';
-  Exec(ExpandConstant('{cmd}'), '/C node "'+TmpJS+'" > "' + TmpResultFile + '"', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
-  DeleteFile(TmpJS)
-
-  // Process the results
-  LoadStringFromFile(TmpResultFile,stdout);
-  NodePath := Trim(Ansi2String(stdout));
-  if DirExists(NodePath) then begin
-    Exec(ExpandConstant('{cmd}'), '/C node -v > "' + TmpResultFile + '"', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
-    LoadStringFromFile(TmpResultFile, stdout);
-    NodeVersion := Trim(Ansi2String(stdout));
-    msg1 := MsgBox('Node '+NodeVersion+' is already installed. Do you want JVMS to control this version?', mbConfirmation, MB_YESNO) = IDNO;
-    if msg1 then begin
-      msg2 := MsgBox('JVMS cannot run in parallel with an existing Node.js installation. Node.js must be uninstalled before JVMS can be installed, or you must allow JVMS to control the existing installation. Do you want JVMS to control node '+NodeVersion+'?', mbConfirmation, MB_YESNO) = IDYES;
-      if msg2 then begin
-        TakeControl(NodePath, NodeVersion);
-      end;
-      if not msg2 then begin
-        DeleteFile(TmpResultFile);
-        WizardForm.Close;
-      end;
-    end;
-    if not msg1 then
-    begin
-      TakeControl(NodePath, NodeVersion);
-    end;
-  end;
 
   // Make sure the symlink directory doesn't exist
   if DirExists(SymlinkPage.Values[0]) then begin
@@ -187,11 +155,11 @@ end;
 procedure InitializeWizard;
 begin
   SymlinkPage := CreateInputDirPage(wpSelectDir,
-    'Set Node.js Symlink', 'The active version of Node.js will always be available here.',
+    'Set JDK Symlink', 'The active version of JDK will always be available here. It the same of JAVA_HOME.',
     'Select the folder in which Setup should create the symlink, then click Next.',
     False, '');
   SymlinkPage.Add('This directory will automatically be added to your system path.');
-  SymlinkPage.Values[0] := ExpandConstant('{pf}\nodejs');
+  SymlinkPage.Values[0] := ExpandConstant('{pf}\jdk');
 end;
 
 function InitializeUninstall(): Boolean;
@@ -199,34 +167,27 @@ var
   path: string;
   jvms_symlink: string;
 begin
-  MsgBox('Removing JVMS for Windows will remove the jvms command and all versions of node.js, including global npm modules.', mbInformation, MB_OK);
+  MsgBox('Removing JVMS for Windows will remove the jvms command and all versions of JDK', mbInformation, MB_OK);
 
   // Remove the symlink
   RegQueryStringValue(HKEY_LOCAL_MACHINE,
     'SYSTEM\CurrentControlSet\Control\Session Manager\Environment',
-    'JVMS_SYMLINK', jvms_symlink);
+    'JAVA_HOME', jvms_symlink);
   RemoveDir(jvms_symlink);
 
   // Clean the registry
   RegDeleteValue(HKEY_LOCAL_MACHINE,
     'SYSTEM\CurrentControlSet\Control\Session Manager\Environment',
     'JVMS_HOME')
-  RegDeleteValue(HKEY_LOCAL_MACHINE,
-    'SYSTEM\CurrentControlSet\Control\Session Manager\Environment',
-    'JVMS_SYMLINK')
   RegDeleteValue(HKEY_CURRENT_USER,
     'Environment',
     'JVMS_HOME')
-  RegDeleteValue(HKEY_CURRENT_USER,
-    'Environment',
-    'JVMS_SYMLINK')
 
   RegQueryStringValue(HKEY_LOCAL_MACHINE,
     'SYSTEM\CurrentControlSet\Control\Session Manager\Environment',
     'Path', path);
 
   StringChangeEx(path,'%JVMS_HOME%','',True);
-  StringChangeEx(path,'%JVMS_SYMLINK%','',True);
   StringChangeEx(path,';;',';',True);
 
   RegWriteExpandStringValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'Path', path);
@@ -236,7 +197,6 @@ begin
     'Path', path);
 
   StringChangeEx(path,'%JVMS_HOME%','',True);
-  StringChangeEx(path,'%JVMS_SYMLINK%','',True);
   StringChangeEx(path,';;',';',True);
 
   RegWriteExpandStringValue(HKEY_CURRENT_USER, 'Environment', 'Path', path);
@@ -255,9 +215,9 @@ begin
 
     // Add Registry settings
     RegWriteExpandStringValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'JVMS_HOME', ExpandConstant('{app}'));
-    RegWriteExpandStringValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'JVMS_SYMLINK', SymlinkPage.Values[0]);
+    RegWriteExpandStringValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'JAVA_HOME', SymlinkPage.Values[0]);
     RegWriteExpandStringValue(HKEY_CURRENT_USER, 'Environment', 'JVMS_HOME', ExpandConstant('{app}'));
-    RegWriteExpandStringValue(HKEY_CURRENT_USER, 'Environment', 'JVMS_SYMLINK', SymlinkPage.Values[0]);
+    RegWriteExpandStringValue(HKEY_CURRENT_USER, 'Environment', 'JAVA_HOME', SymlinkPage.Values[0]);
 
     // Update system and user PATH if needed
     RegQueryStringValue(HKEY_LOCAL_MACHINE,
@@ -269,7 +229,7 @@ begin
       RegWriteExpandStringValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'Path', path);
     end;
     if Pos('%JVMS_SYMLINK%',path) = 0 then begin
-      path := path+';%JVMS_SYMLINK%';
+      path := path+';%JAVA_HOME%\bin';
       StringChangeEx(path,';;',';',True);
       RegWriteExpandStringValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'Path', path);
     end;
@@ -281,8 +241,8 @@ begin
       StringChangeEx(path,';;',';',True);
       RegWriteExpandStringValue(HKEY_CURRENT_USER, 'Environment', 'Path', path);
     end;
-    if Pos('%JVMS_SYMLINK%',path) = 0 then begin
-      path := path+';%JVMS_SYMLINK%';
+    if Pos('%JAVA_HOME%',path) = 0 then begin
+      path := path+';%JAVA_HOME%\bin';
       StringChangeEx(path,';;',';',True);
       RegWriteExpandStringValue(HKEY_CURRENT_USER, 'Environment', 'Path', path);
     end;

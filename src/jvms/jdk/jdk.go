@@ -65,7 +65,5 @@ func GetInstalled(root string) []string {
 func IsVersionInstalled(root string, version string, cpu string) bool {
 	fileName := file.GenJDKFileName(version,cpu)
 	isInstalled := file.Exists(root+"\\v"+fileName+"\\bin\\javac.exe")
-	fmt.Print(root+"\\v"+fileName+"\\bin\\javac.exe  ")
-	fmt.Println(isInstalled)
 	return isInstalled
 }

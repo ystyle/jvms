@@ -9,9 +9,10 @@ REM Get the version number from the setup file
 for /f "tokens=*" %%i in ('findstr /n . %INNOSETUP% ^| findstr ^4:#define') do set L=%%i
 set version=%L:~24,-1%
 
+
 REM Get the version number from the core executable
-for /f "tokens=*" %%i in ('findstr /n . %GOPATH%\jvms.go ^| findstr ^JvmsVersion^| findstr ^21^') do set L=%%i
-set goversion=%L:~19,-1%
+for /f "tokens=*" %%i in ('findstr /n . %GOPATH%\jvms.go ^| findstr ^JvmsVersion^| findstr ^23^') do set L=%%i
+set goversion=%L:~20,-1%
 
 IF NOT %version%==%goversion% GOTO VERSIONMISMATCH
 
@@ -19,27 +20,26 @@ SET DIST=%CD%\dist\%version%
 
 REM Build the executable
 echo Building JVMS for Windows
-rm %GOBIN%\jvms.exe
+del /Q /F %GOBIN%\jvms.exe
 cd %GOPATH%
-goxc -arch="386" -os="windows" -n="jvms" -d="%GOBIN%" -o="%GOBIN%\jvms{{.Ext}}" -tasks-=package
+go install jvms.go
 cd %ORIG%
-rm %GOBIN%\src.exe
-rm %GOPATH%\src.exe
-rm %GOPATH%\jvms.exe
+
 
 REM Clean the dist directory
-rm -rf "%DIST%"
+del /Q /F "%DIST%"
 mkdir "%DIST%"
 
 REM Create the "noinstall" zip
 echo Generating jvms-noinstall.zip
-for /d %%a in (%GOBIN%) do (buildtools\zip -j -9 -r "%DIST%\jvms-noinstall.zip" "%CD%\LICENSE" "%%a\*" -x "%GOBIN%\java.ico")
+for /d %%a in (%GOBIN%) do (buildtools\zip -j -9 -r "%DIST%\jvms-noinstall.zip" "%CD%\LICENSE" "%%a\*" "%GOBIN%\java.ico")
 
 REM Create the installer
 echo Generating jvms-setup.zip
 buildtools\iscc %INNOSETUP% /o%DIST%
 buildtools\zip -j -9 -r "%DIST%\jvms-setup.zip" "%DIST%\jvms-setup.exe"
 REM rm "%DIST%\jvms-setup.exe"
+del /Q /F "%DIST%\jvms-setup.exe"
 echo --------------------------
 echo Release %version% available in %DIST%
 GOTO COMPLETE

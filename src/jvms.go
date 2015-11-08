@@ -20,7 +20,7 @@ import (
 )
 
 const (
-	JvmsVersion = "0.0.1"
+  JvmsVersion = "0.0.1"
 )
 
 type Environment struct {
@@ -31,16 +31,18 @@ type Environment struct {
 	proxy           string
 	originalpath    string
 	originalversion string
+	currentVersion  string
 }
 
 var env = &Environment{
 	settings:        os.Getenv("JVMS_HOME") + "\\settings.txt",
 	root:            "",
-	symlink:         os.Getenv("JVMS_SYMLINK"),
+	symlink:         os.Getenv("JAVA_HOME"),
 	arch:            os.Getenv("PROCESSOR_ARCHITECTURE"),
 	proxy:           "none",
 	originalpath:    "",
 	originalversion: "",
+	currentVersion:  "",
 }
 
 func main() {
@@ -66,13 +68,15 @@ func main() {
 	case "install":
 		install(detail, procarch)
 	case "uninstall":
-		uninstall(detail)
+		uninstall(detail,procarch)
 	case "use":
 		use(detail, procarch)
 	case "list":
 		list(detail)
 	case "ls":
 		list(detail)
+	case "ls-remote":
+		listRemote(detail)
 	case "on":
 		enable()
 	case "off":
@@ -99,9 +103,15 @@ func main() {
 			fmt.Println("Default architecture set to " + detail + "-bit.")
 			return
 		}
-		_, a := node.GetCurrentVersion()
+		inuse := env.currentVersion
+		var inusecpu string
+		if strings.Contains(inuse,"64"){
+			inusecpu = "64"
+		}else {
+			inusecpu = "32"
+		}
 		fmt.Println("System Default: " + env.arch + "-bit.")
-		fmt.Println("Currently Configured: " + a + "-bit.")
+		fmt.Println("Currently Configured: " + inusecpu + "-bit.")
 	case "proxy":
 		if detail == "" {
 			fmt.Println("Current proxy: " + env.proxy)
@@ -129,19 +139,6 @@ func update() {
 	//  }
 }
 
-func CheckVersionExceedsLatest(version string) bool {
-	content := web.GetRemoteTextFile("http://nodejs.org/dist/latest/SHASUMS256.txt")
-	re := regexp.MustCompile("node-v(.+)+msi")
-	reg := regexp.MustCompile("node-v|-x.+")
-	latest := reg.ReplaceAllString(re.FindString(content), "")
-
-	if version <= latest {
-		return false
-	} else {
-		return true
-	}
-}
-
 func install(version string, cpuarch string) {
 	if version == "" {
 		fmt.Println("\nInvalid version.")
@@ -165,40 +162,25 @@ func install(version string, cpuarch string) {
 		cpuarch = arch.Validate(cpuarch)
 	}
 
-	// If user specifies "latest" version, find out what version is
-	if version == "latest" {
-		content := web.GetRemoteTextFile("http://nodejs.org/dist/latest/SHASUMS256.txt")
-		re := regexp.MustCompile("node-v(.+)+msi")
-		reg := regexp.MustCompile("node-v|-x.+")
-		version = reg.ReplaceAllString(re.FindString(content), "")
-	}
-
-	if CheckVersionExceedsLatest(version) {
-		fmt.Println("JDK v" + version + " is not yet released or available.")
-		return
-	}
-
-	if cpuarch == "64" && !web.IsNode64bitAvailable(version) {
+	if cpuarch == "64" && env.arch=="32" {
 		fmt.Println("JDK v" + version + " is only available in 32-bit.")
 		return
 	}
 
 	// Check to see if the version is already installed
-	if !node.IsVersionInstalled(env.root, version, cpuarch) {
-
-		// if !node.IsVersionAvailable(version) {
-		// 	fmt.Println("Version " + version + " is not available. If you are attempting to download a \"just released\" version,")
-		// 	fmt.Println("it may not be recognized by the jvms service yet (updated hourly). If you feel this is in error and")
-		// 	fmt.Println("you know the version exists, please visit http://github.com/ystyle/jvms and submit a PR.")
-		// 	return
-		// }
+	if !jdk.IsVersionInstalled(env.root, version, cpuarch) {
 
 		// Make the output directories
 		os.Mkdir(env.root+"\\download", os.ModeDir)
-		fmt.Println(env.root)
-		fmt.Println( os.ModeDir)
 
-		jdkdownloadURL := getJDKDownloadURL(version)
+		jdkdownloadURL := getJDKDownloadURL(version,cpuarch)
+
+		if jdkdownloadURL=="" {
+			fmt.Println("Version " + version + " is not available. If you are attempting to download a \"just released\" version,")
+			fmt.Println("it may not be recognized by the jvms service yet (updated hourly). If you feel this is in error and")
+			fmt.Println("you know the version exists, please visit http://github.com/ystyle/jvms and submit a PR.")
+			return
+		}
 
 		// Download node
 		if (cpuarch == "32" || cpuarch == "all") && !node.IsVersionInstalled(env.root, version, "32") {
@@ -250,9 +232,6 @@ func install(version string, cpuarch string) {
 			}
 		}
 
-		// If this is ever shipped for Mac, it should use homebrew.
-		// If this ever ships on Linux, it should be on bintray so it can use yum, apt-get, etc.
-
 		return
 	} else {
 		fmt.Println("Version " + version + " is already installed.")
@@ -261,7 +240,7 @@ func install(version string, cpuarch string) {
 
 }
 
-func uninstall(version string) {
+func uninstall(version string,a string) {
 	// Make sure a version is specified
 	if len(version) == 0 {
 		fmt.Println("Provide the version you want to uninstall.")
@@ -269,21 +248,38 @@ func uninstall(version string) {
 		return
 	}
 
+	a = arch.Validate(a)
+
 	// Determine if the version exists and skip if it doesn't
-	if node.IsVersionInstalled(env.root, version, "32") || node.IsVersionInstalled(env.root, version, "64") {
-		fmt.Printf("Uninstalling node v" + version + "...")
+	if jdk.IsVersionInstalled(env.root, version, "32") || jdk.IsVersionInstalled(env.root, version, "64") {
+		fmt.Printf("Uninstalling JDK v" + version + "...")
 		v, _ := node.GetCurrentVersion()
 		if v == version {
 			cmd := exec.Command(env.root+"\\elevate.cmd", "cmd", "/C", "rmdir", env.symlink)
 			cmd.Run()
 		}
-		e := os.RemoveAll(env.root + "\\v" + version)
-		if e != nil {
-			fmt.Println("Error removing jdk v" + version)
-			fmt.Println("Manually remove " + env.root + "\\v" + version + ".")
-		} else {
-			fmt.Printf(" done")
+		if a == "32" && jdk.IsVersionInstalled(env.root, version, "32") {
+			file32 := file.GenJDKFileName(version,"32")
+			e := os.RemoveAll(env.root + "\\v" + file32)
+			if e != nil {
+				fmt.Println("Error removing jdk v" + version + " 32-Bit")
+				fmt.Println("Manually remove " + env.root + "\\v" + file32 + ".")
+			} else {
+				fmt.Printf(" done")
+			}
 		}
+
+		if a=="64" && jdk.IsVersionInstalled(env.root, version, "64") {
+			file64 := file.GenJDKFileName(version,"64")
+			e := os.RemoveAll(env.root + "\\v" + file64)
+			if e != nil {
+				fmt.Println("Error removing jdk v" + version + " 64-Bit")
+				fmt.Println("Manually remove " + env.root + "\\v" + file64 + ".")
+			} else {
+				fmt.Printf(" done")
+			}
+		}
+
 	} else {
 		fmt.Println("jdk v" + version + " is not installed. Type \"jvms list\" to see what is installed.")
 	}
@@ -342,7 +338,8 @@ func use(version string, cpuarch string) {
 		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
 		return
 	}
-
+	env.currentVersion = fileName
+	saveSettings()
 	fmt.Println("Now using JDK v" + version + " (" + cpuarch + "-bit)")
 }
 
@@ -372,8 +369,13 @@ func list(listtype string) {
 
 	if listtype == "installed" {
 		fmt.Println("")
-		inuse, a := jdk.GetCurrentVersion()
-
+		inuse := env.currentVersion
+		var inusecpu string
+		if strings.Contains(inuse,"64"){
+			inusecpu = "64"
+		}else {
+			inusecpu = "32"
+		}
 		v := jdk.GetInstalled(env.root)
 		for i := 0; i < len(v); i++ {
 			version := v[i]
@@ -388,7 +390,7 @@ func list(listtype string) {
 				}
 				str = str + regexp.MustCompile("v").ReplaceAllString(version, "")
 				if "v"+inuse == version {
-					str = str + " (Currently using " + a + "-bit executable)"
+					str = str + " (Currently using " + inusecpu + "-bit executable)"
 					//            str = ansi.Color(str,"green:black")
 				}
 				fmt.Printf(str + "\n")
@@ -422,6 +424,20 @@ func list(listtype string) {
 
 		fmt.Println("\nFor a complete list, visit http://coreybutler.github.io/nodedistro")
 	}
+}
+
+func listRemote(detail string) {
+	// Get raw text
+	text := web.GetRemoteTextFile("https://raw.githubusercontent.com/ystyle/jvms/master/jdkversions.json")
+	// Parse
+	var data interface{}
+	json.Unmarshal([]byte(text), &data)
+	body := data.(map[string]interface{})
+	fmt.Println("Remote Version List :")
+	for key,_:=range body{
+		fmt.Println("\t"+key)
+	}
+	fmt.Println("\nFor a complete list, visit https://raw.githubusercontent.com/ystyle/jvms/master/jdkversions.json")
 }
 
 func enable() {
@@ -458,11 +474,12 @@ func help() {
 	fmt.Println("                                 Optionally specify whether to install the 32 or 64 bit version (defaults to system arch).")
 	fmt.Println("                                 Set [arch] to \"all\" to install 32 AND 64 bit versions.")
 	fmt.Println("  jvms list [available]         : List the JDK installations. Type \"available\" at the end to see what can be installed. Aliased as ls.")
+	fmt.Println("  jvms ls-remote                : List the JDK remote.")
 	fmt.Println("  jvms on                       : Enable JDK version management.")
 	fmt.Println("  jvms off                      : Disable JDK version management.")
 	fmt.Println("  jvms proxy [url]              : Set a proxy to use for downloads. Leave [url] blank to see the current proxy.")
 	fmt.Println("                                 Set [url] to \"none\" to remove the proxy.")
-	fmt.Println("  jvms uninstall <version>      : The version must be a specific version.")
+	fmt.Println("  jvms uninstall <version> <arch> : The version must be a specific version.")
 	//  fmt.Println("  jvms update                   : Automatically update jvms to the latest version.")
 	fmt.Println("  jvms use [version] [arch]     : Switch to use the specified version. Optionally specify 32/64bit architecture.")
 	fmt.Println("                                 jvms use <arch> will continue using the selected version, but switch to 32/64 bit mode.")
@@ -473,17 +490,15 @@ func help() {
 }
 
 // Given a jdk version, returns the associated jdk download url
-func getJDKDownloadURL(jdkversion string) string {
-
+func getJDKDownloadURL(jdkversion string,a string) string {
 	// Get raw text
 	text := web.GetRemoteTextFile("https://raw.githubusercontent.com/ystyle/jvms/master/jdkversions.json")
-
 	// Parse
 	var data interface{}
 	json.Unmarshal([]byte(text), &data)
 	body := data.(map[string]interface{})
-
-	return body[jdkversion].(string)
+	v := file.GenJDKFileName(jdkversion,a)
+	return body[v].(string)
 }
 
 func updateRootDir(path string) {
@@ -499,7 +514,7 @@ func updateRootDir(path string) {
 }
 
 func saveSettings() {
-	content := "root: " + strings.Trim(env.root, " \n\r") + "\r\narch: " + strings.Trim(env.arch, " \n\r") + "\r\nproxy: " + strings.Trim(env.proxy, " \n\r") + "\r\noriginalpath: " + strings.Trim(env.originalpath, " \n\r") + "\r\noriginalversion: " + strings.Trim(env.originalversion, " \n\r")
+	content := "root: " + strings.Trim(env.root, " \n\r") + "\r\narch: " + strings.Trim(env.arch, " \n\r") + "\r\nproxy: " + strings.Trim(env.proxy, " \n\r") + "\r\noriginalpath: " + strings.Trim(env.originalpath, " \n\r") + "\r\noriginalversion: " + strings.Trim(env.originalversion, " \n\r")+ "\r\ncurrentVersion: " + strings.Trim(env.currentVersion, " \n\r")
 	ioutil.WriteFile(env.settings, []byte(content), 0644)
 }
 
@@ -520,6 +535,8 @@ func Setup() {
 			env.originalversion = strings.Trim(regexp.MustCompile("originalversion:").ReplaceAllString(line, ""), " \r\n")
 		} else if strings.Contains(line, "arch:") {
 			env.arch = strings.Trim(regexp.MustCompile("arch:").ReplaceAllString(line, ""), " \r\n")
+		} else if strings.Contains(line, "currentVersion:") {
+			env.arch = strings.Trim(regexp.MustCompile("currentVersion:").ReplaceAllString(line, ""), " \r\n")
 		} else if strings.Contains(line, "proxy:") {
 			env.proxy = strings.Trim(regexp.MustCompile("proxy:").ReplaceAllString(line, ""), " \r\n")
 			if env.proxy != "none" && env.proxy != "" {
