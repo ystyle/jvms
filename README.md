@@ -1,11 +1,9 @@
-[![Tweet This!][1.1] Tweet This!][1]
-[1.1]: http://i.imgur.com/wWzX9uB.png (Tweet about JVMS for Windows)
-
-
 # JDK Version Manager (JVMS) for Windows
 
 Manage multiple installations of JDK on a Windows computer.
 **tl;dr** [JVMS](https://github.com/ystyle/jvms), but for Windows, with an installer. [Download Now](https://github.com/ystyle/jvms/releases)!
+
+This repo fork from [nvm-windows](https://github.com/coreybutler/nvm-windows) .
 
 ![NVM for Windows](dist/images/installlatest.png)
 
