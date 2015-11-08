@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"./jvms/arch"
@@ -380,7 +379,6 @@ func list(listtype string) {
 		for i := 0; i < len(v); i++ {
 			version := v[i]
 			isnode, _ := regexp.MatchString("v", version)
-
 			str := ""
 			if isnode {
 				if "v"+inuse == version {
@@ -514,7 +512,7 @@ func Setup() {
 		} else if strings.Contains(line, "arch:") {
 			env.arch = strings.Trim(regexp.MustCompile("arch:").ReplaceAllString(line, ""), " \r\n")
 		} else if strings.Contains(line, "currentVersion:") {
-			env.arch = strings.Trim(regexp.MustCompile("currentVersion:").ReplaceAllString(line, ""), " \r\n")
+			env.currentVersion = strings.Trim(regexp.MustCompile("currentVersion:").ReplaceAllString(line, ""), " \r\n")
 		} else if strings.Contains(line, "proxy:") {
 			env.proxy = strings.Trim(regexp.MustCompile("proxy:").ReplaceAllString(line, ""), " \r\n")
 			if env.proxy != "none" && env.proxy != "" {

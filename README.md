@@ -13,7 +13,7 @@ There are situations where the ability to switch between different versions of J
 useful. For example, if you want to test a project you're developing with the latest
 bleeding edge version without uninstalling the stable version of JDK, this utility can help.
 
-![Switch between stable and unstable versions.](http://coreybutler.github.io/nvm-windows/images/use.jpg)
+![Switch between stable and unstable versions.](dist/images/use.png)
 
 ### Installation & Upgrades
 
@@ -21,7 +21,7 @@ It comes with an installer (and uninstaller), because getting it should be easy.
 
 [Download the latest installer from the releases](https://github.com/ystyle/jvms/releases).
 
-![JVMS for Windows Installer](http://coreybutler.github.io/nvm-windows/images/installer.jpg)
+![JVMS for Windows Installer](dist/images/installer.png)
 
 **To upgrade**, run the new installer. It will safely overwrite the files it needs to update without touching your node.js installations.
 Make sure you use the same installation and symlink folder. If you originally installed to the default locations, you just need to click
