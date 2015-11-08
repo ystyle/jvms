@@ -23,7 +23,6 @@ _testmain.go
 *.test
 *.prof
 
-dist
 src/v*
 bin/*.exe
 !bin/buildtools/*
