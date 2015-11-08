@@ -400,29 +400,7 @@ func list(listtype string) {
 			fmt.Println("No installations recognized.")
 		}
 	} else {
-		_, stable, unstable := node.GetAvailable()
-
-		releases := 15
-
-		fmt.Println("\nShowing the " + strconv.Itoa(releases) + " latest available releases.\n")
-
-		fmt.Println("      STABLE   |    UNSTABLE  ")
-		fmt.Println("   ---------------------------")
-
-		for i := 0; i < releases; i++ {
-			str := "v" + stable[i]
-			for ii := 10 - len(str); ii > 0; ii-- {
-				str = " " + str
-			}
-			str = str + "  |  "
-			str2 := "v" + unstable[i]
-			for ii := 10 - len(str2); ii > 0; ii-- {
-				str2 = " " + str2
-			}
-			fmt.Println("   " + str + str2)
-		}
-
-		fmt.Println("\nFor a complete list, visit http://coreybutler.github.io/nodedistro")
+		listRemote(listtype)
 	}
 }
 
