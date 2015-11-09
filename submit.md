@@ -1,5 +1,7 @@
 ## Submit Other JDK Version URL
 
+the new Version url will add this file [jdkversions.json](jdkversions.json)
+
 ### The filename structure
 The filename include `jdk`+`$VERSION$`+`x86|x64`+`.zip`
 
