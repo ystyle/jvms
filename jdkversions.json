@@ -1,4 +1,6 @@
 {
-    "1.6.0_43_x86": "http://127.0.0.1/jdk1.6.0_43_x86.zip",
-    "1.7.0_67_x64": "http://127.0.0.1/jdk1.7.0_67_x64.zip"
+    "latest_x64": "http://7xo3cg.com1.z0.glb.clouddn.com/jdk1.8.0_31_x64.zip",
+    "1.6.0_43_x86": "http://7xo3cg.com1.z0.glb.clouddn.com/jdk1.6.0_43_x86.zip",
+    "1.7.0_67_x64": "http://7xo3cg.com1.z0.glb.clouddn.com/jdk1.7.0_67_x64.zip",
+    "1.8.0_31_x64": "http://7xo3cg.com1.z0.glb.clouddn.com/jdk1.8.0_31_x64.zip"
 }

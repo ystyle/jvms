@@ -76,6 +76,9 @@ This is how JDK for Windows recognizes the "latest" stable version. It's free fo
 I needed it, plain and simple. Additionally, it's apparent that [support for multiple versions](https://github.com/joyent/node/issues/8075) is not
 coming to node core, or even something they care about. It was also an excuse to play with Go.
 
+## Submit other jdk Version url
+[Click here](submit.md)
+
 ## License
 
 MIT.
