@@ -229,7 +229,7 @@ begin
       RegWriteExpandStringValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'Path', path);
     end;
     if Pos('%JVMS_SYMLINK%',path) = 0 then begin
-      path := path+';%JAVA_HOME%\bin';
+      path := '%JAVA_HOME%\bin;' + path;
       StringChangeEx(path,';;',';',True);
       RegWriteExpandStringValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'Path', path);
     end;
@@ -242,7 +242,7 @@ begin
       RegWriteExpandStringValue(HKEY_CURRENT_USER, 'Environment', 'Path', path);
     end;
     if Pos('%JAVA_HOME%',path) = 0 then begin
-      path := path+';%JAVA_HOME%\bin';
+      path := '%JAVA_HOME%\bin;' + path;
       StringChangeEx(path,';;',';',True);
       RegWriteExpandStringValue(HKEY_CURRENT_USER, 'Environment', 'Path', path);
     end;
