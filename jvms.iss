@@ -1,7 +1,7 @@
 #define MyAppName "JVMS for Windows"
 #define MyAppShortName "jvms"
 #define MyAppLCShortName "jvms"
-#define MyAppVersion "0.0.1"
+#define MyAppVersion "0.0.2"
 #define MyAppPublisher "YSTYLE"
 #define MyAppURL "http://github.com/ystyle/jvms"
 #define MyAppExeName "jvms.exe"

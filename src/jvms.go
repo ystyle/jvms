@@ -19,7 +19,7 @@ import (
 )
 
 const (
-  JvmsVersion = "0.0.1"
+  JvmsVersion = "0.0.2"
 )
 
 type Environment struct {
