@@ -11,6 +11,8 @@ There are situations where the ability to switch between different versions of J
 useful. For example, if you want to test a project you're developing with the latest
 bleeding edge version without uninstalling the stable version of JDK, this utility can help.
 
+![Switch between stable and unstable versions.](dist/images/installjdk.png)
+
 ![Switch between stable and unstable versions.](dist/images/use.png)
 
 ### Installation & Upgrades
