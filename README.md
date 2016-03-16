@@ -79,11 +79,13 @@ I needed it, plain and simple. Additionally, it's apparent that [support for mul
 coming to node core, or even something they care about. It was also an excuse to play with Go.
 
 ## Submit other jdk Version url
-[Click here](submit.md)
+[Look here](submit.md)
 
 ## Add a local jdk version
 the jdk home folder must start with `v` and end with `_x86` or `_x64`
+
 e.g: add the 1.7 64bit jdk 
+
 1. copy jdk folder to jvms home 
 2. rename folder to `v1.7_x64`
 3. `jvms list ` check this 
