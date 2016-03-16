@@ -19,7 +19,6 @@ v1.7.0_67_x64/
 |-- README.html
 |-- THIRDPARTYLICENSEREADME-JAVAFX.txt
 |-- THIRDPARTYLICENSEREADME.txt
-|-- X64.txt
 |-- bin
 |-- db
 |-- include
