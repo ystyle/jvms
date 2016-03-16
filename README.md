@@ -81,6 +81,15 @@ coming to node core, or even something they care about. It was also an excuse to
 ## Submit other jdk Version url
 [Click here](submit.md)
 
+## Add a local jdk version
+the jdk home folder must start with `v` and end with `_x86` or `_x64`
+e.g: add the 1.7 64bit jdk 
+1. copy jdk folder to jvms home 
+2. rename folder to `v1.7_x64`
+3. `jvms list ` check this 
+4. `jvms use 1.7` or `jvms use 1.7 64`
+5. `java -version` check jdk verison  
+
 ## License
 
 MIT.
