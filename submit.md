@@ -11,25 +11,22 @@ e.g.  `jdk1.7.0.67_x64.zip`
 
 ### zip file structure
 e.g:
+```
+$ tree -L 1 v1.7.0_67_x64/
+v1.7.0_67_x64/
+|-- COPYRIGHT
+|-- LICENSE
+|-- README.html
+|-- THIRDPARTYLICENSEREADME-JAVAFX.txt
+|-- THIRDPARTYLICENSEREADME.txt
+|-- X64.txt
+|-- bin
+|-- db
+|-- include
+|-- jre
+|-- lib
+|-- release
+`-- src.zip
 
-jdk1.7.0.67_x64.zip  
-├─bin  
-│  ├─java.exe  
-│  └─javac.exe  
-│  └─ ...  
-├─db  
-│  └─ ...  
-├─include  
-│  └─ ...  
-├─jre  
-│  └─ ...  
-├─lib  
-│  └─ ...  
-├─COPYRIGHT  
-├─LICENSE  
-├─README.html  
-├─release  
-├─src.zip  
-├─THIRDPARTYLICENSEREADME.txt  
-├─THIRDPARTYLICENSEREADME-JAVAFX.txt  
-└─...
+5 directories, 8 files
+```
