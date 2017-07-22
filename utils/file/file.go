@@ -81,7 +81,9 @@ func GetCurrentPath() string {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	i := strings.LastIndex(s, "\\")
+	s = strings.Replace(s, "\\", "/", -1)
+	s = strings.Replace(s, "\\\\", "/", -1)
+	i := strings.LastIndex(s, "/")
 	path := string(s[0 : i+1])
-	return strings.Replace(path, "\\", "/", -1)
+	return path
 }

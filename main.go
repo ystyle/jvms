@@ -74,19 +74,20 @@ func commands() []cli.Command {
 			Action: func(c *cli.Context) error {
 				if c.IsSet("java_home") || config.JavaHome == "" {
 					config.JavaHome = c.String("java_home")
-					cmd := exec.Command("cmd", "/C", "setx", "JAVA_HOME", config.JavaHome, "/M")
-					err := cmd.Run()
-					if err != nil {
-						return errors.New("Set Environment variable `JAVA_HOME` failure: Please run as admin user")
-					}
-					fmt.Println("set `JAVA_HOME` Environment variable to ", config.JavaHome)
 				}
+				cmd := exec.Command("cmd", "/C", "setx", "JAVA_HOME", config.JavaHome, "/M")
+				err := cmd.Run()
+				if err != nil {
+					return errors.New("Set Environment variable `JAVA_HOME` failure: Please run as admin user")
+				}
+				fmt.Println("set `JAVA_HOME` Environment variable to ", config.JavaHome)
+
 				if c.IsSet("originalpath") || config.Originalpath == "" {
 					config.Originalpath = c.String("originalpath")
 				}
 				path := fmt.Sprintf(`%s/bin;%s;%s`, config.JavaHome, os.Getenv("PATH"), file.GetCurrentPath())
-				cmd := exec.Command("cmd", "/C", "setx", "path", path, "/m")
-				err := cmd.Run()
+				cmd = exec.Command("cmd", "/C", "setx", "path", path, "/m")
+				err = cmd.Run()
 				if err != nil {
 					return errors.New("Set Environment variable `PATH` failure: Please run as admin user")
 				}
@@ -148,7 +149,7 @@ func commands() []cli.Command {
 						os.Remove(dlzipfile)
 						success := web.GetJDK(config.download, v, version.Url)
 						if success {
-							fmt.Printf("Installing JDK %s...\n", v)
+							fmt.Printf("Installing JDK %s ...\n", v)
 
 							// Extract jdk to the temp directory
 							jdktempfile := fmt.Sprintf("%s%s_temp", config.download, v)
@@ -190,7 +191,12 @@ func commands() []cli.Command {
 						return errors.New("Switch jdk failed, please manually remove "+ config.JavaHome)
 					}
 				}
-				err := os.Symlink(config.store+v, config.JavaHome)
+				cmd := exec.Command("cmd", "/C", "setx", "JAVA_HOME", config.JavaHome, "/M")
+				err := cmd.Run()
+				if err != nil {
+					return errors.New("Set Environment variable `JAVA_HOME` failure: Please run as admin user")
+				}
+				err = os.Symlink(config.store+v, config.JavaHome)
 				if err != nil {
 					return errors.New("Switch jdk failed, " + err.Error())
 				}
@@ -294,8 +300,9 @@ func startup(c *cli.Context) error {
 	if err := store.Load("jvms.json", &config); err != nil {
 		return errors.New("failed to load the config:" + err.Error())
 	}
-	config.store = file.GetCurrentPath() + "store/"
-	config.download = file.GetCurrentPath() + "download/"
+	s := file.GetCurrentPath()
+	config.store = s + "store/"
+	config.download = s + "download/"
 	if config.Originalpath == "" {
 		config.Originalpath = default_Originalpath
 	}
