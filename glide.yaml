@@ -1,0 +1,6 @@
+package: github.com/ystyle/jvms
+import:
+- package: github.com/codegangsta/cli
+  version: ^1.19.1
+- package: github.com/tucnak/store
+  version: ^1.0.0

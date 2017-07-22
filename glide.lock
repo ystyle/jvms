@@ -1,0 +1,8 @@
+hash: b937a6361b08120db9107ffde62ee4c23850da7d2316e217213a79b642fef342
+updated: 2017-07-15T21:04:42.1322442+08:00
+imports:
+- name: github.com/codegangsta/cli
+  version: 0bdeddeeb0f650497d603c4ad7b20cfe685682f6
+- name: github.com/tucnak/store
+  version: 84b795be94a4e02b5d92d7ef7490c4ebdb347ddf
+testImports: []
