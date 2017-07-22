@@ -14,7 +14,7 @@ bleeding edge version without uninstalling the stable version of JDK, this utili
 - run cmd or powershell as administrator
 - cd to folder where `jvms.exe` in
 - run `jvms.exe init`
-- Setup is complete ! Switch and install jdk see [Usage](#Usage) Section
+- Setup is complete ! Switch and install jdk see [Usage](#usage) Section
 
 ![](images/powershell_2017-07-23_00-38-13.png)
 
