@@ -14,7 +14,7 @@ bleeding edge version without uninstalling the stable version of JDK, this utili
 - run cmd or powershell as administrator
 - cd to folder where `jvms.exe` in
 - run `jvms.exe init`
-- Setup is complete ! Switch and install jdk see below
+- Setup is complete ! Switch and install jdk see [Usage](#Usage) Section
 
 ![](images/powershell_2017-07-23_00-38-13.png)
 
@@ -47,10 +47,10 @@ GLOBAL OPTIONS:
 
 how to install and switch jdk. see:
 - run cmd or powershell as administrator
-- jvms rls *list available jdk version for download*
-- jvms install 1.8.0_31 *install jdk 1.8.0_31*
-- jvms ls *list installed jdk*
-- jvms switch 1.8.0_31 *switch jdk version to 1.8.0_31*
+- `jvms rls` *list available jdk version for download*
+- `jvms install 1.8.0_31` *install jdk 1.8.0_31*
+- `jvms ls` *list installed jdk*
+- `jvms switch 1.8.0_31` *switch jdk version to 1.8.0_31*
 
 ![](images/powershell_2017-07-23_01-26-40.png)
 ---
