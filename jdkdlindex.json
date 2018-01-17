@@ -1,26 +1,50 @@
 [
   {
-    "version":"ibm_sdk80",
-    "url":"http://7xo3cg.com1.z0.glb.clouddn.com/vibm_sdk80_x64.zip"
+    "version": "ibm_sdk80",
+    "url": "http://7xo3cg.com1.z0.glb.clouddn.com/vibm_sdk80_x64.zip"
   },
   {
-    "version":"ibm_sdk71",
-    "url":"http://7xo3cg.com1.z0.glb.clouddn.com/vibm_sdk71_x64.zip"
+    "version": "ibm_sdk71",
+    "url": "http://7xo3cg.com1.z0.glb.clouddn.com/vibm_sdk71_x64.zip"
   },
   {
-    "version":"1.8.0_31",
-    "url":"http://7xo3cg.com1.z0.glb.clouddn.com/jdk1.8.0_31_x64.zip"
+    "version": "1.9.0",
+    "url": "http://7xo3cg.com1.z0.glb.clouddn.com/jdk1.9_x64.zip"
   },
   {
-    "version":"1.7.0_67",
-    "url":"http://7xo3cg.com1.z0.glb.clouddn.com/jdk1.7.0_67_x64.zip"
+    "version": "1.8.0_151",
+    "url": "http://7xo3cg.com1.z0.glb.clouddn.com/jdk1.8.0_151_x64.zip"
   },
   {
-    "version":"1.6.0_43",
-    "url":"http://7xo3cg.com1.z0.glb.clouddn.com/jdk1.6.0_43_x64.zip"
+    "version": "1.8.0_111",
+    "url": "http://7xo3cg.com1.z0.glb.clouddn.com/jdk1.8.0_111_x64.zip"
   },
   {
-    "version":"1.6.0_43_x86",
-    "url":"http://7xo3cg.com1.z0.glb.clouddn.com/jdk1.6.0_43_x86.zip"
+    "version": "1.8.0_31",
+    "url": "http://7xo3cg.com1.z0.glb.clouddn.com/jdk1.8.0_31_x64.zip"
+  },
+  {
+    "version": "1.7.0_67",
+    "url": "http://7xo3cg.com1.z0.glb.clouddn.com/jdk1.7.0_67_x64.zip"
+  },
+  {
+    "version": "1.6.0_43",
+    "url": "http://7xo3cg.com1.z0.glb.clouddn.com/jdk1.6.0_43_x64.zip"
+  },
+  {
+    "version": "1.8.0_74_x86",
+    "url": "http://7xo3cg.com1.z0.glb.clouddn.com/jdk1.8.0_74_x86.zip"
+  },
+  {
+    "version": "1.7.0_80_x86",
+    "url": "http://7xo3cg.com1.z0.glb.clouddn.com/jdk1.7.0_80_x86.zip"
+  },
+  {
+    "version": "1.6.0_43_x86",
+    "url": "http://7xo3cg.com1.z0.glb.clouddn.com/jdk1.6.0_43_x86.zip"
+  },
+  {
+    "version": "1.5.0_07_x86",
+    "url": "http://7xo3cg.com1.z0.glb.clouddn.com/jdk1.5.0_07_x86.zip"
   }
 ]
