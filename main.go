@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	version              = "2.0.0"
+	version              = "2.0.2"
 	default_Originalpath = "http://7xo3cg.com1.z0.glb.clouddn.com/2.0/jdkdlindex.json"
 )
 
@@ -162,7 +162,8 @@ func commands() []cli.Command {
 							// may consider keep the temp files here
 							os.RemoveAll(jdktempfile)
 
-							fmt.Println("Installation complete. If you want to use this version, type\n\njvms use", v)
+							fmt.Println("Installation complete. If you want to use this version, type\n\njvms switch", v)
+							fmt.Println()
 						} else {
 							fmt.Println("Could not download JDK " + v + " executable.")
 						}
