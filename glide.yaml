@@ -4,3 +4,6 @@ import:
   version: ^1.19.1
 - package: github.com/tucnak/store
   version: ^1.0.0
+- package: github.com/go-yaml/yaml
+- package: github.com/BurntSushi/toml
+  version: ^0.3.0

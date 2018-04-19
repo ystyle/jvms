@@ -1,8 +1,12 @@
-hash: b937a6361b08120db9107ffde62ee4c23850da7d2316e217213a79b642fef342
-updated: 2017-07-15T21:04:42.1322442+08:00
+hash: 9a86c76cd41c0dc647d0e033aca96d5d49334546070493b514a044121524cdef
+updated: 2017-08-10T22:48:16.3647629+08:00
 imports:
+- name: github.com/BurntSushi/toml
+  version: b26d9c308763d68093482582cea63d69be07a0f0
 - name: github.com/codegangsta/cli
   version: 0bdeddeeb0f650497d603c4ad7b20cfe685682f6
+- name: github.com/go-yaml/yaml
+  version: 25c4ec802a7d637f88d584ab26798e94ad14c13b
 - name: github.com/tucnak/store
   version: 84b795be94a4e02b5d92d7ef7490c4ebdb347ddf
 testImports: []
