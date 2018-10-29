@@ -1,29 +1,29 @@
 package main
 
 import (
-	"os"
-	"log"
-	"github.com/codegangsta/cli"
-	"github.com/tucnak/store"
+	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/ystyle/jvms/utils/jdk"
-	"os/exec"
+	"github.com/codegangsta/cli"
+	"github.com/tucnak/store"
 	"github.com/ystyle/jvms/utils/file"
+	"github.com/ystyle/jvms/utils/jdk"
 	"github.com/ystyle/jvms/utils/web"
-	"encoding/json"
+	"log"
+	"os"
+	"os/exec"
 )
 
 const (
-	version              = "2.0.2"
-	default_Originalpath = "http://7xo3cg.com1.z0.glb.clouddn.com/2.0/jdkdlindex.json"
+	version              = "2.0.3"
+	default_Originalpath = "https://raw.githubusercontent.com/ystyle/jvms/new/jdkdlindex.json"
 )
 
 type Config struct {
-	JavaHome          string`json:"java_home"`
-	CurrentJDKVersion string`json:"current_jdk_version"`
-	Originalpath      string`json:"original_path"`
-	Proxy             string`json:"proxy"`
+	JavaHome          string `json:"java_home"`
+	CurrentJDKVersion string `json:"current_jdk_version"`
+	Originalpath      string `json:"original_path"`
+	Proxy             string `json:"proxy"`
 	store             string
 	download          string
 }
@@ -31,8 +31,8 @@ type Config struct {
 var config Config
 
 type JdkVersion struct {
-	Version string`json:"version"`
-	Url     string`json:"url"`
+	Version string `json:"version"`
+	Url     string `json:"url"`
 }
 
 func main() {
@@ -136,11 +136,11 @@ func commands() []cli.Command {
 					return err
 				}
 
-				if !file.Exists(config.download){
-					os.MkdirAll(config.download,0666)
+				if !file.Exists(config.download) {
+					os.MkdirAll(config.download, 0666)
 				}
-				if !file.Exists(config.store){
-					os.MkdirAll(config.store,0666)
+				if !file.Exists(config.store) {
+					os.MkdirAll(config.store, 0666)
 				}
 
 				for _, version := range versions {
@@ -162,8 +162,7 @@ func commands() []cli.Command {
 							// may consider keep the temp files here
 							os.RemoveAll(jdktempfile)
 
-							fmt.Println("Installation complete. If you want to use this version, type\n\njvms switch", v)
-							fmt.Println()
+							fmt.Println("Installation complete. If you want to use this version, type\n\njvms use", v)
 						} else {
 							fmt.Println("Could not download JDK " + v + " executable.")
 						}
@@ -189,7 +188,7 @@ func commands() []cli.Command {
 				if file.Exists(config.JavaHome) {
 					err := os.Remove(config.JavaHome)
 					if err != nil {
-						return errors.New("Switch jdk failed, please manually remove "+ config.JavaHome)
+						return errors.New("Switch jdk failed, please manually remove " + config.JavaHome)
 					}
 				}
 				cmd := exec.Command("cmd", "/C", "setx", "JAVA_HOME", config.JavaHome, "/M")
@@ -287,7 +286,6 @@ func getJdkVersions() ([]JdkVersion, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	var versions []JdkVersion
 	err = json.Unmarshal([]byte(jsonContent), &versions)
 	if err != nil {
