@@ -8,6 +8,10 @@
     "url": "https://github.com/ystyle/jvms/releases/download/jdk/vibm_sdk71_x64.zip"
   },
   {
+    "version": "amazon_jdk8",
+    "url": "https://github.com/ystyle/jvms/releases/download/jdk/amazon_jdk8.zip"
+  },
+  {
     "version": "1.9.0",
     "url": "https://github.com/ystyle/jvms/releases/download/jdk/jdk1.9_x64.zip"
   },
