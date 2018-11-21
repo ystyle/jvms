@@ -12,6 +12,10 @@
     "url": "https://github.com/ystyle/jvms/releases/download/jdk/amazon_jdk8.zip"
   },
   {
+    "version": "11.0.1",
+    "url": "https://github.com/ystyle/jvms/releases/download/jdk/jdk-11.0.1.zip"
+  },
+  {
     "version": "1.9.0",
     "url": "https://github.com/ystyle/jvms/releases/download/jdk/jdk1.9_x64.zip"
   },
