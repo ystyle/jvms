@@ -162,7 +162,7 @@ func commands() []cli.Command {
 							// may consider keep the temp files here
 							os.RemoveAll(jdktempfile)
 
-							fmt.Println("Installation complete. If you want to use this version, type\n\njvms use", v)
+							fmt.Println("Installation complete. If you want to use this version, type\n\njvms switch", v)
 						} else {
 							fmt.Println("Could not download JDK " + v + " executable.")
 						}
