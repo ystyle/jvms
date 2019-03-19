@@ -1,15 +1,19 @@
 [
   {
+    "version": "amazon_jdk11.0.2_9",
+    "url": "https://github.com/ystyle/jvms/releases/download/jdk/amazon_jdk11.0.2_9.zip"
+  },
+  {
+    "version": "amazon_jdk1.8.0_202",
+    "url": "https://github.com/ystyle/jvms/releases/download/jdk/amazon_jdk1.8.0_202.zip"
+  },
+  {
     "version": "ibm_sdk80",
     "url": "https://github.com/ystyle/jvms/releases/download/jdk/vibm_sdk80_x64.zip"
   },
   {
     "version": "ibm_sdk71",
     "url": "https://github.com/ystyle/jvms/releases/download/jdk/vibm_sdk71_x64.zip"
-  },
-  {
-    "version": "amazon_jdk8",
-    "url": "https://github.com/ystyle/jvms/releases/download/jdk/amazon_jdk8.zip"
   },
   {
     "version": "11.0.1",
