@@ -1,11 +1,11 @@
 [
   {
-    "version": "amazon_jdk11.0.2_9",
-    "url": "https://github.com/ystyle/jvms/releases/download/jdk/amazon_jdk11.0.2_9.zip"
+    "version": "amazon_jdk11.0.3_7",
+    "url": "https://github.com/ystyle/jvms/releases/download/jdk/amazon_jdk11.0.3_7.zip"
   },
   {
-    "version": "amazon_jdk1.8.0_202",
-    "url": "https://github.com/ystyle/jvms/releases/download/jdk/amazon_jdk1.8.0_202.zip"
+    "version": "amazon_jdk1.8.0_222",
+    "url": "https://github.com/ystyle/jvms/releases/download/jdk/amazon_jdk1.8.0_222.zip"
   },
   {
     "version": "ibm_sdk80",
@@ -38,6 +38,10 @@
   {
     "version": "1.6.0_43",
     "url": "https://github.com/ystyle/jvms/releases/download/jdk/jdk1.6.0_43_x64.zip"
+  },
+  {
+    "version": "amazon_jdk1.8.0_222_x86",
+    "url": "https://github.com/ystyle/jvms/releases/download/jdk/amazon_jdk1.8.0_222_x86.zip"
   },
   {
     "version": "1.8.0_74_x86",
