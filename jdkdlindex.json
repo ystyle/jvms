@@ -1,31 +1,23 @@
 [
   {
-    "version": "14.0.2",
-    "url": "https://github.com/ystyle/jvms/releases/download/jdk/jdk-14.0.2.zip"
+    "version": "17.0.1",
+    "url": "https://github.com/ystyle/jvms/releases/download/jdk/amazon_jdk17.0.1_12.zip"
   },
   {
-    "version": "13.0",
-    "url": "https://github.com/ystyle/jvms/releases/download/jdk/jdk-13.zip"
-  },
-  {
-    "version": "12.0",
-    "url": "https://github.com/ystyle/jvms/releases/download/jdk/jdk-12.zip"
+    "version": "amazon_jdk17.0.1_120",
+    "url": "https://github.com/ystyle/jvms/releases/download/jdk/amazon_jdk17.0.1_12.zipzip"
   },
   {
     "version": "11.0.8",
     "url": "https://github.com/ystyle/jvms/releases/download/jdk/jdk-11.0.8.zip"
   },
   {
-    "version": "1.9.0",
-    "url": "https://github.com/ystyle/jvms/releases/download/jdk/jdk1.9_x64.zip"
+    "version": "amazon_jdk11.0.13_8",
+    "url": "https://github.com/ystyle/jvms/releases/download/jdk/amazon_jdk11.0.13_8.zip"
   },
   {
     "version": "1.8.0_151",
     "url": "https://github.com/ystyle/jvms/releases/download/jdk/jdk1.8.0_151_x64.zip"
-  },
-  {
-    "version": "amazon_jdk11.0.8_10",
-    "url": "https://github.com/ystyle/jvms/releases/download/jdk/amazon_jdk11.0.8_10.zip"
   },
   {
     "version": "amazon_jdk1.8.0_265",
@@ -34,14 +26,6 @@
   {
     "version": "amazon_jdk1.8.0_222_x86",
     "url": "https://github.com/ystyle/jvms/releases/download/jdk/amazon_jdk1.8.0_222_x86.zip"
-  },
-  {
-    "version": "ibm_sdk80",
-    "url": "https://github.com/ystyle/jvms/releases/download/jdk/vibm_sdk80_x64.zip"
-  },
-  {
-    "version": "ibm_sdk71",
-    "url": "https://github.com/ystyle/jvms/releases/download/jdk/vibm_sdk71_x64.zip"
   },
   {
     "version": "1.8.0_74_x86",
@@ -66,5 +50,13 @@
   {
     "version": "1.5.0_07_x86",
     "url": "https://github.com/ystyle/jvms/releases/download/jdk/jdk1.5.0_07_x86.zip"
+  },
+  {
+    "version": "ibm_sdk80",
+    "url": "https://github.com/ystyle/jvms/releases/download/jdk/vibm_sdk80_x64.zip"
+  },
+  {
+    "version": "ibm_sdk71",
+    "url": "https://github.com/ystyle/jvms/releases/download/jdk/vibm_sdk71_x64.zip"
   }
 ]
