@@ -12,11 +12,12 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path"
 )
 
 const (
-	version              = "2.0.3"
-	default_Originalpath = "https://raw.githubusercontent.com/ystyle/jvms/new/jdkdlindex.json"
+	version             = "2.1.0"
+	defaultOriginalpath = "https://raw.githubusercontent.com/ystyle/jvms/new/jdkdlindex.json"
 )
 
 type Config struct {
@@ -68,7 +69,7 @@ func commands() []cli.Command {
 				cli.StringFlag{
 					Name:  "originalpath",
 					Usage: "the jdk download index file url.",
-					Value: default_Originalpath,
+					Value: defaultOriginalpath,
 				},
 			},
 			Action: func(c *cli.Context) error {
@@ -78,7 +79,7 @@ func commands() []cli.Command {
 				cmd := exec.Command("cmd", "/C", "setx", "JAVA_HOME", config.JavaHome, "/M")
 				err := cmd.Run()
 				if err != nil {
-					return errors.New("Set Environment variable `JAVA_HOME` failure: Please run as admin user")
+					return errors.New("set Environment variable `JAVA_HOME` failure: Please run as admin user")
 				}
 				fmt.Println("set `JAVA_HOME` Environment variable to ", config.JavaHome)
 
@@ -89,7 +90,7 @@ func commands() []cli.Command {
 				cmd = exec.Command("cmd", "/C", "setx", "path", path, "/m")
 				err = cmd.Run()
 				if err != nil {
-					return errors.New("Set Environment variable `PATH` failure: Please run as admin user")
+					return errors.New("set Environment variable `PATH` failure: Please run as admin user")
 				}
 				fmt.Println("add jvms.exe to `path` Environment variable")
 				return nil
@@ -124,7 +125,7 @@ func commands() []cli.Command {
 			Action: func(c *cli.Context) error {
 				v := c.Args().Get(0)
 				if v == "" {
-					return errors.New("Invalid version., Type \"jvms rls\" to see what is available for install.")
+					return errors.New("invalid version., Type \"jvms rls\" to see what is available for install")
 				}
 
 				if jdk.IsVersionInstalled(config.store, v) {
@@ -137,26 +138,29 @@ func commands() []cli.Command {
 				}
 
 				if !file.Exists(config.download) {
-					os.MkdirAll(config.download, 0666)
+					os.MkdirAll(config.download, 0777)
 				}
 				if !file.Exists(config.store) {
-					os.MkdirAll(config.store, 0666)
+					os.MkdirAll(config.store, 0777)
 				}
 
 				for _, version := range versions {
 					if version.Version == v {
-						dlzipfile := fmt.Sprintf("%s%s.zip", config.download, v)
-						os.Remove(dlzipfile)
-						success := web.GetJDK(config.download, v, version.Url)
+						dlzipfile, success := web.GetJDK(config.download, v, version.Url)
 						if success {
 							fmt.Printf("Installing JDK %s ...\n", v)
 
 							// Extract jdk to the temp directory
-							jdktempfile := fmt.Sprintf("%s%s_temp", config.download, v)
-							file.Unzip(dlzipfile, jdktempfile)
-
+							jdktempfile := path.Join(config.download, fmt.Sprintf("%s_temp", v))
+							err := file.Unzip(dlzipfile, jdktempfile)
+							if err != nil {
+								return fmt.Errorf("unzip failed: %w", err)
+							}
 							// Copy the jdk files to the installation directory
-							os.Rename(jdktempfile, fmt.Sprintf("%s%s", config.store, v))
+							err = os.Rename(jdktempfile, path.Join(config.store, v))
+							if err != nil {
+								return fmt.Errorf("unzip failed: %w", err)
+							}
 
 							// Remove the temp directory
 							// may consider keep the temp files here
@@ -169,7 +173,7 @@ func commands() []cli.Command {
 						return nil
 					}
 				}
-				return errors.New("Invalid version., Type \"jvms rls\" to see what is available for install.")
+				return errors.New("invalid version., Type \"jvms rls\" to see what is available for install")
 			},
 		},
 		{
@@ -179,10 +183,11 @@ func commands() []cli.Command {
 			Action: func(c *cli.Context) error {
 				v := c.Args().Get(0)
 				if v == "" {
-					return errors.New("you should input a version, Type \"jvms list\" to see what is installed.")
+					return errors.New("you should input a version, Type \"jvms list\" to see what is installed")
 				}
 				if !jdk.IsVersionInstalled(config.store, v) {
 					fmt.Printf("jdk %s is uninstall. ", v)
+					return nil
 				}
 				// Create or update the symlink
 				if file.Exists(config.JavaHome) {
@@ -194,9 +199,9 @@ func commands() []cli.Command {
 				cmd := exec.Command("cmd", "/C", "setx", "JAVA_HOME", config.JavaHome, "/M")
 				err := cmd.Run()
 				if err != nil {
-					return errors.New("Set Environment variable `JAVA_HOME` failure: Please run as admin user")
+					return errors.New("set Environment variable `JAVA_HOME` failure: Please run as admin user")
 				}
-				err = os.Symlink(config.store+v, config.JavaHome)
+				err = os.Symlink(path.Join(config.store, v), config.JavaHome)
 				if err != nil {
 					return errors.New("Switch jdk failed, " + err.Error())
 				}
@@ -212,17 +217,18 @@ func commands() []cli.Command {
 			Action: func(c *cli.Context) error {
 				v := c.Args().Get(0)
 				if v == "" {
-					return errors.New("you should input a version, Type \"jvms list\" to see what is installed.")
+					return errors.New("you should input a version, Type \"jvms list\" to see what is installed")
 				}
 				if jdk.IsVersionInstalled(config.store, v) {
 					fmt.Printf("Remove JDK %s ...\n", v)
 					if config.CurrentJDKVersion == v {
 						os.Remove(config.JavaHome)
 					}
-					e := os.RemoveAll(config.store + "\\" + v)
+					dir := path.Join(config.store, v)
+					e := os.RemoveAll(dir)
 					if e != nil {
 						fmt.Println("Error removing jdk " + v)
-						fmt.Println("Manually remove " + config.store + "\\" + v + ".")
+						fmt.Println("Manually remove " + dir + ".")
 					} else {
 						fmt.Printf(" done")
 					}
@@ -300,10 +306,10 @@ func startup(c *cli.Context) error {
 		return errors.New("failed to load the config:" + err.Error())
 	}
 	s := file.GetCurrentPath()
-	config.store = s + "store/"
-	config.download = s + "download/"
+	config.store = path.Join(s, "store")
+	config.download = path.Join(s, "download")
 	if config.Originalpath == "" {
-		config.Originalpath = default_Originalpath
+		config.Originalpath = defaultOriginalpath
 	}
 	return nil
 }

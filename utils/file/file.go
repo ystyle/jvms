@@ -1,15 +1,14 @@
 package file
 
 import (
-	"os"
-	"bufio"
 	"archive/zip"
+	"bufio"
+	"io"
+	"log"
+	"os"
+	"path"
 	"path/filepath"
 	"strings"
-	"log"
-	"io"
-	"os/exec"
-	"fmt"
 )
 
 // Function courtesy http://stackoverflow.com/users/1129149/swtdrgn
@@ -77,13 +76,9 @@ func Exists(filename string) bool {
 }
 
 func GetCurrentPath() string {
-	s, err := exec.LookPath(os.Args[0])
+	currentDir, err := os.Executable()
 	if err != nil {
-		fmt.Println(err.Error())
+		return ""
 	}
-	s = strings.Replace(s, "\\", "/", -1)
-	s = strings.Replace(s, "\\\\", "/", -1)
-	i := strings.LastIndex(s, "/")
-	path := string(s[0 : i+1])
-	return path
+	return path.Dir(currentDir) + "/"
 }
