@@ -64,7 +64,7 @@ func commands() []cli.Command {
 				cli.StringFlag{
 					Name:  "java_home",
 					Usage: "the JAVA_HOME location",
-					Value: os.Getenv("ProgramFiles") + "\\jdk",
+					Value: path.Join(os.Getenv("ProgramFiles"), "jdk"),
 				},
 				cli.StringFlag{
 					Name:  "originalpath",
@@ -241,6 +241,12 @@ func commands() []cli.Command {
 		{
 			Name:  "rls",
 			Usage: "Show a list of versions available for download. ",
+			Flags: []cli.Flag{
+				cli.BoolFlag{
+					Name:  "a",
+					Usage: "list all the version",
+				},
+			},
 			Action: func(c *cli.Context) error {
 				if config.Proxy != "" {
 					web.SetProxy(config.Proxy)
@@ -251,6 +257,10 @@ func commands() []cli.Command {
 				}
 				for i, version := range versions {
 					fmt.Printf("    %d) %s\n", i+1, version.Version)
+					if !c.Bool("a") && i >= 9 {
+						fmt.Println("\nuse \"jvm rls -a\" show all the versions ")
+						break
+					}
 				}
 				if len(versions) == 0 {
 					fmt.Println("No availabled jdk veriosn for download.")
