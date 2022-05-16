@@ -70,8 +70,8 @@ realize just how much of a pain symlinks are on Windows. This is why it hasn't h
 
 In order to create/modify a symlink, you must be running as an admin, and you must get around Windows UAC (that annoying prompt). As a result, JVMS for Windows
 maintains a single symlink that is put in the system `PATH` during `jvms init` only. Switching to different versions of JDK is a matter of
-switching the symlink target. As a result, this utility does **not** require you to run `jvms use x.x.x` every time you open a console window.
-When you _do_ run `jvms use x.x.x`, the active version of jdk is automatically updated across all open console windows. It also persists
+switching the symlink target. As a result, this utility does **not** require you to run `jvms switch x.x.x` every time you open a console window.
+When you _do_ run `jvms switch x.x.x`, the active version of jdk is automatically updated across all open console windows. It also persists
 between system reboots, so you only need to use jvms when you want to make a change.
 
 Overall, this project brings together some ideas, a few battle-hardened pieces of other modules, and support for newer versions of JDK.
@@ -79,13 +79,14 @@ Overall, this project brings together some ideas, a few battle-hardened pieces o
 I also wrote a simple [data feed](http://github.com/ystyle/jvms) containing a list of jdk versions. It's free for anyone to use.
 
 ### add a local jdk version
-e.g: add the 1.7 jdk
+e.g: add the `jdk 17.0.1`
 
-1. copy jdk folder to jvms/store
-2. rename folder to `1.7`
+1. copy jdk home folder to `jvms/store`
+2. rename folder to `17.0.1`
 3. `jvms list ` check this
-4. `jvms switch 1.7`
+4. `jvms switch 17.0.1`
 5. `java -version` check jdk verison
+![jdk dir example](https://user-images.githubusercontent.com/4478635/168568154-3fef53a4-1660-4b87-b99a-4580bd61ad0d.png)
 
 
 ## Create own local download server
