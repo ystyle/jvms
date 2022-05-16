@@ -129,7 +129,7 @@ func commands() []cli.Command {
 				}
 
 				if jdk.IsVersionInstalled(config.store, v) {
-					fmt.Println("Version " + version + " is already installed.")
+					fmt.Println("Version " + v + " is already installed.")
 					return nil
 				}
 				versions, err := getJdkVersions()

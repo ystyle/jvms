@@ -6,7 +6,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 )
@@ -80,5 +79,5 @@ func GetCurrentPath() string {
 	if err != nil {
 		return ""
 	}
-	return path.Dir(currentDir) + "/"
+	return filepath.Dir(currentDir)
 }
