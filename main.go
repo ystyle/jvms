@@ -99,9 +99,9 @@ func commands() []cli.Command {
 		{
 			Name:      "list",
 			ShortName: "ls",
-			Usage:     "List the JDK installations.",
+			Usage:     "List current JDK installations.",
 			Action: func(c *cli.Context) error {
-				fmt.Println("Installed jdk (mark up * is in used):")
+				fmt.Println("Installed jdk (* marks in use):")
 				v := jdk.GetInstalled(config.store)
 				for i, version := range v {
 					str := ""
@@ -121,7 +121,7 @@ func commands() []cli.Command {
 		{
 			Name:      "install",
 			ShortName: "i",
-			Usage:     "Install remote available jdk",
+			Usage:     "Install available remote jdk",
 			Action: func(c *cli.Context) error {
 				v := c.Args().Get(0)
 				if v == "" {
@@ -186,7 +186,7 @@ func commands() []cli.Command {
 					return errors.New("you should input a version, Type \"jvms list\" to see what is installed")
 				}
 				if !jdk.IsVersionInstalled(config.store, v) {
-					fmt.Printf("jdk %s is uninstall. ", v)
+					fmt.Printf("jdk %s is not installed. ", v)
 					return nil
 				}
 				// Create or update the symlink
