@@ -1,0 +1,44 @@
+name: Go
+
+on:
+  release:
+    types: [published]
+
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ^1.19
+        id: go
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+
+      - name: Build
+        run: |
+          hash=`git rev-list --tags --max-count=1`
+          version=`git describe --tags $hash`
+          flag="-s -w -X main.version=$version"
+          go mod tidy
+          GOOS=windows GOARCH=amd64   go build -ldflags "$flag" -o build/windows-amd64/jvms.exe
+          GOOS=windows GOARCH=386     go build -ldflags "$flag" -o build/windows-386/jvms.exe
+
+      - name: compression zip
+        run: |
+          hash=`git rev-list --tags --max-count=1`
+          version=`git describe --tags $hash`
+          zip -j jvms_${version}_amd64.zip build/windows-amd64/jvms.exe
+          zip -j jvms_${version}_386.zip   build/windows-386/jvms.exe
+
+      - name: Upload release binaries
+        uses: alexellis/upload-assets@0.2.2
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          asset_paths: '["./jvms_*.zip"]'
