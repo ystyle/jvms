@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/baneeishaque/adoptium_jdk_go"
 	"github.com/codegangsta/cli"
 	"github.com/tucnak/store"
 	"github.com/ystyle/jvms/utils/file"
@@ -308,6 +309,8 @@ func getJdkVersions() ([]JdkVersion, error) {
 	if err != nil {
 		return nil, err
 	}
+	adoptiumJdks := adoptium_jdk_go.ApiListReleases()
+	fmt.Println(adoptiumJdks)
 	return versions, nil
 }
 
