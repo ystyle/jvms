@@ -14,6 +14,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"strings"
 )
 
 var version = "2.1.0"
@@ -309,8 +310,16 @@ func getJdkVersions() ([]JdkVersion, error) {
 	if err != nil {
 		return nil, err
 	}
-	adoptiumJdks := adoptium_jdk_go.ApiListReleases()
-	fmt.Println(adoptiumJdks)
+	//fmt.Println(versions)
+	adoptiumJdks := strings.Split(adoptium_jdk_go.ApiListReleases(), "\n")
+	for _, adoptiumJdkUrl := range adoptiumJdks {
+		fileSeparatorIndex := strings.LastIndex(adoptiumJdkUrl, "/")
+		fileName := adoptiumJdkUrl[fileSeparatorIndex+1:]
+		fileVersion := strings.TrimSuffix(fileName, ".zip")
+		//fmt.Println(fileVersion)
+		versions = append(versions, JdkVersion{Version: fileVersion, Url: adoptiumJdkUrl})
+	}
+	//fmt.Println(versions)
 	return versions, nil
 }
 
