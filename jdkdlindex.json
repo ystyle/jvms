@@ -1,15 +1,15 @@
 [
   {
-    "version": "jdk-20",
+    "version": "20.0.0",
     "url": "https://github.com/ystyle/jvms/releases/download/jdk/jdk-20_windows-x64_bin.zip"
   },
   {
-    "version": "17.0.1",
-    "url": "https://github.com/ystyle/jvms/releases/download/jdk/amazon_jdk17.0.1_12.zip"
+    "version": "17.0.6",
+    "url": "https://github.com/ystyle/jvms/releases/download/jdk/jdk-17_windows-x64_bin.zip"
   },
   {
-    "version": "amazon_jdk17.0.1_120",
-    "url": "https://github.com/ystyle/jvms/releases/download/jdk/amazon_jdk17.0.1_12.zip"
+    "version": "amazon_jdk17.0.6",
+    "url": "https://github.com/ystyle/jvms/releases/download/jdk/amazon-corretto-17.0.6.10.1-windows-x64-jdk.zip"
   },
   {
     "version": "11.0.8",
