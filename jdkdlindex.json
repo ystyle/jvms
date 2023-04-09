@@ -1,5 +1,9 @@
 [
   {
+    "version": "jdk-20",
+    "url": "https://github.com/ystyle/jvms/releases/download/jdk/jdk-20_windows-x64_bin.zip"
+  },
+  {
     "version": "17.0.1",
     "url": "https://github.com/ystyle/jvms/releases/download/jdk/amazon_jdk17.0.1_12.zip"
   },
