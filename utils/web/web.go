@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"path"
+	"path/filepath"
 	"strconv"
 	"time"
 )
@@ -77,7 +77,7 @@ func Download(url string, target string) bool {
 }
 
 func GetJDK(download string, v string, url string) (string, bool) {
-	fileName := path.Join(download, fmt.Sprintf("%s.zip", v))
+	fileName := filepath.Join(download, fmt.Sprintf("%s.zip", v))
 	os.Remove(fileName)
 	if url == "" {
 		//No url should mean this version/arch isn't available

@@ -10,10 +10,11 @@ import (
 	"github.com/ystyle/jvms/utils/file"
 	"github.com/ystyle/jvms/utils/jdk"
 	"github.com/ystyle/jvms/utils/web"
+	"io/fs"
 	"log"
 	"os"
 	"os/exec"
-	"path"
+	"path/filepath"
 	"strings"
 )
 
@@ -67,7 +68,7 @@ func commands() []cli.Command {
 				cli.StringFlag{
 					Name:  "java_home",
 					Usage: "the JAVA_HOME location",
-					Value: path.Join(os.Getenv("ProgramFiles"), "jdk"),
+					Value: filepath.Join(os.Getenv("ProgramFiles"), "jdk"),
 				},
 				cli.StringFlag{
 					Name:  "originalpath",
@@ -154,13 +155,21 @@ func commands() []cli.Command {
 							fmt.Printf("Installing JDK %s ...\n", v)
 
 							// Extract jdk to the temp directory
-							jdktempfile := path.Join(config.download, fmt.Sprintf("%s_temp", v))
+							jdktempfile := filepath.Join(config.download, fmt.Sprintf("%s_temp", v))
+							if file.Exists(jdktempfile) {
+								err := os.RemoveAll(jdktempfile)
+								if err != nil {
+									panic(err)
+								}
+							}
 							err := file.Unzip(dlzipfile, jdktempfile)
 							if err != nil {
 								return fmt.Errorf("unzip failed: %w", err)
 							}
+
 							// Copy the jdk files to the installation directory
-							err = os.Rename(jdktempfile, path.Join(config.store, v))
+							temJavaHome := getJavaHome(jdktempfile)
+							err = os.Rename(temJavaHome, filepath.Join(config.store, v))
 							if err != nil {
 								return fmt.Errorf("unzip failed: %w", err)
 							}
@@ -204,7 +213,7 @@ func commands() []cli.Command {
 				if err != nil {
 					return errors.New("set Environment variable `JAVA_HOME` failure: Please run as admin user")
 				}
-				err = os.Symlink(path.Join(config.store, v), config.JavaHome)
+				err = os.Symlink(filepath.Join(config.store, v), config.JavaHome)
 				if err != nil {
 					return errors.New("Switch jdk failed, " + err.Error())
 				}
@@ -227,7 +236,7 @@ func commands() []cli.Command {
 					if config.CurrentJDKVersion == v {
 						os.Remove(config.JavaHome)
 					}
-					dir := path.Join(config.store, v)
+					dir := filepath.Join(config.store, v)
 					e := os.RemoveAll(dir)
 					if e != nil {
 						fmt.Println("Error removing jdk " + v)
@@ -300,6 +309,19 @@ func commands() []cli.Command {
 	}
 }
 
+func getJavaHome(jdkTempFile string) string {
+	var javaHome string
+	fs.WalkDir(os.DirFS(jdkTempFile), ".", func(path string, d fs.DirEntry, err error) error {
+		if filepath.Base(path) == "java.exe" {
+			temPath := strings.Replace(path, "/bin/java.exe", "", 1)
+			javaHome = filepath.Join(jdkTempFile, temPath)
+			return fs.SkipDir
+		}
+		return nil
+	})
+	return javaHome
+}
+
 func getJdkVersions() ([]JdkVersion, error) {
 	jsonContent, err := web.GetRemoteTextFile(config.Originalpath)
 	if err != nil {
@@ -329,8 +351,9 @@ func startup(c *cli.Context) error {
 		return errors.New("failed to load the config:" + err.Error())
 	}
 	s := file.GetCurrentPath()
-	config.store = path.Join(s, "store")
-	config.download = path.Join(s, "download")
+	config.store = filepath.Join(s, "store")
+
+	config.download = filepath.Join(s, "download")
 	if config.Originalpath == "" {
 		config.Originalpath = defaultOriginalpath
 	}
