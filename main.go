@@ -313,7 +313,7 @@ func getJavaHome(jdkTempFile string) string {
 	var javaHome string
 	fs.WalkDir(os.DirFS(jdkTempFile), ".", func(path string, d fs.DirEntry, err error) error {
 		if filepath.Base(path) == "java.exe" {
-			temPath := strings.Replace(path, "/bin/java.exe", "", 1)
+			temPath := strings.Replace(path, "bin/java.exe", "", -1)
 			javaHome = filepath.Join(jdkTempFile, temPath)
 			return fs.SkipDir
 		}
