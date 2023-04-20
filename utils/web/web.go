@@ -3,7 +3,6 @@ package web
 import (
 	"errors"
 	"fmt"
-	pb "gopkg.in/cheggaaa/pb.v1"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -12,6 +11,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
+
+	pb "gopkg.in/cheggaaa/pb.v1"
 )
 
 var client = &http.Client{}
@@ -26,19 +27,23 @@ func SetProxy(p string) {
 }
 
 func Download(url string, target string) bool {
+	response, err := client.Get(url)
+	if err != nil {
+		fmt.Println("Error while downloading", url, "-", err)
+		return false
+	}
+	if response.StatusCode != 200 {
+		fmt.Println("Error status while downloading", url, "-", response.StatusCode)
+		return false
+	}
+	defer response.Body.Close()
+
 	output, err := os.Create(target)
 	if err != nil {
 		fmt.Println("Error while creating", target, "-", err)
 		return false
 	}
 	defer output.Close()
-
-	response, err := client.Get(url)
-	if err != nil {
-		fmt.Println("Error while downloading", url, "-", err)
-		return false
-	}
-	defer response.Body.Close()
 
 	// 获取下载文件的大小
 	i, _ := strconv.Atoi(response.Header.Get("Content-Length"))
@@ -64,14 +69,6 @@ func Download(url string, target string) bool {
 		return false
 	}
 	bar.Finish()
-	if response.Status[0:3] != "200" {
-		fmt.Println("Download failed. Rolling Back.")
-		err := os.Remove(target)
-		if err != nil {
-			fmt.Println("Rollback failed.", err)
-		}
-		return false
-	}
 
 	return true
 }
