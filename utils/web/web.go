@@ -9,7 +9,6 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"strconv"
 	"time"
 
 	pb "gopkg.in/cheggaaa/pb.v1"
@@ -45,11 +44,8 @@ func Download(url string, target string) bool {
 	}
 	defer output.Close()
 
-	// 获取下载文件的大小
-	i, _ := strconv.Atoi(response.Header.Get("Content-Length"))
-	sourceSiz := int64(i)
 	// 创建一个进度条
-	bar := pb.New(int(sourceSiz)).SetUnits(pb.U_BYTES_DEC).SetRefreshRate(time.Millisecond * 10)
+	bar := pb.New(int(response.ContentLength)).SetUnits(pb.U_BYTES_DEC).SetRefreshRate(time.Millisecond * 10)
 	// 显示下载速度
 	bar.ShowSpeed = true
 
