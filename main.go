@@ -357,6 +357,9 @@ func startup(c *cli.Context) error {
 	if config.Originalpath == "" {
 		config.Originalpath = defaultOriginalpath
 	}
+	if config.Proxy != "" {
+		web.SetProxy(config.Proxy)
+	}
 	return nil
 }
 
