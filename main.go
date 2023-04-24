@@ -127,6 +127,9 @@ func commands() []cli.Command {
 			ShortName: "i",
 			Usage:     "Install available remote jdk",
 			Action: func(c *cli.Context) error {
+				if config.Proxy != "" {
+					web.SetProxy(config.Proxy)
+				}
 				v := c.Args().Get(0)
 				if v == "" {
 					return errors.New("invalid version., Type \"jvms rls\" to see what is available for install")
@@ -356,6 +359,9 @@ func startup(c *cli.Context) error {
 	config.download = filepath.Join(s, "download")
 	if config.Originalpath == "" {
 		config.Originalpath = defaultOriginalpath
+	}
+	if config.Proxy != "" {
+		web.SetProxy(config.Proxy)
 	}
 	return nil
 }
