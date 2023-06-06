@@ -40,9 +40,6 @@ type AzulJDK struct {
 func AzulApiEndpoint() string {
 	//https://api.azul.com/metadata/v1/docs/swagger
 	var api = AzulApi() + "?os=$OS&arch=$ARCH&archive_type=zip&java_package_type=jdk&javafx_bundled=false&latest=true&release_status=ga&availability_types=CA&certifications=tck&page=1&page_size=100"
-	fmt.Println(runtime.GOOS)
-	fmt.Println(runtime.GOARCH)
-
 	api = strings.Replace(api, "$OS", runtime.GOOS, 1)
 	api = strings.Replace(api, "$ARCH", runtime.GOARCH, 1)
 	return api
