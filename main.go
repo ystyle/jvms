@@ -344,6 +344,13 @@ func getJdkVersions() ([]JdkVersion, error) {
 		//fmt.Println(fileVersion)
 		versions = append(versions, JdkVersion{Version: fileVersion, Url: adoptiumJdkUrl})
 	}
+
+	//Azul JDKs
+	azulJdks := jdk.AzulJDKs()
+	for _, azulJdk := range azulJdks {
+		versions = append(versions, JdkVersion{Version: azulJdk.ShortName, Url: azulJdk.DownloadURL})
+	}
+
 	//fmt.Println(versions)
 	return versions, nil
 }
