@@ -172,6 +172,12 @@ func commands() []cli.Command {
 
 							// Copy the jdk files to the installation directory
 							temJavaHome := getJavaHome(jdktempfile)
+							if file.Exists(temJavaHome) {
+								err := os.RemoveAll(temJavaHome)
+								if err != nil {
+									panic(err)
+								}
+							}
 							err = os.Rename(temJavaHome, filepath.Join(config.store, v))
 							if err != nil {
 								return fmt.Errorf("unzip failed: %w", err)
@@ -315,8 +321,8 @@ func commands() []cli.Command {
 func getJavaHome(jdkTempFile string) string {
 	var javaHome string
 	fs.WalkDir(os.DirFS(jdkTempFile), ".", func(path string, d fs.DirEntry, err error) error {
-		if filepath.Base(path) == "java.exe" {
-			temPath := strings.Replace(path, "bin/java.exe", "", -1)
+		if filepath.Base(path) == "javac.exe" {
+			temPath := strings.Replace(path, "bin/javac.exe", "", -1)
 			javaHome = filepath.Join(jdkTempFile, temPath)
 			return fs.SkipDir
 		}
