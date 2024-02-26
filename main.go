@@ -356,6 +356,14 @@ func getJdkVersions() ([]JdkVersion, error) {
 }
 
 func startup(c *cli.Context) error {
+
+	store.Register(
+		"json",
+		func(v interface{}) ([]byte, error) {
+			return json.MarshalIndent(v, "", "    ")
+		},
+		json.Unmarshal)
+
 	store.Init("jvms")
 	if err := store.Load("jvms.json", &config); err != nil {
 		return errors.New("failed to load the config:" + err.Error())
