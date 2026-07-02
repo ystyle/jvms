@@ -5,13 +5,11 @@ import (
 	"errors"
 	"log"
 	"os"
-	"path/filepath"
 
 	"github.com/codegangsta/cli"
 	"github.com/tucnak/store"
 	"github.com/ystyle/jvms/internal/icli"
 	"github.com/ystyle/jvms/internal/models"
-	"github.com/ystyle/jvms/utils/file"
 	"github.com/ystyle/jvms/utils/web"
 )
 
@@ -31,38 +29,22 @@ func main() {
 	app.Before = startup
 	app.After = shutdown
 	if err := app.Run(os.Args); err != nil {
-		log.Fatal(err.Error())
-		os.Exit(1)
+		log.Fatal(err.Error()) // Fatal already calls os.Exit(1)
 	}
-}
-
-func commandNotFound(c *cli.Context, command string) {
-	log.Fatal("Command Not Found")
 }
 
 func startup(c *cli.Context) error {
-	store.Register(
-		"json",
-		func(v interface{}) ([]byte, error) {
-			return json.MarshalIndent(v, "", "    ")
-		},
-		json.Unmarshal)
+	store.Register("json", marshalFunc, json.Unmarshal)
+	store.Init(models.ProjectConfigDir)
 
-	store.Init("jvms")
-	if err := store.Load("jvms.json", &config); err != nil {
+	// Load the config and store with idempotent initialization
+	if err := store.Load(models.ConfigFileName, config); err != nil {
 		return errors.New("failed to load the config:" + err.Error())
 	}
-	s := file.GetCurrentPath()
 
-	config.Store = filepath.Join(s, "store")
-	// Override store path by storepath file
-	if storepath, err := os.ReadFile(filepath.Join(s, "storepath")); err == nil {
-		config.Store = string(storepath)
-	}
-	config.Download = filepath.Join(s, "download")
-	if config.Originalpath == "" {
-		config.Originalpath = icli.DefaultOriginalpath
-	}
+	// Ensure the config is initialized with default values if they are not set
+	config.IdempotentSeed()
+
 	if config.Proxy != "" {
 		web.SetProxy(config.Proxy)
 	}
@@ -70,8 +52,16 @@ func startup(c *cli.Context) error {
 }
 
 func shutdown(c *cli.Context) error {
-	if err := store.Save("jvms.json", &config); err != nil {
+	if err := store.Save(models.ConfigFileName, config); err != nil {
 		return errors.New("failed to save the config:" + err.Error())
 	}
 	return nil
+}
+
+func commandNotFound(c *cli.Context, command string) {
+	log.Fatal("Command Not Found")
+}
+
+func marshalFunc(v interface{}) ([]byte, error) {
+	return json.MarshalIndent(v, "", "    ")
 }

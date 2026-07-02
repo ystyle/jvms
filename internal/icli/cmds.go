@@ -2,20 +2,10 @@ package icli
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
 
 	"github.com/codegangsta/cli"
 	"github.com/ystyle/jvms/internal/models"
 	"github.com/ystyle/jvms/utils/admin"
-)
-
-const (
-	DefaultOriginalpath = "https://raw.githubusercontent.com/ystyle/jvms/new/jdkdlindex.json"
-)
-
-var (
-	DefaultJavaHome = filepath.Join(os.Getenv("ProgramFiles"), "jdk")
 )
 
 // Commands Register all commands

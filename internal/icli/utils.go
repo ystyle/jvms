@@ -32,7 +32,7 @@ func getJavaHome(jdkTempFile string) string {
 }
 
 func getJdkVersions(config *models.Config) ([]models.JdkVersion, error) {
-	jsonContent, err := web.GetRemoteTextFile(config.Originalpath)
+	jsonContent, err := web.GetRemoteTextFile(config.OriginalPath)
 	if err != nil {
 		return nil, err
 	}

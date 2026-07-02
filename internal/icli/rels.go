@@ -37,7 +37,7 @@ func rls(config *models.Config) *cli.Command {
 				fmt.Println("No availabled jdk veriosn for download.")
 			}
 
-			fmt.Printf("\nFor a complete list, visit %s\n", config.Originalpath)
+			fmt.Printf("\nFor a complete list, visit %s\n", config.OriginalPath)
 			return nil
 		},
 	}

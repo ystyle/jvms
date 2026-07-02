@@ -21,12 +21,12 @@ func init_(config *models.Config) *cli.Command {
 			cli.StringFlag{
 				Name:  "java_home",
 				Usage: "the JAVA_HOME location",
-				Value: DefaultJavaHome,
+				Value: models.DefaultJavaHome,
 			},
 			cli.StringFlag{
 				Name:  "originalpath",
 				Usage: "the jdk download index file url.",
-				Value: DefaultOriginalpath,
+				Value: models.DefaultOriginalPath,
 			},
 		},
 		Action: func(c *cli.Context) error {
@@ -48,8 +48,8 @@ func init_(config *models.Config) *cli.Command {
 			}
 			fmt.Println("set `JAVA_HOME` Environment variable to ", config.JavaHome)
 
-			if c.IsSet("originalpath") || config.Originalpath == "" {
-				config.Originalpath = c.String("originalpath")
+			if c.IsSet("originalpath") || config.OriginalPath == "" {
+				config.OriginalPath = c.String("originalpath")
 			}
 			path := fmt.Sprintf(`%s/bin;%s;%s`, config.JavaHome, os.Getenv("PATH"), file.GetCurrentPath())
 			cmd = exec.Command("cmd", "/C", "setx", "path", path, "/m")
