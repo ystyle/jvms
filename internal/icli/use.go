@@ -15,12 +15,12 @@ func use(config *models.Config) *cli.Command {
 		ShortName: "u",
 		Usage:     "Switch to use the specified version or index number and install it if not installed.",
 		Flags:     switchFlags,
-		Action:    intercept(config),
+		Action:    useFunc(config),
 	}
 	return cmd
 }
 
-func intercept(config *models.Config) func(*cli.Context) error {
+func useFunc(config *models.Config) func(*cli.Context) error {
 	return func(c *cli.Context) error {
 		v := strings.TrimSpace(c.Args().Get(0))
 		isInstalled := jdk.IsVersionInstalled(config.Store, v)
