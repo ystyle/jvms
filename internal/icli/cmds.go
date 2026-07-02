@@ -20,7 +20,7 @@ func ensureConfigInitializedAndIsAdmin(config *models.Config) func(*cli.Context)
 		if config.JavaHomeNotSet() {
 			if admin.IsAdmin() {
 				fmt.Println("Jvms not initialized. Attempting to initialize jvms automatically...")
-				if err := init_(config).Run(&cli.Context{}); err != nil {
+				if err := init_(config).Run(c); err != nil {
 					return fmt.Errorf("could not initialize jvms automatically. Please run \"jvms init\" to initialize jvms\n%v", err)
 				}
 				return errors.New("jvms is not initialized and you're not running as administrator.\n" +
