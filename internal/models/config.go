@@ -12,3 +12,7 @@ type Config struct {
 func NewConfigPtr() *Config {
 	return &Config{}
 }
+
+func (c *Config) JavaHomeNotSet() bool {
+	return c.JavaHome == ""
+}

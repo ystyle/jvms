@@ -11,7 +11,6 @@ import (
 
 	"github.com/codegangsta/cli"
 	"github.com/ystyle/jvms/internal/models"
-	"github.com/ystyle/jvms/utils/admin"
 	"github.com/ystyle/jvms/utils/file"
 	"github.com/ystyle/jvms/utils/jdk"
 )
@@ -44,8 +43,8 @@ func switch_(config *models.Config) *cli.Command {
 // SwitchFunc is used by both switch and use commands
 func switchFunc(config *models.Config) func(*cli.Context) error {
 	return func(c *cli.Context) error {
-		if !admin.IsAdmin() {
-			return errors.New("jvms switch requires administrator privileges. Please run as administrator")
+		if err := ensureConfigInitializedAndIsAdmin(config)(c); err != nil {
+			return err
 		}
 		v := strings.TrimSpace(c.Args().Get(0))
 		if v == "" {
