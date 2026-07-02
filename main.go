@@ -9,8 +9,8 @@ import (
 
 	"github.com/codegangsta/cli"
 	"github.com/tucnak/store"
-	"github.com/ystyle/jvms/internal/cmdCli"
 	"github.com/ystyle/jvms/internal/entity"
+	"github.com/ystyle/jvms/internal/icli"
 	"github.com/ystyle/jvms/utils/file"
 	"github.com/ystyle/jvms/utils/web"
 )
@@ -26,7 +26,7 @@ func main() {
 	app.Usage = `JDK Version Manager (JVMS) for Windows`
 	app.Version = version
 	app.CommandNotFound = commandNotFound
-	app.Commands = cmdCli.Commands(config)
+	app.Commands = icli.Commands(config)
 
 	app.Before = startup
 	app.After = shutdown
@@ -61,7 +61,7 @@ func startup(c *cli.Context) error {
 	}
 	config.Download = filepath.Join(s, "download")
 	if config.Originalpath == "" {
-		config.Originalpath = cmdCli.DefaultOriginalpath
+		config.Originalpath = icli.DefaultOriginalpath
 	}
 	if config.Proxy != "" {
 		web.SetProxy(config.Proxy)

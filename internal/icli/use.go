@@ -1,4 +1,4 @@
-package cmdCli
+package icli
 
 import (
 	"fmt"

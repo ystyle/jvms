@@ -1,12 +1,12 @@
 module github.com/ystyle/jvms
 
-go 1.24.0
+go 1.25.0
 
 require (
 	github.com/baneeishaque/adoptium_jdk_go v0.0.0-20221214163615-0b2cfe72098d
 	github.com/codegangsta/cli v1.20.0
 	github.com/tucnak/store v0.0.0-20170905113834-b02ecdcc6dfb
-	golang.org/x/sys v0.40.0
+	golang.org/x/sys v0.46.0
 	gopkg.in/cheggaaa/pb.v1 v1.0.28
 )
 
