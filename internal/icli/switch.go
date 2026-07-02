@@ -44,7 +44,7 @@ func switch_(config *models.Config) *cli.Command {
 func switchFunc(config *models.Config) func(*cli.Context) error {
 	return func(c *cli.Context) error {
 		// Ensure the config is initialized with java_home & isAdmin
-		if err := ensureConfigInitializedAndIsAdmin(config)(c); err != nil {
+		if err := switchPrerequisites(config)(c); err != nil {
 			return err
 		}
 		v := strings.TrimSpace(c.Args().Get(0))
