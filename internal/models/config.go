@@ -8,3 +8,7 @@ type Config struct {
 	Store             string
 	Download          string
 }
+
+func NewConfigPtr() *Config {
+	return &Config{}
+}
