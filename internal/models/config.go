@@ -1,4 +1,4 @@
-package entity
+package models
 
 type Config struct {
 	JavaHome          string `json:"java_home"`

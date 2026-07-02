@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/baneeishaque/adoptium_jdk_go"
-	"github.com/ystyle/jvms/internal/entity"
+	"github.com/ystyle/jvms/internal/models"
 	"github.com/ystyle/jvms/utils/jdk"
 	"github.com/ystyle/jvms/utils/web"
 )
@@ -31,12 +31,12 @@ func getJavaHome(jdkTempFile string) string {
 	return javaHome
 }
 
-func getJdkVersions(config *entity.Config) ([]entity.JdkVersion, error) {
+func getJdkVersions(config *models.Config) ([]models.JdkVersion, error) {
 	jsonContent, err := web.GetRemoteTextFile(config.Originalpath)
 	if err != nil {
 		return nil, err
 	}
-	var versions []entity.JdkVersion
+	var versions []models.JdkVersion
 	err = json.Unmarshal([]byte(jsonContent), &versions)
 	if err != nil {
 		return nil, err
@@ -48,13 +48,13 @@ func getJdkVersions(config *entity.Config) ([]entity.JdkVersion, error) {
 		fileName := adoptiumJdkUrl[fileSeparatorIndex+1:]
 		fileVersion := strings.TrimSuffix(fileName, ".zip")
 		//fmt.Println(fileVersion)
-		versions = append(versions, entity.JdkVersion{Version: fileVersion, Url: adoptiumJdkUrl})
+		versions = append(versions, models.JdkVersion{Version: fileVersion, Url: adoptiumJdkUrl})
 	}
 
 	//Azul JDKs
 	azulJdks := jdk.AzulJDKs()
 	for _, azulJdk := range azulJdks {
-		versions = append(versions, entity.JdkVersion{Version: azulJdk.ShortName, Url: azulJdk.DownloadURL})
+		versions = append(versions, models.JdkVersion{Version: azulJdk.ShortName, Url: azulJdk.DownloadURL})
 	}
 
 	//fmt.Println(versions)

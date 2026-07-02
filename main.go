@@ -9,15 +9,15 @@ import (
 
 	"github.com/codegangsta/cli"
 	"github.com/tucnak/store"
-	"github.com/ystyle/jvms/internal/entity"
 	"github.com/ystyle/jvms/internal/icli"
+	"github.com/ystyle/jvms/internal/models"
 	"github.com/ystyle/jvms/utils/file"
 	"github.com/ystyle/jvms/utils/web"
 )
 
 var (
 	version = "2.1.0"
-	config  = &entity.Config{}
+	config  = &models.Config{}
 )
 
 func main() {

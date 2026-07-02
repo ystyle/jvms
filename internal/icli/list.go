@@ -4,11 +4,11 @@ import (
 	"fmt"
 
 	"github.com/codegangsta/cli"
-	"github.com/ystyle/jvms/internal/entity"
+	"github.com/ystyle/jvms/internal/models"
 	"github.com/ystyle/jvms/utils/jdk"
 )
 
-func list(config *entity.Config) *cli.Command {
+func list(config *models.Config) *cli.Command {
 	cmd := &cli.Command{
 		Name:      "list",
 		ShortName: "ls",

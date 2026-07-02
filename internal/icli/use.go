@@ -5,11 +5,11 @@ import (
 	"strings"
 
 	"github.com/codegangsta/cli"
-	"github.com/ystyle/jvms/internal/entity"
+	"github.com/ystyle/jvms/internal/models"
 	"github.com/ystyle/jvms/utils/jdk"
 )
 
-func use(config *entity.Config) *cli.Command {
+func use(config *models.Config) *cli.Command {
 	cmd := &cli.Command{
 		Name:      "use",
 		ShortName: "u",
@@ -20,7 +20,7 @@ func use(config *entity.Config) *cli.Command {
 	return cmd
 }
 
-func intercept(config *entity.Config) func(*cli.Context) error {
+func intercept(config *models.Config) func(*cli.Context) error {
 	return func(c *cli.Context) error {
 		v := strings.TrimSpace(c.Args().Get(0))
 		isInstalled := jdk.IsVersionInstalled(config.Store, v)

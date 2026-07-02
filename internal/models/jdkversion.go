@@ -1,4 +1,4 @@
-package entity
+package models
 
 type JdkVersion struct {
 	Version string `json:"version"`

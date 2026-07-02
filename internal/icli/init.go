@@ -8,12 +8,12 @@ import (
 	"path/filepath"
 
 	"github.com/codegangsta/cli"
-	"github.com/ystyle/jvms/internal/entity"
+	"github.com/ystyle/jvms/internal/models"
 	"github.com/ystyle/jvms/utils/admin"
 	"github.com/ystyle/jvms/utils/file"
 )
 
-func init_(config *entity.Config) *cli.Command {
+func init_(config *models.Config) *cli.Command {
 	return &cli.Command{
 		Name:        "init",
 		Usage:       "Initialize config file",

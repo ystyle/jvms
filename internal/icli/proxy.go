@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	"github.com/codegangsta/cli"
-	"github.com/ystyle/jvms/internal/entity"
+	"github.com/ystyle/jvms/internal/models"
 )
 
-func proxy(config *entity.Config) *cli.Command {
+func proxy(config *models.Config) *cli.Command {
 	cmd := &cli.Command{
 		Name:  "proxy",
 		Usage: "Set a proxy to use for downloads.",

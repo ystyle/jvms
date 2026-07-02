@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/codegangsta/cli"
-	"github.com/ystyle/jvms/internal/entity"
+	"github.com/ystyle/jvms/internal/models"
 	"github.com/ystyle/jvms/utils/admin"
 	"github.com/ystyle/jvms/utils/file"
 	"github.com/ystyle/jvms/utils/jdk"
@@ -30,7 +30,7 @@ var switchFlags = []cli.Flag{
 	},
 }
 
-func switch_(config *entity.Config) *cli.Command {
+func switch_(config *models.Config) *cli.Command {
 	cmd := &cli.Command{
 		Name:      "switch",
 		ShortName: "s",
@@ -42,7 +42,7 @@ func switch_(config *entity.Config) *cli.Command {
 }
 
 // SwitchFunc is used by both switch and use commands
-func switchFunc(config *entity.Config) func(*cli.Context) error {
+func switchFunc(config *models.Config) func(*cli.Context) error {
 	return func(c *cli.Context) error {
 		if !admin.IsAdmin() {
 			return errors.New("jvms switch requires administrator privileges. Please run as administrator")

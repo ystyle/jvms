@@ -2,7 +2,7 @@ package icli
 
 import (
 	"github.com/codegangsta/cli"
-	"github.com/ystyle/jvms/internal/entity"
+	"github.com/ystyle/jvms/internal/models"
 )
 
 const (
@@ -10,7 +10,7 @@ const (
 )
 
 // Commands Registrer
-func Commands(c *entity.Config) []cli.Command {
+func Commands(c *models.Config) []cli.Command {
 	return []cli.Command{
 		*switch_(c),
 		*install(c),

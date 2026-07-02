@@ -4,11 +4,11 @@ import (
 	"fmt"
 
 	"github.com/codegangsta/cli"
-	"github.com/ystyle/jvms/internal/entity"
+	"github.com/ystyle/jvms/internal/models"
 	"github.com/ystyle/jvms/utils/web"
 )
 
-func rls(config *entity.Config) *cli.Command {
+func rls(config *models.Config) *cli.Command {
 	cmd := &cli.Command{
 		Name:  "rls",
 		Usage: "Show a list of versions available for download. ",
