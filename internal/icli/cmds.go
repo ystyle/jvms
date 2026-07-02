@@ -3,6 +3,8 @@ package icli
 import (
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/codegangsta/cli"
 	"github.com/ystyle/jvms/internal/models"
@@ -11,6 +13,10 @@ import (
 
 const (
 	DefaultOriginalpath = "https://raw.githubusercontent.com/ystyle/jvms/new/jdkdlindex.json"
+)
+
+var (
+	DefaultJavaHome = filepath.Join(os.Getenv("ProgramFiles"), "jdk")
 )
 
 // ensureConfigInitializedAndIsAdmin checks if the config is initialized and if the user has admin privileges.
@@ -23,10 +29,11 @@ func ensureConfigInitializedAndIsAdmin(config *models.Config) func(*cli.Context)
 				if err := init_(config).Run(c); err != nil {
 					return fmt.Errorf("could not initialize jvms automatically. Please run \"jvms init\" to initialize jvms\n%v", err)
 				}
-				return errors.New("jvms is not initialized and you're not running as administrator.\n" +
-					"Please run \"jvms init\" to initialize jvms or run the command as administrator to allow automatic initialization. \n" +
-					"You may also specify the JAVA_HOME location using the --java_home flag when running \"jvms init\".")
+				return nil
 			}
+			return errors.New("jvms is not initialized and you're not running as administrator.\n" +
+				"Please run \"jvms init\" to initialize jvms or run the command as administrator to allow automatic initialization. \n" +
+				"You may also specify the JAVA_HOME location using the --java_home flag when running \"jvms init\".")
 		}
 		return nil
 	}

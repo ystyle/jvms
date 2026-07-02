@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
 
 	"github.com/codegangsta/cli"
 	"github.com/ystyle/jvms/internal/models"
@@ -22,7 +21,7 @@ func init_(config *models.Config) *cli.Command {
 			cli.StringFlag{
 				Name:  "java_home",
 				Usage: "the JAVA_HOME location",
-				Value: filepath.Join(os.Getenv("ProgramFiles"), "jdk"),
+				Value: DefaultJavaHome,
 			},
 			cli.StringFlag{
 				Name:  "originalpath",
