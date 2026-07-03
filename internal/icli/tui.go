@@ -1,4 +1,3 @@
-// internal/icli/tui.go
 package icli
 
 import (
@@ -13,6 +12,7 @@ import (
 var tuiFlags = []cli.Flag{
 	cli.BoolFlag{Name: "u", Usage: "Launch the switch picker"},
 	cli.BoolFlag{Name: "i", Usage: "Launch the install picker"},
+	cli.BoolFlag{Name: "s", Usage: "Switch to use the specified version or index number."},
 }
 
 func tui(config *models.Config) *cli.Command {
@@ -23,6 +23,24 @@ func tui(config *models.Config) *cli.Command {
 		Flags:     tuiFlags,
 		Action: func(c *cli.Context) error {
 			switch {
+			case c.Bool("s"):
+				versions := []models.JdkVersion{}
+				for _, v := range jdk.GetInstalled(config.Store) {
+					versions = append(versions, models.JdkVersion{Version: v})
+				}
+				return RunJdkPicker(config, versions, Action{
+					Title: "Switch JDK",
+					ConfirmText: func(v models.JdkVersion) string {
+						return fmt.Sprintf("Switch to %s?", v.Version)
+					},
+					Execute: func(config *models.Config, v models.JdkVersion) error {
+						return switchFunc(config)(withArg(c, v.Version))
+					},
+					SuccessText: func(v models.JdkVersion) string {
+						return fmt.Sprintf("Now using JDK %s", v.Version)
+					},
+				})
+
 			case c.Bool("u"):
 				fmt.Println("Getting available versions...")
 				versions, err := jdk.GetJdkVersions(config)
@@ -30,14 +48,10 @@ func tui(config *models.Config) *cli.Command {
 					return err
 				}
 				return RunJdkPicker(config, versions, Action{
-					Title: "Switch JDK",
+					Title: "Switch or Install JDK",
 					ConfirmText: func(v models.JdkVersion) string {
 						return fmt.Sprintf("Switch to %s?", v.Version)
 					},
-					// Delegate to the existing, untouched CLI path: build a
-					// synthetic context whose one positional arg is the
-					// version the user picked, exactly as if they'd typed
-					// `jvms switch <version>`.
 					Execute: func(config *models.Config, v models.JdkVersion) error {
 						return useFunc(config)(withArg(c, v.Version))
 					},
@@ -48,13 +62,7 @@ func tui(config *models.Config) *cli.Command {
 
 			case c.Bool("i"):
 				fmt.Println("Getting available versions...")
-				versions, err := func() ([]models.JdkVersion, error) {
-					jdks := []models.JdkVersion{}
-					for _, s := range jdk.GetInstalled(config.Store) {
-						jdks = append(jdks, models.JdkVersion{Version: s})
-					}
-					return jdks, nil
-				}()
+				versions, err := jdk.GetJdkVersions(config)
 				if err != nil {
 					return err
 				}
@@ -72,7 +80,7 @@ func tui(config *models.Config) *cli.Command {
 				})
 
 			default:
-				return errors.New("specify -u to switch or -i to install")
+				return errors.New("specify -u, -s to switch or -i to install")
 			}
 		},
 	}
