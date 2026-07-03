@@ -10,6 +10,7 @@ import (
 	"github.com/tucnak/store"
 	"github.com/ystyle/jvms/internal/icli"
 	"github.com/ystyle/jvms/internal/models"
+	"github.com/ystyle/jvms/utils/jdk"
 	"github.com/ystyle/jvms/utils/web"
 )
 
@@ -41,8 +42,9 @@ func startup(c *cli.Context) error {
 	if err := store.Load(models.ConfigFileName, config); err != nil {
 		return errors.New("failed to load the config:" + err.Error())
 	}
-	config.IdempotentSeed() // Ensure the config is initialized with idempotence
+	config.Load() // Ensure the config is initialized with idempotence
 
+	go jdk.GetJdkVersions(config) // Preload available JDK versions in the background
 	if config.Proxy != "" {
 		web.SetProxy(config.Proxy)
 	}
