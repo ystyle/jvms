@@ -27,9 +27,9 @@ func tui(config *models.Config) *cli.Command {
 
 func tuiFuncUse(config *models.Config) func(c *cli.Context) error {
 	return func(c *cli.Context) error {
-		versions := []models.JdkVersion{}
-		for _, v := range jdk.GetInstalled(config.Store) {
-			versions = append(versions, models.JdkVersion{Version: v})
+		versions, err := jdk.GetJdkVersions(config)
+		if err != nil {
+			return err
 		}
 		return ui.RunJdkPicker(config, versions, ui.Action{
 			Title: "Use JDK/Install JDK",
