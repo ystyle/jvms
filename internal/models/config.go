@@ -28,6 +28,34 @@ type Config struct {
 	Download string `json:"-"`
 }
 
+func (c *Config) JavaHomeNotSet() bool {
+	return c.JavaHome == ""
+}
+
+func (c *Config) SetJavaHome(javaHome string) {
+	c.JavaHome = javaHome
+}
+
+func (c *Config) SetCurrentJDKVersion(version string) {
+	c.CurrentJDKVersion = version
+}
+
+func (c *Config) SetOriginalPath(path string) {
+	c.OriginalPath = path
+}
+
+func (c *Config) SetDownload(download string) {
+	c.Download = download
+}
+
+func (c *Config) SetStore(store string) {
+	c.Store = store
+}
+
+func (c *Config) SetProxy(proxy string) {
+	c.Proxy = proxy
+}
+
 // NewConfig creates a new Config instance with default values
 func NewConfigPtr() *Config {
 	return &Config{}
@@ -55,39 +83,5 @@ func (c *Config) IdempotentSeed() *Config {
 	if c.Download == "" {
 		c.SetDownload(filepath.Join(dir, "download"))
 	}
-	return c
-}
-
-func (c *Config) JavaHomeNotSet() bool {
-	return c.JavaHome == ""
-}
-
-func (c *Config) SetJavaHome(javaHome string) *Config {
-	c.JavaHome = javaHome
-	return c
-}
-
-func (c *Config) SetCurrentJDKVersion(version string) *Config {
-	c.CurrentJDKVersion = version
-	return c
-}
-
-func (c *Config) SetOriginalPath(path string) *Config {
-	c.OriginalPath = path
-	return c
-}
-
-func (c *Config) SetDownload(download string) *Config {
-	c.Download = download
-	return c
-}
-
-func (c *Config) SetStore(store string) *Config {
-	c.Store = store
-	return c
-}
-
-func (c *Config) SetProxy(proxy string) *Config {
-	c.Proxy = proxy
 	return c
 }
