@@ -17,7 +17,8 @@ func Commands(c *models.Config) []cli.Command {
 	}
 }
 
-// switchPrerequisites checks if the config is initialized and if the user has admin privileges. // If the config is not initialized and the user is an admin, it attempts to initialize itself automatically.
+// switchPrerequisites checks if the config is initialized and if the user has admin privileges.
+// If the config is not initialized and the user is an admin, it attempts to initialize itself automatically.
 func switchPrerequisites(config *models.Config) func(*cli.Context) error {
 	return func(c *cli.Context) error {
 		if !admin.IsAdmin() {
