@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	"github.com/codegangsta/cli"
@@ -40,6 +39,7 @@ func switch_(config *models.Config) *cli.Command {
 	return cmd
 }
 
+// switchPrerequisites checks if the prerequisites for switching JDK are met
 // SwitchFunc is used by both switch and use commands
 func switchFunc(config *models.Config) func(*cli.Context) error {
 	return func(c *cli.Context) error {
@@ -52,38 +52,13 @@ func switchFunc(config *models.Config) func(*cli.Context) error {
 			return errors.New("you should input a version or index number, Type \"jvms list\" to see what is installed")
 		}
 
-		// Check if input is a number (index)
-		index, err := strconv.Atoi(v)
-		if err == nil && index > 0 {
-			asPath := c.Bool("as_path")
-			if !asPath {
-				asPath = c.Bool("p")
-			}
-
-			// If not as_path, try index expansion
-			if !asPath {
-				installed := jdk.GetInstalled(config.Store)
-				if len(installed) == 0 {
-					return errors.New("no JDK installations found")
-				}
-				// Check if index is within valid range
-				if index <= len(installed) {
-					// Valid index, use it to select JDK
-					v = installed[index-1]
-					fmt.Printf("Using index %d to select JDK %s\n", index, v)
-				} else {
-					// Index out of range, check if there's a version folder with this numeric name (e.g., "17", "21")
-					// Keep the original input as version name
-					if jdk.IsVersionInstalled(config.Store, v) {
-						// Version folder with numeric name exists, proceed with it
-						fmt.Printf("Using version name %s\n", v)
-					} else {
-						// Neither valid index nor matching version folder
-						return fmt.Errorf("invalid index: %d (should be between 1 and %d) and version '%s' is not installed", index, len(installed), v)
-					}
-				}
-			}
+		// Try to resolve the version from context, which may be a version string,
+		// an index number, or a direct path
+		v, err := resolveJdkVersion(c, config, v)
+		if err != nil {
+			return err
 		}
+
 		if !jdk.IsVersionInstalled(config.Store, v) {
 			fmt.Printf("jdk %s is not installed. ", v)
 			return nil

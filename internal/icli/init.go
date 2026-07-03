@@ -33,6 +33,7 @@ func init_(config *models.Config) *cli.Command {
 	}
 
 }
+
 func initPrerequisites(c *cli.Context, config *models.Config) error {
 	if !admin.IsAdmin() {
 		return errors.New("jvms init requires administrator privileges. Please run as administrator")
