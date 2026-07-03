@@ -6,6 +6,7 @@ import (
 
 	"github.com/codegangsta/cli"
 	"github.com/ystyle/jvms/internal/models"
+	"github.com/ystyle/jvms/internal/ui"
 	"github.com/ystyle/jvms/utils/jdk"
 )
 
@@ -28,7 +29,7 @@ func tui(config *models.Config) *cli.Command {
 				for _, v := range jdk.GetInstalled(config.Store) {
 					versions = append(versions, models.JdkVersion{Version: v})
 				}
-				return RunJdkPicker(config, versions, Action{
+				return ui.RunJdkPicker(config, versions, ui.Action{
 					Title: "Switch JDK",
 					ConfirmText: func(v models.JdkVersion) string {
 						return fmt.Sprintf("Switch to %s?", v.Version)
@@ -47,7 +48,7 @@ func tui(config *models.Config) *cli.Command {
 				if err != nil {
 					return err
 				}
-				return RunJdkPicker(config, versions, Action{
+				return ui.RunJdkPicker(config, versions, ui.Action{
 					Title: "Switch or Install JDK",
 					ConfirmText: func(v models.JdkVersion) string {
 						return fmt.Sprintf("Switch to %s?", v.Version)
@@ -66,7 +67,7 @@ func tui(config *models.Config) *cli.Command {
 				if err != nil {
 					return err
 				}
-				return RunJdkPicker(config, versions, Action{
+				return ui.RunJdkPicker(config, versions, ui.Action{
 					Title: "Install JDK",
 					ConfirmText: func(v models.JdkVersion) string {
 						return fmt.Sprintf("Install %s?", v.Version)
