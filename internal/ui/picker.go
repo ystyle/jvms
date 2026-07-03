@@ -8,17 +8,6 @@ import (
 	"github.com/ystyle/jvms/internal/models"
 )
 
-// Action describes what happens once a version is picked. ConfirmText is
-// optional -- leave it nil to execute immediately on selection.
-type Action struct {
-	Title       string
-	ConfirmText func(models.JdkVersion) string
-	Execute     func(*models.Config, models.JdkVersion) error
-	SuccessText func(models.JdkVersion) string
-}
-
-func (a Action) needsConfirm() bool { return a.ConfirmText != nil }
-
 type jdkItem struct{ models.JdkVersion }
 
 func (i jdkItem) Title() string       { return i.Version }
@@ -83,9 +72,6 @@ func newPickerModel(config *models.Config, versions []models.JdkVersion, action 
 
 func (m pickerModel) Init() tea.Cmd { return nil }
 
-// transitions
-// selectItem decides whether a pick goes straight to execution or via
-// confirmation, per Action.ConfirmText.
 func (m *pickerModel) selectItem(v models.JdkVersion) tea.Cmd {
 	m.selected = v
 	if !m.action.needsConfirm() {

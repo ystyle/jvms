@@ -5,7 +5,7 @@ import "github.com/charmbracelet/lipgloss"
 // Palette -- grayscale for structure/emphasis, two muted semantic colors
 // for outcomes. Nothing draws attention except success/error states.
 const (
-	colorAccent  = lipgloss.Color("253") // bright grey — titles, borders, focus
+	colorAccent  = lipgloss.Color("253") // bright grey -- titles, borders, focus
 	colorSuccess = lipgloss.Color("108") // muted sage green
 	colorError   = lipgloss.Color("203") // soft coral red
 	colorMuted   = lipgloss.Color("245") // help text, secondary info
