@@ -1,7 +1,6 @@
 package icli
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/codegangsta/cli"
@@ -22,67 +21,75 @@ func tui(config *models.Config) *cli.Command {
 		ShortName: "tui",
 		Usage:     "Run the interactive TUI interface.",
 		Flags:     tuiFlags,
-		Action: func(c *cli.Context) error {
-			switch {
-			case c.Bool("s"):
-				versions := []models.JdkVersion{}
-				for _, v := range jdk.GetInstalled(config.Store) {
-					versions = append(versions, models.JdkVersion{Version: v})
-				}
-				return ui.RunJdkPicker(config, versions, ui.Action{
-					Title: "Switch JDK",
-					ConfirmText: func(v models.JdkVersion) string {
-						return fmt.Sprintf("Switch to %s?", v.Version)
-					},
-					Execute: func(config *models.Config, v models.JdkVersion) error {
-						return switchFunc(config)(withArg(c, v.Version))
-					},
-					SuccessText: func(v models.JdkVersion) string {
-						return fmt.Sprintf("Now using JDK %s", v.Version)
-					},
-				})
+		Action:    tuiFunc(config),
+	}
+}
 
-			case c.Bool("u"):
-				fmt.Println("Getting available versions...")
-				versions, err := jdk.GetJdkVersions(config)
-				if err != nil {
-					return err
-				}
-				return ui.RunJdkPicker(config, versions, ui.Action{
-					Title: "Switch or Install JDK",
-					ConfirmText: func(v models.JdkVersion) string {
-						return fmt.Sprintf("Switch to %s?", v.Version)
-					},
-					Execute: func(config *models.Config, v models.JdkVersion) error {
-						return useFunc(config)(withArg(c, v.Version))
-					},
-					SuccessText: func(v models.JdkVersion) string {
-						return fmt.Sprintf("Now using JDK %s", v.Version)
-					},
-				})
+func tuiFuncUse(config *models.Config) func(c *cli.Context) error {
+	return func(c *cli.Context) error {
+		versions := []models.JdkVersion{}
+		for _, v := range jdk.GetInstalled(config.Store) {
+			versions = append(versions, models.JdkVersion{Version: v})
+		}
+		return ui.RunJdkPicker(config, versions, ui.Action{
+			Title: "Use JDK/Install JDK",
+			ConfirmText: func(v models.JdkVersion) string {
+				return fmt.Sprintf("Use %s?", v.Version)
+			},
+			Execute: func(config *models.Config, v models.JdkVersion) error {
+				return useFunc(config)(withArg(c, v.Version))
+			},
+			SuccessText: func(v models.JdkVersion) string {
+				return fmt.Sprintf("Now using JDK %s", v.Version)
+			},
+		})
+	}
+}
 
-			case c.Bool("i"):
-				fmt.Println("Getting available versions...")
-				versions, err := jdk.GetJdkVersions(config)
-				if err != nil {
-					return err
-				}
-				return ui.RunJdkPicker(config, versions, ui.Action{
-					Title: "Install JDK",
-					ConfirmText: func(v models.JdkVersion) string {
-						return fmt.Sprintf("Install %s?", v.Version)
-					},
-					Execute: func(config *models.Config, v models.JdkVersion) error {
-						return installFunc(config)(withArg(c, v.Version))
-					},
-					SuccessText: func(v models.JdkVersion) string {
-						return fmt.Sprintf("Installed %s", v.Version)
-					},
-				})
+func tuiFunc(config *models.Config) func(*cli.Context) error {
+	return func(c *cli.Context) error {
+		switch {
+		case c.Bool("u"):
+			return tuiFuncUse(config)(c)
 
-			default:
-				return errors.New("specify -u, -s to switch or -i to install")
+		case c.Bool("s"):
+			versions := []models.JdkVersion{}
+			for _, v := range jdk.GetInstalled(config.Store) {
+				versions = append(versions, models.JdkVersion{Version: v})
 			}
-		},
+			return ui.RunJdkPicker(config, versions, ui.Action{
+				Title: "Switch JDK",
+				ConfirmText: func(v models.JdkVersion) string {
+					return fmt.Sprintf("Switch to %s?", v.Version)
+				},
+				Execute: func(config *models.Config, v models.JdkVersion) error {
+					return switchFunc(config)(withArg(c, v.Version))
+				},
+				SuccessText: func(v models.JdkVersion) string {
+					return fmt.Sprintf("Now using JDK %s", v.Version)
+				},
+			})
+
+		case c.Bool("i"):
+			versions, err := jdk.GetJdkVersions(config)
+			if err != nil {
+				return err
+			}
+			return ui.RunJdkPicker(config, versions, ui.Action{
+				Title: "Install JDK",
+				ConfirmText: func(v models.JdkVersion) string {
+					return fmt.Sprintf("Install %s?", v.Version)
+				},
+				Execute: func(config *models.Config, v models.JdkVersion) error {
+					return installFunc(config)(withArg(c, v.Version))
+				},
+				SuccessText: func(v models.JdkVersion) string {
+					return fmt.Sprintf("Installed %s", v.Version)
+				},
+			})
+
+		default:
+			return tuiFuncUse(config)(c)
+		}
 	}
 }
