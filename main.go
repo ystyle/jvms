@@ -41,9 +41,7 @@ func startup(c *cli.Context) error {
 	if err := store.Load(models.ConfigFileName, config); err != nil {
 		return errors.New("failed to load the config:" + err.Error())
 	}
-
-	// Ensure the config is initialized with default values if they are not set
-	config.IdempotentSeed()
+	config.IdempotentSeed() // Ensure the config is initialized with idempotence
 
 	if config.Proxy != "" {
 		web.SetProxy(config.Proxy)
