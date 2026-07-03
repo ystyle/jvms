@@ -1,4 +1,4 @@
-package cmdCli
+package icli
 
 import (
 	"errors"
@@ -6,12 +6,10 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	"github.com/codegangsta/cli"
-	"github.com/ystyle/jvms/internal/entity"
-	"github.com/ystyle/jvms/utils/admin"
+	"github.com/ystyle/jvms/internal/models"
 	"github.com/ystyle/jvms/utils/file"
 	"github.com/ystyle/jvms/utils/jdk"
 )
@@ -30,7 +28,7 @@ var switchFlags = []cli.Flag{
 	},
 }
 
-func switch_(config *entity.Config) *cli.Command {
+func switch_(config *models.Config) *cli.Command {
 	cmd := &cli.Command{
 		Name:      "switch",
 		ShortName: "s",
@@ -41,49 +39,26 @@ func switch_(config *entity.Config) *cli.Command {
 	return cmd
 }
 
+// switchPrerequisites checks if the prerequisites for switching JDK are met
 // SwitchFunc is used by both switch and use commands
-func switchFunc(config *entity.Config) func(*cli.Context) error {
+func switchFunc(config *models.Config) func(*cli.Context) error {
 	return func(c *cli.Context) error {
-		if !admin.IsAdmin() {
-			return errors.New("jvms switch requires administrator privileges. Please run as administrator")
+		// Ensure the config is initialized with java_home & isAdmin
+		if err := switchPrerequisites(config)(c); err != nil {
+			return err
 		}
 		v := strings.TrimSpace(c.Args().Get(0))
 		if v == "" {
 			return errors.New("you should input a version or index number, Type \"jvms list\" to see what is installed")
 		}
 
-		// Check if input is a number (index)
-		index, err := strconv.Atoi(v)
-		if err == nil && index > 0 {
-			asPath := c.Bool("as_path")
-			if !asPath {
-				asPath = c.Bool("p")
-			}
-
-			// If not as_path, try index expansion
-			if !asPath {
-				installed := jdk.GetInstalled(config.Store)
-				if len(installed) == 0 {
-					return errors.New("no JDK installations found")
-				}
-				// Check if index is within valid range
-				if index <= len(installed) {
-					// Valid index, use it to select JDK
-					v = installed[index-1]
-					fmt.Printf("Using index %d to select JDK %s\n", index, v)
-				} else {
-					// Index out of range, check if there's a version folder with this numeric name (e.g., "17", "21")
-					// Keep the original input as version name
-					if jdk.IsVersionInstalled(config.Store, v) {
-						// Version folder with numeric name exists, proceed with it
-						fmt.Printf("Using version name %s\n", v)
-					} else {
-						// Neither valid index nor matching version folder
-						return fmt.Errorf("invalid index: %d (should be between 1 and %d) and version '%s' is not installed", index, len(installed), v)
-					}
-				}
-			}
+		// Try to resolve the version from context, which may be a version string,
+		// an index number, or a direct path
+		v, err := jdk.ResolveJdkVersion(c, config, v)
+		if err != nil {
+			return err
 		}
+
 		if !jdk.IsVersionInstalled(config.Store, v) {
 			fmt.Printf("jdk %s is not installed. ", v)
 			return nil
@@ -108,7 +83,7 @@ func switchFunc(config *entity.Config) func(*cli.Context) error {
 		if err != nil {
 			return errors.New("Switch jdk failed, " + err.Error())
 		}
-		fmt.Println("Switch success.\nNow using JDK " + v)
+		fmt.Println("\nSwitch success.\nNow using JDK " + v)
 		config.CurrentJDKVersion = v
 		return nil
 	}

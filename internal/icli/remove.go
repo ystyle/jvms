@@ -1,4 +1,4 @@
-package cmdCli
+package icli
 
 import (
 	"errors"
@@ -7,11 +7,11 @@ import (
 	"path/filepath"
 
 	"github.com/codegangsta/cli"
-	"github.com/ystyle/jvms/internal/entity"
+	"github.com/ystyle/jvms/internal/models"
 	"github.com/ystyle/jvms/utils/jdk"
 )
 
-func remove(config *entity.Config) *cli.Command {
+func remove(config *models.Config) *cli.Command {
 	cmd := &cli.Command{
 		Name:      "remove",
 		ShortName: "rm",

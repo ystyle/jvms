@@ -1,4 +1,4 @@
-package cmdCli
+package icli
 
 import (
 	"errors"
@@ -7,13 +7,14 @@ import (
 	"path/filepath"
 
 	"github.com/codegangsta/cli"
-	"github.com/ystyle/jvms/internal/entity"
+	"github.com/ystyle/jvms/internal/models"
 	"github.com/ystyle/jvms/utils/file"
+	"github.com/ystyle/jvms/utils/java"
 	"github.com/ystyle/jvms/utils/jdk"
 	"github.com/ystyle/jvms/utils/web"
 )
 
-func install(config *entity.Config) *cli.Command {
+func install(config *models.Config) *cli.Command {
 	cmd := &cli.Command{
 		Name:      "install",
 		ShortName: "i",
@@ -23,7 +24,7 @@ func install(config *entity.Config) *cli.Command {
 	return cmd
 }
 
-func installPrerequisites(config *entity.Config) {
+func installPrerequisites(config *models.Config) {
 	if !file.Exists(config.Download) {
 		os.MkdirAll(config.Download, 0777)
 	}
@@ -32,7 +33,7 @@ func installPrerequisites(config *entity.Config) {
 	}
 }
 
-func installFunc(config *entity.Config) func(*cli.Context) error {
+func installFunc(config *models.Config) func(*cli.Context) error {
 	return func(c *cli.Context) error {
 		if config.Proxy != "" {
 			web.SetProxy(config.Proxy)
@@ -46,7 +47,7 @@ func installFunc(config *entity.Config) func(*cli.Context) error {
 			fmt.Println("Version " + v + " is already installed.")
 			return nil
 		}
-		versions, err := getJdkVersions(config)
+		versions, err := jdk.GetJdkVersions(config)
 		if err != nil {
 			return err
 		}
@@ -72,7 +73,7 @@ func installFunc(config *entity.Config) func(*cli.Context) error {
 					}
 
 					// Copy the jdk files to the installation directory
-					temJavaHome := getJavaHome(jdktempfile)
+					temJavaHome := java.GetJavaHome(jdktempfile)
 					err = os.Rename(temJavaHome, filepath.Join(config.Store, v))
 					if err != nil {
 						return fmt.Errorf("unzip failed: %w", err)

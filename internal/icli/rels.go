@@ -1,14 +1,15 @@
-package cmdCli
+package icli
 
 import (
 	"fmt"
 
 	"github.com/codegangsta/cli"
-	"github.com/ystyle/jvms/internal/entity"
+	"github.com/ystyle/jvms/internal/models"
+	"github.com/ystyle/jvms/utils/jdk"
 	"github.com/ystyle/jvms/utils/web"
 )
 
-func rls(config *entity.Config) *cli.Command {
+func rls(config *models.Config) *cli.Command {
 	cmd := &cli.Command{
 		Name:  "rls",
 		Usage: "Show a list of versions available for download. ",
@@ -22,7 +23,7 @@ func rls(config *entity.Config) *cli.Command {
 			if config.Proxy != "" {
 				web.SetProxy(config.Proxy)
 			}
-			versions, err := getJdkVersions(config)
+			versions, err := jdk.GetJdkVersions(config)
 			if err != nil {
 				return err
 			}
@@ -37,7 +38,7 @@ func rls(config *entity.Config) *cli.Command {
 				fmt.Println("No availabled jdk veriosn for download.")
 			}
 
-			fmt.Printf("\nFor a complete list, visit %s\n", config.Originalpath)
+			fmt.Printf("\nFor a complete list, visit %s\n", config.OriginalPath)
 			return nil
 		},
 	}
