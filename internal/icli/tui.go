@@ -24,6 +24,7 @@ func tui(config *models.Config) *cli.Command {
 		Action: func(c *cli.Context) error {
 			switch {
 			case c.Bool("u"):
+				fmt.Println("Getting available versions...")
 				versions, err := jdk.GetJdkVersions(config)
 				if err != nil {
 					return err
@@ -38,7 +39,7 @@ func tui(config *models.Config) *cli.Command {
 					// version the user picked, exactly as if they'd typed
 					// `jvms switch <version>`.
 					Execute: func(config *models.Config, v models.JdkVersion) error {
-						return switchFunc(config)(withArg(c, v.Version))
+						return useFunc(config)(withArg(c, v.Version))
 					},
 					SuccessText: func(v models.JdkVersion) string {
 						return fmt.Sprintf("Now using JDK %s", v.Version)
@@ -46,7 +47,14 @@ func tui(config *models.Config) *cli.Command {
 				})
 
 			case c.Bool("i"):
-				versions, err := jdk.GetJdkVersions(config)
+				fmt.Println("Getting available versions...")
+				versions, err := func() ([]models.JdkVersion, error) {
+					jdks := []models.JdkVersion{}
+					for _, s := range jdk.GetInstalled(config.Store) {
+						jdks = append(jdks, models.JdkVersion{Version: s})
+					}
+					return jdks, nil
+				}()
 				if err != nil {
 					return err
 				}

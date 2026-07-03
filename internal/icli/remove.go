@@ -12,7 +12,7 @@ import (
 )
 
 func remove(config *models.Config) *cli.Command {
-	cmd := &cli.Command{
+	return &cli.Command{
 		Name:      "remove",
 		ShortName: "rm",
 		Usage:     "Remove a specific version.",
@@ -42,5 +42,4 @@ func remove(config *models.Config) *cli.Command {
 			return nil
 		},
 	}
-	return cmd
 }

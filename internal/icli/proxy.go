@@ -8,7 +8,7 @@ import (
 )
 
 func proxy(config *models.Config) *cli.Command {
-	cmd := &cli.Command{
+	return &cli.Command{
 		Name:  "proxy",
 		Usage: "Set a proxy to use for downloads.",
 		Flags: []cli.Flag{
@@ -32,5 +32,4 @@ func proxy(config *models.Config) *cli.Command {
 			return nil
 		},
 	}
-	return cmd
 }

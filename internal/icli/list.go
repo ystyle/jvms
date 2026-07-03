@@ -9,7 +9,7 @@ import (
 )
 
 func list(config *models.Config) *cli.Command {
-	cmd := &cli.Command{
+	return &cli.Command{
 		Name:      "list",
 		ShortName: "ls",
 		Usage:     "List current JDK installations.",
@@ -31,5 +31,4 @@ func list(config *models.Config) *cli.Command {
 			return nil
 		},
 	}
-	return cmd
 }

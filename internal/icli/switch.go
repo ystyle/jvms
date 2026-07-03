@@ -18,25 +18,18 @@ var asPathUsage = "Interpret the argument as a direct path rather than a version
 
 // Shared flags between switch and use commands
 var switchFlags = []cli.Flag{
-	cli.BoolFlag{
-		Name:  "as_path",
-		Usage: asPathUsage,
-	},
-	cli.BoolFlag{
-		Name:  "p",
-		Usage: asPathUsage,
-	},
+	cli.BoolFlag{Name: "as_path", Usage: asPathUsage},
+	cli.BoolFlag{Name: "p", Usage: asPathUsage},
 }
 
 func switch_(config *models.Config) *cli.Command {
-	cmd := &cli.Command{
+	return &cli.Command{
 		Name:      "switch",
 		ShortName: "s",
 		Usage:     "Switch to use the specified version or index number.",
 		Flags:     switchFlags,
 		Action:    switchFunc(config),
 	}
-	return cmd
 }
 
 // switchPrerequisites checks if the prerequisites for switching JDK are met

@@ -10,7 +10,7 @@ import (
 )
 
 func rls(config *models.Config) *cli.Command {
-	cmd := &cli.Command{
+	return &cli.Command{
 		Name:  "rls",
 		Usage: "Show a list of versions available for download. ",
 		Flags: []cli.Flag{
@@ -42,5 +42,4 @@ func rls(config *models.Config) *cli.Command {
 			return nil
 		},
 	}
-	return cmd
 }
