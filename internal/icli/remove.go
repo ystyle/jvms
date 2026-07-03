@@ -24,7 +24,9 @@ func remove(config *models.Config) *cli.Command {
 			if jdk.IsVersionInstalled(config.Store, v) {
 				fmt.Printf("Remove JDK %s ...\n", v)
 				if config.CurrentJDKVersion == v {
-					os.Remove(config.JavaHome)
+					if err := os.Remove(config.JavaHome); err != nil {
+						fmt.Printf("Warning: failed to remove JavaHome symlink: %v\n", err)
+					}
 				}
 				dir := filepath.Join(config.Store, v)
 				e := os.RemoveAll(dir)

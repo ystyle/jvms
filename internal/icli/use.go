@@ -1,6 +1,7 @@
 package icli
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -23,15 +24,15 @@ func use(config *models.Config) *cli.Command {
 func useFunc(config *models.Config) func(*cli.Context) error {
 	return func(c *cli.Context) error {
 		v := strings.TrimSpace(c.Args().Get(0))
+		if v == "" {
+			return errors.New("you should input a version or index number, Type \"jvms list\" to see what is installed")
+		}
 		isInstalled := jdk.IsVersionInstalled(config.Store, v)
-		if v != "" {
-			// If not installed, redirect to install
-			if !isInstalled {
-				fmt.Printf("Version %s is not installed. Installing now...\n", v)
-				err := installFunc(config)(c)
-				if err != nil {
-					return err
-				}
+		if !isInstalled {
+			fmt.Printf("Version %s is not installed. Installing now...\n", v)
+			err := installFunc(config)(c)
+			if err != nil {
+				return err
 			}
 		}
 

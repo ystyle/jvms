@@ -23,7 +23,7 @@ func list(config *models.Config) *cli.Command {
 				} else {
 					str = fmt.Sprintf("%s    %d) %s", str, i+1, version)
 				}
-				fmt.Printf("%s", str+"\n")
+				fmt.Println(str)
 			}
 			if len(v) == 0 {
 				fmt.Println("No installations recognized.")

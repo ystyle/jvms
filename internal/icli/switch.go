@@ -83,7 +83,7 @@ func switchFunc(config *models.Config) func(*cli.Context) error {
 		if err != nil {
 			return errors.New("Switch jdk failed, " + err.Error())
 		}
-		fmt.Println("\nSwitch success.\nNow using JDK " + v)
+		fmt.Println("Switch success.\nNow using JDK " + v)
 		config.CurrentJDKVersion = v
 		return nil
 	}
