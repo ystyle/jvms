@@ -23,6 +23,7 @@ func rls(config *models.Config) *cli.Command {
 			if config.Proxy != "" {
 				web.SetProxy(config.Proxy)
 			}
+			jdk.InvalidateCache()
 			versions, err := jdk.GetJdkVersions(config)
 			if err != nil {
 				return err

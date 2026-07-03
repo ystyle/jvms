@@ -18,6 +18,10 @@ type JdkVersionCache struct {
 	LastUpdated int64               `json:"last_updated"`
 }
 
+func InvalidateCache() error {
+	return store.Save(cacheFileName, &JdkVersionCache{})
+}
+
 func cacheJdkVersions(config *models.Config, versions []models.JdkVersion) error {
 	if len(versions) == 0 {
 		return errors.New("no JDK versions to cache")
