@@ -2,6 +2,7 @@ package icli
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 
 	"github.com/codegangsta/cli"
@@ -12,9 +13,18 @@ import (
 // Commands Register all commands
 func Commands(c *models.Config) []cli.Command {
 	return []cli.Command{
-		*switch_(c), *install(c), *remove(c), *init_(c),
-		*proxy(c), *list(c), *use(c), *rls(c),
+		*tui(c), *switch_(c), *install(c), *remove(c),
+		*init_(c), *proxy(c), *list(c), *use(c), *rls(c),
 	}
+}
+
+// withArg builds a child cli.Context whose only positional argument is v,
+// so existing Args().Get(0)-based commands (switchFunc, installFunc) can be
+// invoked exactly as if the user had typed the version on the command line.
+func withArg(c *cli.Context, v string) *cli.Context {
+	set := flag.NewFlagSet("", flag.ContinueOnError)
+	set.Parse([]string{v})
+	return cli.NewContext(c.App, set, c)
 }
 
 // switchPrerequisites checks if the config is initialized and if the user has admin privileges.
