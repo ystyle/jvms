@@ -54,7 +54,7 @@ func switchFunc(config *models.Config) func(*cli.Context) error {
 
 		// Try to resolve the version from context, which may be a version string,
 		// an index number, or a direct path
-		v, err := resolveJdkVersion(c, config, v)
+		v, err := jdk.ResolveJdkVersion(c, config, v)
 		if err != nil {
 			return err
 		}

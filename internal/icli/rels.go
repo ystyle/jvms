@@ -5,6 +5,7 @@ import (
 
 	"github.com/codegangsta/cli"
 	"github.com/ystyle/jvms/internal/models"
+	"github.com/ystyle/jvms/utils/jdk"
 	"github.com/ystyle/jvms/utils/web"
 )
 
@@ -22,7 +23,7 @@ func rls(config *models.Config) *cli.Command {
 			if config.Proxy != "" {
 				web.SetProxy(config.Proxy)
 			}
-			versions, err := getJdkVersions(config)
+			versions, err := jdk.GetJdkVersions(config)
 			if err != nil {
 				return err
 			}

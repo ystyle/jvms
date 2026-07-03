@@ -9,6 +9,7 @@ import (
 	"github.com/codegangsta/cli"
 	"github.com/ystyle/jvms/internal/models"
 	"github.com/ystyle/jvms/utils/file"
+	"github.com/ystyle/jvms/utils/java"
 	"github.com/ystyle/jvms/utils/jdk"
 	"github.com/ystyle/jvms/utils/web"
 )
@@ -46,7 +47,7 @@ func installFunc(config *models.Config) func(*cli.Context) error {
 			fmt.Println("Version " + v + " is already installed.")
 			return nil
 		}
-		versions, err := getJdkVersions(config)
+		versions, err := jdk.GetJdkVersions(config)
 		if err != nil {
 			return err
 		}
@@ -72,7 +73,7 @@ func installFunc(config *models.Config) func(*cli.Context) error {
 					}
 
 					// Copy the jdk files to the installation directory
-					temJavaHome := getJavaHome(jdktempfile)
+					temJavaHome := java.GetJavaHome(jdktempfile)
 					err = os.Rename(temJavaHome, filepath.Join(config.Store, v))
 					if err != nil {
 						return fmt.Errorf("unzip failed: %w", err)
