@@ -51,6 +51,10 @@ func ResolveJdkVersion(c *cli.Context, config *models.Config, v string) (string,
 }
 
 func GetJdkVersions(config *models.Config) ([]models.JdkVersion, error) {
+	if versions, err := loadCachedJdkVersions(config); err == nil {
+		return versions, nil
+	}
+
 	jsonContent, err := web.GetRemoteTextFile(config.OriginalPath)
 	if err != nil {
 		return nil, err
@@ -76,7 +80,11 @@ func GetJdkVersions(config *models.Config) ([]models.JdkVersion, error) {
 		versions = append(versions, models.JdkVersion{Version: azulJdk.ShortName, Url: azulJdk.DownloadURL})
 	}
 
-	//fmt.Println(versions)
+	// Cache the fetched versions for future use
+	if err := cacheJdkVersions(config, versions); err != nil {
+		return nil, err
+	}
+
 	return versions, nil
 }
 
