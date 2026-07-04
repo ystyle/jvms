@@ -7,7 +7,7 @@ import (
 )
 
 // View renders the current state of the picker model to a string for display in the terminal.
-func (m pickerModel) View() string {
+func (m *pickerModel) View() string {
 	switch m.state {
 	case stateEmpty:
 		return m.emptyView()
@@ -23,7 +23,7 @@ func (m pickerModel) View() string {
 	return ""
 }
 
-func (m pickerModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *pickerModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if km, ok := msg.(tea.KeyMsg); ok && km.String() == "ctrl+c" {
 		return m, tea.Quit
 	}

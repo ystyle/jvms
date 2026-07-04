@@ -5,11 +5,11 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-func (m pickerModel) listView() string {
+func (m *pickerModel) listView() string {
 	return m.list.View()
 }
 
-func (m pickerModel) listFunc(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *pickerModel) listFunc(msg tea.Msg) (tea.Model, tea.Cmd) {
 	km, ok := msg.(tea.KeyMsg)
 	if !ok || m.list.FilterState() == bubbleView.Filtering {
 		var cmd tea.Cmd

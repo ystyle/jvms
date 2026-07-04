@@ -9,7 +9,7 @@ const (
 	fallbackHelpStyle = "press enter to exit"
 )
 
-func (m pickerModel) newDialog(text, help string) string {
+func (m *pickerModel) newDialog(text, help string) string {
 	var b strings.Builder
 	b.WriteString(titleStyle.Render(m.action.Title))
 	b.WriteString("\n\n")

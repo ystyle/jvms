@@ -42,7 +42,7 @@ func RunJdkPicker(config *models.Config, versions []models.JdkVersion, action Ac
 	return err
 }
 
-func newPickerModel(config *models.Config, versions []models.JdkVersion, action Action) pickerModel {
+func newPickerModel(config *models.Config, versions []models.JdkVersion, action Action) *pickerModel {
 	l := bubbleView.New(nil, bubbleView.NewDefaultDelegate(), 0, 0)
 	l.Title = action.Title
 	l.SetFilteringEnabled(true)
@@ -61,7 +61,7 @@ func newPickerModel(config *models.Config, versions []models.JdkVersion, action 
 		state = stateEmpty
 	}
 
-	return pickerModel{
+	return &pickerModel{
 		config:  config,
 		action:  action,
 		state:   state,
@@ -70,7 +70,7 @@ func newPickerModel(config *models.Config, versions []models.JdkVersion, action 
 	}
 }
 
-func (m pickerModel) Init() tea.Cmd { return nil }
+func (m *pickerModel) Init() tea.Cmd { return nil }
 
 func (m *pickerModel) selectItem(v models.JdkVersion) tea.Cmd {
 	m.selected = v

@@ -6,7 +6,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-func (m pickerModel) doneView() string {
+func (m *pickerModel) doneView() string {
 	if m.err != nil {
 		return m.newDialog(errStyle.Render(fmt.Sprintf("\n  %s failed: %v\n\n",
 			m.action.Title, m.err)), "")
@@ -16,7 +16,7 @@ func (m pickerModel) doneView() string {
 		successPrefix, m.action.SuccessText(m.selected))), "")
 }
 
-func (m pickerModel) doneFunc(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *pickerModel) doneFunc(msg tea.Msg) (tea.Model, tea.Cmd) {
 	km, ok := msg.(tea.KeyMsg)
 	if !ok {
 		return m, nil

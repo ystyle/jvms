@@ -4,12 +4,12 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-func (m pickerModel) confirmView() string {
+func (m *pickerModel) confirmView() string {
 	return m.newDialog(m.action.ConfirmText(m.selected),
 		helpStyle.Render("y/enter: confirm • n/esc: cancel"))
 }
 
-func (m pickerModel) confirmFunc(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *pickerModel) confirmFunc(msg tea.Msg) (tea.Model, tea.Cmd) {
 	km, ok := msg.(tea.KeyMsg)
 	if !ok {
 		return m, nil
