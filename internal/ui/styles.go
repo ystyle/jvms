@@ -13,10 +13,16 @@ const (
 )
 
 var (
-	titleStyle  = lipgloss.NewStyle().Bold(true).Foreground(colorAccent)
-	dialogStyle = lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).
-			BorderForeground(colorAccent).Padding(1, 2)
+	titleStyle   = lipgloss.NewStyle().Bold(true).Foreground(colorAccent)
 	errStyle     = lipgloss.NewStyle().Foreground(colorError)
 	successStyle = lipgloss.NewStyle().Foreground(colorSuccess)
 	helpStyle    = lipgloss.NewStyle().Foreground(colorMuted)
+	dialogStyle  = lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(colorAccent).
+			Padding(1, 2).
+			Width(48).                        // fixed width keeps it from jittering per-message
+			Height(7).                        // min height, lipgloss pads short content to fill it
+			AlignHorizontal(lipgloss.Center). // center text/help lines inside the box
+			AlignVertical(lipgloss.Center)
 )

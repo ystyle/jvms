@@ -2,6 +2,8 @@ package ui
 
 import (
 	"strings"
+
+	"github.com/charmbracelet/lipgloss"
 )
 
 const (
@@ -9,6 +11,7 @@ const (
 	fallbackHelpStyle = "press enter to exit"
 )
 
+// dialog.go — wrap the rendered dialog in Place using the model's known size
 func (m *pickerModel) newDialog(text, help string) string {
 	var b strings.Builder
 	b.WriteString(titleStyle.Render(m.action.Title))
@@ -22,5 +25,10 @@ func (m *pickerModel) newDialog(text, help string) string {
 		b.WriteString(helpStyle.Render(help))
 	}
 
-	return dialogStyle.Render(b.String())
+	box := dialogStyle.Render(b.String())
+
+	if m.width == 0 || m.height == 0 {
+		return box // no size known yet (e.g. first frame) — fall back ungracefully
+	}
+	return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, box)
 }

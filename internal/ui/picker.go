@@ -10,7 +10,7 @@ import (
 
 type jdkItem struct{ models.JdkVersion }
 
-func (i jdkItem) Title() string       { return i.Version }
+func (i jdkItem) Title() string { return i.Version }
 func (i jdkItem) Description() string {
 	if i.Url != "" {
 		return i.Url
@@ -29,8 +29,9 @@ type pickerModel struct {
 	spinner       spinner.Model
 	spinnerActive bool
 
-	selected models.JdkVersion
-	err      error // set only on execute failure
+	width, height int // terminal size
+	selected      models.JdkVersion
+	err           error // set only on execute failure
 }
 
 const (
