@@ -11,7 +11,7 @@ const (
 	fallbackHelpStyle = "press enter to exit"
 )
 
-// dialog.go — wrap the rendered dialog in Place using the model's known size
+// dialog.go, wrap the rendered dialog in Place using the model's known size
 func (m *pickerModel) newDialog(text, help string) string {
 	var b strings.Builder
 	b.WriteString(titleStyle.Render(m.action.Title))
@@ -28,7 +28,7 @@ func (m *pickerModel) newDialog(text, help string) string {
 	box := dialogStyle.Render(b.String())
 
 	if m.width == 0 || m.height == 0 {
-		return box // no size known yet (e.g. first frame) — fall back ungracefully
+		return box // no size known yet (e.g. first frame) so fall back ungracefully
 	}
 	return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, box)
 }
