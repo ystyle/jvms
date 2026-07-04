@@ -11,7 +11,12 @@ import (
 type jdkItem struct{ models.JdkVersion }
 
 func (i jdkItem) Title() string       { return i.Version }
-func (i jdkItem) Description() string { return i.Url }
+func (i jdkItem) Description() string {
+	if i.Url != "" {
+		return i.Url
+	}
+	return "installed"
+}
 func (i jdkItem) FilterValue() string { return i.Version }
 
 type execDoneMsg struct{ err error }

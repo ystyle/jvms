@@ -44,7 +44,11 @@ func startup(c *cli.Context) error {
 	}
 	config.Load() // Ensure the config is initialized with idempotence
 
-	go jdk.GetJdkVersions(config) // Preload available JDK versions in the background
+	go func() {
+		if _, err := jdk.GetJdkVersions(config); err != nil {
+			log.Printf("background JDK preload failed: %v", err)
+		}
+	}()
 	if config.Proxy != "" {
 		web.SetProxy(config.Proxy)
 	}

@@ -7,11 +7,8 @@ func (m *pickerModel) emptyView() string {
 }
 
 func (m *pickerModel) emptyFunc(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if km, ok := msg.(tea.KeyMsg); ok {
-		switch km.String() {
-		case "q", "esc", "enter":
-			return m, tea.Quit
-		}
+	if _, ok := msg.(tea.KeyMsg); ok {
+		return m, tea.Quit
 	}
 	return m, nil
 }
