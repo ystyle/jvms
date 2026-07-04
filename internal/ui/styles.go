@@ -17,8 +17,7 @@ var (
 	errStyle     = lipgloss.NewStyle().Foreground(colorError)
 	successStyle = lipgloss.NewStyle().Foreground(colorSuccess)
 	helpStyle    = lipgloss.NewStyle().Foreground(colorMuted)
-	dialogStyle  = lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder()).
+	dialogStyle  = lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).
 			BorderForeground(colorAccent).
 			Padding(1, 2).
 			Width(48).                        // fixed width keeps it from jittering per-message
