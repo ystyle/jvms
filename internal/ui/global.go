@@ -3,7 +3,6 @@ package ui
 import (
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 )
 
 type subModelUpdate[T any] interface {
@@ -36,8 +35,7 @@ func (m *pickerModel) globalFunc(msg tea.Msg) (tea.Model, tea.Cmd, bool) {
 
 	case tea.WindowSizeMsg:
 		m.width, m.height = tm.Width, tm.Height
-		h, v := lipgloss.NewStyle().Margin(1, 2).GetFrameSize()
-		m.list.SetSize(tm.Width-h, tm.Height-v)
+		m.list.SetSize(tm.Width, tm.Height)
 		return m, nil, true
 	}
 

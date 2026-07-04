@@ -15,6 +15,7 @@ func (m *pickerModel) listFunc(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, updateSubModel(&m.list, msg)
 
 	}
+	// Unhandled keys fall through to the list for navigation, filtering, and help.
 	switch km.String() {
 	case "q":
 		return m, tea.Quit
