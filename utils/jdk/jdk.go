@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/baneeishaque/adoptium_jdk_go"
 	"github.com/codegangsta/cli"
@@ -15,6 +16,8 @@ import (
 	"github.com/ystyle/jvms/utils/file"
 	"github.com/ystyle/jvms/utils/web"
 )
+
+var getJdkLock sync.Mutex
 
 func ResolveJdkVersion(c *cli.Context, config *models.Config, v string) (string, error) {
 	// If the user has specified the --as_path or -p flag, treat the argument as a direct path
@@ -50,7 +53,16 @@ func ResolveJdkVersion(c *cli.Context, config *models.Config, v string) (string,
 	return v, nil
 }
 
+// GetJdkVersions fetches the list of available JDK versions from the remote source and caches it locally
+// with a time-to-live (TTL). If the cached version is available, it will be used instead of fetching from the remote source.
 func GetJdkVersions(config *models.Config) ([]models.JdkVersion, error) {
+	getJdkLock.Lock() // Ensure that only one goroutine can fetch JDK versions at a time
+	defer getJdkLock.Unlock()
+
+	if versions, err := loadCachedJdkVersions(config); err == nil {
+		return versions, nil
+	}
+
 	jsonContent, err := web.GetRemoteTextFile(config.OriginalPath)
 	if err != nil {
 		return nil, err
@@ -76,7 +88,11 @@ func GetJdkVersions(config *models.Config) ([]models.JdkVersion, error) {
 		versions = append(versions, models.JdkVersion{Version: azulJdk.ShortName, Url: azulJdk.DownloadURL})
 	}
 
-	//fmt.Println(versions)
+	// Cache the fetched versions for future use
+	if err := cacheJdkVersions(config, versions); err != nil {
+		return nil, err
+	}
+
 	return versions, nil
 }
 

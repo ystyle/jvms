@@ -15,13 +15,12 @@ import (
 )
 
 func install(config *models.Config) *cli.Command {
-	cmd := &cli.Command{
+	return &cli.Command{
 		Name:      "install",
 		ShortName: "i",
 		Usage:     "Install available remote jdk",
 		Action:    installFunc(config),
 	}
-	return cmd
 }
 
 func installPrerequisites(config *models.Config) {

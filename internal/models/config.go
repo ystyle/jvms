@@ -61,8 +61,8 @@ func NewConfigPtr() *Config {
 	return &Config{}
 }
 
-// IdempotentSeed initializes the config with default values if they are not set
-func (c *Config) IdempotentSeed() *Config {
+// Load initializes the config with default values if they are not set
+func (c *Config) Load() *Config {
 	if c.OriginalPath == "" {
 		c.SetOriginalPath(DefaultOriginalPath)
 	}
