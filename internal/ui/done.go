@@ -8,7 +8,7 @@ import (
 
 func (m pickerModel) doneView() string {
 	if m.err != nil {
-		m.newDialog(errStyle.Render(fmt.Sprintf("\n  %s failed: %v\n\n",
+		return m.newDialog(errStyle.Render(fmt.Sprintf("\n  %s failed: %v\n\n",
 			m.action.Title, m.err)), "")
 	}
 
