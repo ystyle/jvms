@@ -9,8 +9,9 @@ import (
 )
 
 const (
-	cacheFileName = "jdk_versions.json"
-	cacheTTL      = 24 * 60 * 60 // Cache time-to-live in seconds (24 hours)
+	cacheFileName    = "jdk_versions.json"
+	cacheTTL         = 24 * 60 * 60 // Cache time-to-live in seconds (24 hours)
+	cacheFetchWindow = 60 * 5       // Recently refreshed window (5 minutes)
 )
 
 type JdkVersionCache struct {
@@ -18,7 +19,16 @@ type JdkVersionCache struct {
 	LastUpdated int64               `json:"last_updated"`
 }
 
-func InvalidateCache() error {
+func InvalidateCache(config *models.Config) error {
+	getJdkLock.Lock()
+	defer getJdkLock.Unlock()
+
+	_, recentlyFetched, err := loadCachedJdkVersions(config)
+	if err == nil && recentlyFetched {
+		// Cache was refreshed very recently; don't throw it away.
+		return nil
+	}
+
 	return store.Save(cacheFileName, &JdkVersionCache{})
 }
 
@@ -33,16 +43,19 @@ func cacheJdkVersions(config *models.Config, versions []models.JdkVersion) error
 	})
 }
 
-func loadCachedJdkVersions(config *models.Config) ([]models.JdkVersion, error) {
+// loadCachedJdkVersions returns the cached versions and whether the cache was
+// refreshed recently.
+func loadCachedJdkVersions(config *models.Config) ([]models.JdkVersion, bool, error) {
 	versionsCached := &JdkVersionCache{}
 	if err := store.Load(cacheFileName, versionsCached); err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
-	// Check if the cache is still valid based on TTL
-	if time.Now().Unix()-versionsCached.LastUpdated > cacheTTL {
-		return nil, errors.New("cached JDK versions are stale")
+	age := time.Now().Unix() - versionsCached.LastUpdated
+
+	if age > cacheTTL {
+		return nil, age <= cacheFetchWindow, errors.New("cached JDK versions are stale")
 	}
 
-	return versionsCached.Versions, nil
+	return versionsCached.Versions, age <= cacheFetchWindow, nil
 }
