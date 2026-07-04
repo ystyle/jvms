@@ -55,6 +55,10 @@ func RunJdkPicker(config *models.Config, versions []models.JdkVersion, action Ac
 }
 
 func newPickerModel(config *models.Config, versions []models.JdkVersion, action Action) *pickerModel {
+	if action.Execute == nil || action.SuccessText == nil {
+		panic("ui: Action.Execute and Action.SuccessText are required")
+	}
+
 	l := bubbleView.New(nil, bubbleView.NewDefaultDelegate(), 0, 0)
 	l.Title = action.Title
 	l.SetFilteringEnabled(true)
