@@ -3,6 +3,7 @@ download
 storepath
 store
 *.exe
+jvms
 .idea
 *.zip
 .run
