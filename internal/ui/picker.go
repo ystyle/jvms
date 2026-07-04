@@ -42,10 +42,16 @@ const (
 	stateDone
 )
 
-// RunJdkPicker starts the picker TUI over the given versions and blocks
+// RunJdkPicker starts the picker TUI over the given versions and blocks.
 func RunJdkPicker(config *models.Config, versions []models.JdkVersion, action Action) error {
-	_, err := tea.NewProgram(newPickerModel(config, versions, action), tea.WithAltScreen()).Run()
-	return err
+	finalModel, err := tea.NewProgram(newPickerModel(config, versions, action), tea.WithAltScreen()).Run()
+	if err != nil {
+		return err
+	}
+	if pm, ok := finalModel.(*pickerModel); ok {
+		return pm.err
+	}
+	return nil
 }
 
 func newPickerModel(config *models.Config, versions []models.JdkVersion, action Action) *pickerModel {
