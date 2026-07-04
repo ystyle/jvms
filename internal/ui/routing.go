@@ -45,15 +45,15 @@ func (m pickerModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch m.state {
 	case stateEmpty:
-		return m.handleEmptyView(msg)
+		return m.emptyFunc(msg)
 	case stateList:
-		return m.handleList(msg)
+		return m.listFunc(msg)
 	case stateConfirm:
-		return m.handleConfirm(msg)
+		return m.confirmFunc(msg)
 	case stateExecuting:
-		return m.handleExecuting(msg)
+		return m.executeFunc(msg)
 	case stateDone:
-		return m.handleDone(msg)
+		return m.doneFunc(msg)
 	}
 	return m, nil
 }
