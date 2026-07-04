@@ -28,17 +28,19 @@ USAGE:
    jvms.exe [global options] command [command options] [arguments...]
 
 VERSION:
-   2.0.0
+   2.1.17
 
 COMMANDS:
-     init        Initialize config file
-     list, ls    List the JDK installations.
-     install, i  Install remote available jdk
-     switch, s   Switch to use the specified version.
-     remove, rm  Remove a specific version.
-     rls         Show a list of versions available for download.
-     proxy       Set a proxy to use for downloads.
-     help, h     Shows a list of commands or help for one command
+   tui, tui       Run the interactive TUI interface
+   init           Initialize config file
+   list, ls       List current JDK installations.
+   install, i     Install available remote jdk
+   switch, s      Switch to use the specified version or index number.
+   use, u         Switch to use the specified version and install it if not installed.
+   remove, rm     Remove a specific version.
+   rls            Show a list of versions available for download.
+   proxy          Set a proxy to use for downloads.
+   help, h        Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
    --help, -h     show help
@@ -51,6 +53,10 @@ how to install and switch jdk. see:
 - `jvms install 1.8.0_31` *install jdk 1.8.0_31*
 - `jvms ls` *list installed jdk*
 - `jvms switch 1.8.0_31` *switch jdk version to 1.8.0_31*
+- `jvms use 21.0.4` *install (if missing) and switch to jdk 21.0.4*
+- `jvms tui` *launch interactive TUI picker*
+- `jvms tui -i` *launch TUI install picker*
+- `jvms tui -s` *launch TUI switch picker*
 
 ![](images/powershell_2017-07-23_01-26-40.png)
 
