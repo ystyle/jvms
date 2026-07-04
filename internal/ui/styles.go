@@ -9,7 +9,7 @@ const (
 	colorSuccess = lipgloss.Color("108") // muted sage green
 	colorError   = lipgloss.Color("203") // soft coral red
 	colorMuted   = lipgloss.Color("245") // help text, secondary info
-	colorDim     = lipgloss.Color("238") // faint borders, disabled state
+	// colorDim     = lipgloss.Color("238") // faint borders, disabled state
 )
 
 var (
