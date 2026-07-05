@@ -10,7 +10,7 @@ import (
 
 type jdkItem struct{ models.JdkVersion }
 
-func (i jdkItem) Title() string       { return i.Version }
+func (i jdkItem) Title() string { return i.Version }
 func (i jdkItem) Description() string {
 	if i.Url != "" {
 		return i.Url
@@ -29,8 +29,9 @@ type pickerModel struct {
 	spinner       spinner.Model
 	spinnerActive bool
 
-	selected models.JdkVersion
-	err      error // set only on execute failure
+	width, height int // terminal size
+	selected      models.JdkVersion
+	err           error // set only on execute failure
 }
 
 const (
@@ -41,13 +42,23 @@ const (
 	stateDone
 )
 
-// RunJdkPicker starts the picker TUI over the given versions and blocks
+// RunJdkPicker starts the picker TUI over the given versions and blocks.
 func RunJdkPicker(config *models.Config, versions []models.JdkVersion, action Action) error {
-	_, err := tea.NewProgram(newPickerModel(config, versions, action), tea.WithAltScreen()).Run()
-	return err
+	finalModel, err := tea.NewProgram(newPickerModel(config, versions, action), tea.WithAltScreen()).Run()
+	if err != nil {
+		return err
+	}
+	if pm, ok := finalModel.(*pickerModel); ok {
+		return pm.err
+	}
+	return nil
 }
 
 func newPickerModel(config *models.Config, versions []models.JdkVersion, action Action) *pickerModel {
+	if action.Execute == nil || action.SuccessText == nil {
+		panic("ui: Action.Execute and Action.SuccessText are required")
+	}
+
 	l := bubbleView.New(nil, bubbleView.NewDefaultDelegate(), 0, 0)
 	l.Title = action.Title
 	l.SetFilteringEnabled(true)

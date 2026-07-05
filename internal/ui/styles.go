@@ -9,14 +9,19 @@ const (
 	colorSuccess = lipgloss.Color("108") // muted sage green
 	colorError   = lipgloss.Color("203") // soft coral red
 	colorMuted   = lipgloss.Color("245") // help text, secondary info
-	colorDim     = lipgloss.Color("238") // faint borders, disabled state
+	// colorDim     = lipgloss.Color("238") // faint borders, disabled state
 )
 
 var (
-	titleStyle  = lipgloss.NewStyle().Bold(true).Foreground(colorAccent)
-	dialogStyle = lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).
-			BorderForeground(colorAccent).Padding(1, 2)
+	titleStyle   = lipgloss.NewStyle().Bold(true).Foreground(colorAccent)
 	errStyle     = lipgloss.NewStyle().Foreground(colorError)
 	successStyle = lipgloss.NewStyle().Foreground(colorSuccess)
 	helpStyle    = lipgloss.NewStyle().Foreground(colorMuted)
+	dialogStyle  = lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).
+			BorderForeground(colorAccent).
+			Padding(1, 2).
+			Width(48).                        // fixed width keeps it from jittering per-message
+			Height(7).                        // min height, lipgloss pads short content to fill it
+			AlignHorizontal(lipgloss.Center). // center text/help lines inside the box
+			AlignVertical(lipgloss.Center)
 )

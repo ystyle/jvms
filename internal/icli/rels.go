@@ -23,8 +23,9 @@ func rls(config *models.Config) *cli.Command {
 			if config.Proxy != "" {
 				web.SetProxy(config.Proxy)
 			}
-			jdk.InvalidateCache()
-			fmt.Println("Fetching available JDK versions...")
+			if err := jdk.InvalidateCache(config); err != nil {
+				return err
+			}
 			versions, err := jdk.GetJdkVersions(config)
 			if err != nil {
 				return err

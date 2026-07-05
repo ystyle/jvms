@@ -1,9 +1,7 @@
 package ui
 
 import (
-	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 )
 
 // View renders the current state of the picker model to a string for display in the terminal.
@@ -24,23 +22,8 @@ func (m *pickerModel) View() string {
 }
 
 func (m *pickerModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if km, ok := msg.(tea.KeyMsg); ok && km.String() == "ctrl+c" {
-		return m, tea.Quit
-	}
-
-	if tm, ok := msg.(spinner.TickMsg); ok {
-		if !m.spinnerActive {
-			return m, nil // stale tick from a state we've already left
-		}
-		var cmd tea.Cmd
-		m.spinner, cmd = m.spinner.Update(tm)
-		return m, cmd
-	}
-
-	if wm, ok := msg.(tea.WindowSizeMsg); ok {
-		h, v := lipgloss.NewStyle().Margin(1, 2).GetFrameSize()
-		m.list.SetSize(wm.Width-h, wm.Height-v)
-		return m, nil
+	if model, cmd, handled := m.globalFunc(msg); handled {
+		return model, cmd
 	}
 
 	switch m.state {

@@ -59,10 +59,11 @@ func GetJdkVersions(config *models.Config) ([]models.JdkVersion, error) {
 	getJdkLock.Lock() // Ensure that only one goroutine can fetch JDK versions at a time
 	defer getJdkLock.Unlock()
 
-	if versions, err := loadCachedJdkVersions(config); err == nil {
+	if versions, _, err := loadCachedJdkVersions(config); err == nil {
 		return versions, nil
 	}
 
+	fmt.Println("Fetching available JDK versions...")
 	jsonContent, err := web.GetRemoteTextFile(config.OriginalPath)
 	if err != nil {
 		return nil, err
