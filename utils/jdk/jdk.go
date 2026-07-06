@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -53,10 +54,9 @@ func ResolveJdkVersion(c *cli.Context, config *models.Config, v string) (string,
 	return v, nil
 }
 
-// GetJdkVersions fetches the list of available JDK versions from the remote source and caches it locally
-// with a time-to-live (TTL). If the cached version is available, it will be used instead of fetching from the remote source.
+// GetJdkVersions acquires sync lock, fetches from remote & catches result for 24h then free lock
 func GetJdkVersions(config *models.Config) ([]models.JdkVersion, error) {
-	getJdkLock.Lock() // Ensure that only one goroutine can fetch JDK versions at a time
+	getJdkLock.Lock()
 	defer getJdkLock.Unlock()
 
 	if versions, _, err := loadCachedJdkVersions(config); err == nil {
@@ -68,28 +68,26 @@ func GetJdkVersions(config *models.Config) ([]models.JdkVersion, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	var versions []models.JdkVersion
 	err = json.Unmarshal([]byte(jsonContent), &versions)
 	if err != nil {
 		return nil, err
 	}
-	//fmt.Println(versions)
+
 	adoptiumJdks := strings.Split(adoptium_jdk_go.ApiListReleases(), "\n")
 	for _, adoptiumJdkUrl := range adoptiumJdks {
 		fileSeparatorIndex := strings.LastIndex(adoptiumJdkUrl, "/")
 		fileName := adoptiumJdkUrl[fileSeparatorIndex+1:]
 		fileVersion := strings.TrimSuffix(fileName, ".zip")
-		//fmt.Println(fileVersion)
 		versions = append(versions, models.JdkVersion{Version: fileVersion, Url: adoptiumJdkUrl})
 	}
 
-	//Azul JDKs
-	if azulJdks, err := AzulJDKs(); err != nil {
-		for _, azulJdk := range azulJdks {
-			versions = append(versions, models.JdkVersion{Version: azulJdk.ShortName, Url: azulJdk.DownloadURL})
-		}
+	withAzulJdks, err := appendAzulJdks(versions)
+	if err != nil {
+		log.Printf("could not fetch azul jdk: %v", err)
 	}
-
+	versions = withAzulJdks
 	// Cache the fetched versions for future use
 	if err := cacheJdkVersions(config, versions); err != nil {
 		return nil, err

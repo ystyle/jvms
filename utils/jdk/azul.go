@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"runtime"
 	"strings"
+
+	"github.com/ystyle/jvms/internal/models"
 )
 
 type azulJdk struct {
@@ -22,22 +24,24 @@ type azulJdk struct {
 	ShortName          string
 }
 
-func AzulJDKs() ([]azulJdk, error) {
+func appendAzulJdks(versions []models.JdkVersion) ([]models.JdkVersion, error) {
 	url := AzulApiEndpoint()
 	body, err := call(url)
 	if err != nil {
-		return nil, fmt.Errorf("error %v \n", err)
+		return versions, fmt.Errorf("error %v \n", err)
 	}
 	var jdks []azulJdk
 	err = json.Unmarshal(body, &jdks)
 	if err != nil {
-		return nil, fmt.Errorf("error %v \n", err)
+		return versions, fmt.Errorf("error %v \n", err)
 	}
-	for i := 0; i < len(jdks); i++ {
-		lastIndex := strings.LastIndex(jdks[i].Name, "-")
-		jdks[i].ShortName = jdks[i].Name[0:lastIndex]
+
+	for _, jdk := range jdks {
+		lastIndex := strings.LastIndex(jdk.Name, "-")
+		jdk.ShortName = jdk.Name[0:lastIndex]
+		versions = append(versions, models.JdkVersion{Version: jdk.ShortName, Url: jdk.DownloadURL})
 	}
-	return jdks, nil
+	return versions, nil
 }
 
 func AzulApiEndpoint() string {
