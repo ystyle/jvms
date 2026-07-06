@@ -11,7 +11,7 @@ import (
 const (
 	cacheFileName    = "jdk_versions.json"
 	cacheTTL         = 24 * 60 * 60 // Cache time-to-live in seconds (24 hours)
-	cacheFetchWindow = 60 * 5       // Recently refreshed window (5 minutes)
+	cacheFetchWindow = 30
 )
 
 type JdkVersionCache struct {

@@ -24,23 +24,32 @@ type azulJdk struct {
 	ShortName          string
 }
 
-func appendAzulJdks(versions []models.JdkVersion) ([]models.JdkVersion, error) {
+func getAzulJdks() ([]models.JdkVersion, error) {
 	url := AzulApiEndpoint()
 	body, err := call(url)
 	if err != nil {
-		return versions, fmt.Errorf("error %v \n", err)
-	}
-	var jdks []azulJdk
-	err = json.Unmarshal(body, &jdks)
-	if err != nil {
-		return versions, fmt.Errorf("error %v \n", err)
+		return nil, fmt.Errorf("error %v", err)
 	}
 
+	var jdks []azulJdk
+	if err := json.Unmarshal(body, &jdks); err != nil {
+		return nil, fmt.Errorf("error %v", err)
+	}
+
+	versions := make([]models.JdkVersion, 0, len(jdks))
 	for _, jdk := range jdks {
 		lastIndex := strings.LastIndex(jdk.Name, "-")
-		jdk.ShortName = jdk.Name[0:lastIndex]
-		versions = append(versions, models.JdkVersion{Version: jdk.ShortName, Url: jdk.DownloadURL})
+		if lastIndex <= 0 || jdk.DownloadURL == "" {
+			continue
+		}
+
+		jdk.ShortName = jdk.Name[:lastIndex]
+		versions = append(versions, models.JdkVersion{
+			Version: jdk.ShortName,
+			Url:     jdk.DownloadURL,
+		})
 	}
+
 	return versions, nil
 }
 

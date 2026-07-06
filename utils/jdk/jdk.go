@@ -2,56 +2,24 @@ package jdk
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
-	"os"
-	"path/filepath"
-	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/baneeishaque/adoptium_jdk_go"
-	"github.com/codegangsta/cli"
 	"github.com/ystyle/jvms/internal/models"
-	"github.com/ystyle/jvms/utils/file"
 	"github.com/ystyle/jvms/utils/web"
 )
 
 var getJdkLock sync.Mutex
 
-func ResolveJdkVersion(c *cli.Context, config *models.Config, v string) (string, error) {
-	// If the user has specified the --as_path or -p flag, treat the argument as a direct path
-	if c.Bool("as_path") || c.Bool("p") {
-		return v, nil
-	}
-
-	// If the input is numeric, resolve it as an index or numeric version.
-	index, err := strconv.Atoi(v)
-	if err == nil && index > 0 {
-		// If not as_path, try index expansion
-		installed := GetInstalled(config.Store)
-		if len(installed) == 0 {
-			return "", errors.New("no JDK installations found")
-		}
-		// Check if index is within valid range
-		if index <= len(installed) {
-			// Valid index, use it to select JDK
-			v = installed[index-1]
-			fmt.Printf("Using index %d to select JDK %s\n", index, v)
-		} else {
-			// Index out of range, check if there's a version folder with this numeric name (e.g., "17", "21")
-			// Keep the original input as version name
-			if IsVersionInstalled(config.Store, v) {
-				// Version folder with numeric name exists, proceed with it
-				fmt.Printf("Using version name %s\n", v)
-			} else {
-				// Neither valid index nor matching version folder
-				return "", fmt.Errorf("invalid index: %d (should be between 1 and %d) and version '%s' is not installed", index, len(installed), v)
-			}
-		}
-	}
-	return v, nil
+type fetchResult struct {
+	name     string
+	versions []models.JdkVersion
+	err      error
+	duration time.Duration
 }
 
 // GetJdkVersions acquires sync lock, fetches from remote & catches result for 24h then free lock
@@ -64,51 +32,106 @@ func GetJdkVersions(config *models.Config) ([]models.JdkVersion, error) {
 	}
 
 	fmt.Println("Fetching available JDK versions...")
-	jsonContent, err := web.GetRemoteTextFile(config.OriginalPath)
-	if err != nil {
-		return nil, err
-	}
+	start := time.Now()
+	results := make(chan fetchResult, 3)
+	var wg sync.WaitGroup
+	wg.Add(3)
+	go func() {
+		defer wg.Done()
+		start := time.Now()
+		jsonContent, err := web.GetRemoteTextFile(config.OriginalPath)
+		if err != nil {
+			results <- fetchResult{err: err}
+			return
+		}
+		var versions []models.JdkVersion
+		if err := json.Unmarshal([]byte(jsonContent), &versions); err != nil {
+			results <- fetchResult{err: err}
+			return
+		}
+		results <- fetchResult{
+			name:     "Original",
+			versions: versions,
+			duration: time.Since(start),
+		}
+	}()
 
+	go func() {
+		defer wg.Done()
+		start := time.Now()
+		adoptiumJdks := strings.Split(adoptium_jdk_go.ApiListReleases(), "\n")
+		versions := make([]models.JdkVersion, 0, len(adoptiumJdks))
+		for _, adoptiumJdkUrl := range adoptiumJdks {
+			fileSeparatorIndex := strings.LastIndex(adoptiumJdkUrl, "/")
+			fileName := adoptiumJdkUrl[fileSeparatorIndex+1:]
+			fileVersion := strings.TrimSuffix(fileName, ".zip")
+			versions = append(versions, models.JdkVersion{
+				Version: fileVersion,
+				Url:     adoptiumJdkUrl,
+			})
+		}
+		results <- fetchResult{
+			name:     "Adoptium",
+			versions: versions,
+			duration: time.Since(start),
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+
+		start := time.Now()
+
+		versions, err := getAzulJdks()
+		if err != nil {
+			log.Printf("could not fetch azul jdk: %v", err)
+			results <- fetchResult{
+				name:     "Azul",
+				duration: time.Since(start),
+			}
+			return
+		}
+		results <- fetchResult{
+			name:     "Azul",
+			versions: versions,
+			duration: time.Since(start),
+		}
+	}()
+
+	go func() {
+		wg.Wait()
+		close(results)
+	}()
+
+	timeout := time.After(30 * time.Second)
 	var versions []models.JdkVersion
-	err = json.Unmarshal([]byte(jsonContent), &versions)
-	if err != nil {
-		return nil, err
-	}
 
-	adoptiumJdks := strings.Split(adoptium_jdk_go.ApiListReleases(), "\n")
-	for _, adoptiumJdkUrl := range adoptiumJdks {
-		fileSeparatorIndex := strings.LastIndex(adoptiumJdkUrl, "/")
-		fileName := adoptiumJdkUrl[fileSeparatorIndex+1:]
-		fileVersion := strings.TrimSuffix(fileName, ".zip")
-		versions = append(versions, models.JdkVersion{Version: fileVersion, Url: adoptiumJdkUrl})
-	}
+collect:
+	for {
+		select {
+		case result, ok := <-results:
+			if !ok {
+				break collect
+			}
+			if result.err != nil {
+				return nil, result.err
+			}
 
-	withAzulJdks, err := appendAzulJdks(versions)
-	if err != nil {
-		log.Printf("could not fetch azul jdk: %v", err)
+			if result.name != "" {
+				log.Printf("%s: %d versions in %s", result.name, len(result.versions), result.duration)
+			}
+
+			versions = append(versions, result.versions...)
+		case <-timeout:
+			return nil, fmt.Errorf("timed out fetching JDK versions")
+		}
 	}
-	versions = withAzulJdks
+	log.Printf("Fetched %d JDK versions in %s", len(versions), time.Since(start))
+
 	// Cache the fetched versions for future use
 	if err := cacheJdkVersions(config, versions); err != nil {
 		return nil, err
 	}
 
 	return versions, nil
-}
-
-func GetInstalled(root string) []string {
-	list := make([]string, 0)
-	files, _ := os.ReadDir(root)
-	for i := len(files) - 1; i >= 0; i-- {
-		if files[i].IsDir() {
-			list = append(list, files[i].Name())
-		}
-	}
-	return list
-}
-
-func IsVersionInstalled(root string, version string) bool {
-	path := filepath.Join(root, version, "bin", "javac.exe")
-	isInstalled := file.Exists(path)
-	return isInstalled
 }
