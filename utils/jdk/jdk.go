@@ -84,9 +84,10 @@ func GetJdkVersions(config *models.Config) ([]models.JdkVersion, error) {
 	}
 
 	//Azul JDKs
-	azulJdks := AzulJDKs()
-	for _, azulJdk := range azulJdks {
-		versions = append(versions, models.JdkVersion{Version: azulJdk.ShortName, Url: azulJdk.DownloadURL})
+	if azulJdks, err := AzulJDKs(); err != nil {
+		for _, azulJdk := range azulJdks {
+			versions = append(versions, models.JdkVersion{Version: azulJdk.ShortName, Url: azulJdk.DownloadURL})
+		}
 	}
 
 	// Cache the fetched versions for future use

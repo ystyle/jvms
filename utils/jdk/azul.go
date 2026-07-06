@@ -9,22 +9,7 @@ import (
 	"strings"
 )
 
-func AzulJDKs() []AzulJDK {
-	url := AzulApiEndpoint()
-	body := call(url)
-	var jdks []AzulJDK
-	err := json.Unmarshal(body, &jdks)
-	if err != nil {
-		fmt.Printf("error %v \n", err)
-	}
-	for i := 0; i < len(jdks); i++ {
-		lastIndex := strings.LastIndex(jdks[i].Name, "-")
-		jdks[i].ShortName = jdks[i].Name[0:lastIndex]
-	}
-	return jdks
-}
-
-type AzulJDK struct {
+type azulJdk struct {
 	PackageUUID        string `json:"package_uuid"`
 	Name               string `json:"name"`
 	JavaVersion        []int  `json:"java_version"`
@@ -35,6 +20,24 @@ type AzulJDK struct {
 	DistroVersion      []int  `json:"distro_version"`
 	AvailabilityType   string `json:"availability_type"`
 	ShortName          string
+}
+
+func AzulJDKs() ([]azulJdk, error) {
+	url := AzulApiEndpoint()
+	body, err := call(url)
+	if err != nil {
+		return nil, fmt.Errorf("error %v \n", err)
+	}
+	var jdks []azulJdk
+	err = json.Unmarshal(body, &jdks)
+	if err != nil {
+		return nil, fmt.Errorf("error %v \n", err)
+	}
+	for i := 0; i < len(jdks); i++ {
+		lastIndex := strings.LastIndex(jdks[i].Name, "-")
+		jdks[i].ShortName = jdks[i].Name[0:lastIndex]
+	}
+	return jdks, nil
 }
 
 func AzulApiEndpoint() string {
@@ -49,14 +52,22 @@ func AzulApi() string {
 	return "https://api.azul.com/metadata/v1/zulu/packages"
 }
 
-func call(url string) []byte {
+func call(url string) ([]byte, error) {
 	res, err := http.Get(url)
 	if err != nil {
-		fmt.Printf("error: %v\n", err)
+		return nil, err
 	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(res.Body)
+		return nil, fmt.Errorf("%s: %s", res.Status, body)
+	}
+
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		fmt.Printf("error: %v\n", err)
+		return nil, err
 	}
-	return body
+
+	return body, nil
 }
