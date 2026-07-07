@@ -26,7 +26,7 @@ func rls(config *models.Config) *cli.Command {
 			if err := jdk.InvalidateCache(config); err != nil {
 				return err
 			}
-			versions, err := jdk.GetJdkVersions(config)
+			versions, err := jdk.GetJdkVersions(config, true)
 			if err != nil {
 				return err
 			}

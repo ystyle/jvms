@@ -57,7 +57,7 @@ func (c *Config) SetProxy(proxy string) {
 }
 
 // NewConfig creates a new Config instance with default values
-func NewConfigPtr() *Config {
+func NewConfig() *Config {
 	return &Config{}
 }
 

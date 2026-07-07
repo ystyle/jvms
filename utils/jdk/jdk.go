@@ -1,29 +1,27 @@
 package jdk
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
-	"strings"
 	"sync"
 	"time"
 
-	"github.com/baneeishaque/adoptium_jdk_go"
 	"github.com/ystyle/jvms/internal/models"
-	"github.com/ystyle/jvms/utils/web"
 )
 
 var getJdkLock sync.Mutex
 
-type fetchResult struct {
+type providerResult struct {
 	name     string
-	versions []models.JdkVersion
+	count    int
 	err      error
 	duration time.Duration
 }
 
+var errs []error
+
 // GetJdkVersions acquires sync lock, fetches from remote & catches result for 24h then free lock
-func GetJdkVersions(config *models.Config) ([]models.JdkVersion, error) {
+func GetJdkVersions(config *models.Config, mute bool) ([]models.JdkVersion, error) {
 	getJdkLock.Lock()
 	defer getJdkLock.Unlock()
 
@@ -32,103 +30,84 @@ func GetJdkVersions(config *models.Config) ([]models.JdkVersion, error) {
 	}
 
 	fmt.Println("Fetching available JDK versions...")
+
 	start := time.Now()
-	results := make(chan fetchResult, 3)
+	providers := []jdkProvider{
+		azulProvider{},
+		originalProvider{url: config.OriginalPath},
+		adoptiumProvider{},
+	}
+
+	versionsOut := make(chan models.JdkVersion)
+	results := make(chan providerResult, len(providers))
+
 	var wg sync.WaitGroup
-	wg.Add(3)
-	go func() {
-		defer wg.Done()
-		start := time.Now()
-		jsonContent, err := web.GetRemoteTextFile(config.OriginalPath)
-		if err != nil {
-			results <- fetchResult{err: err}
-			return
-		}
-		var versions []models.JdkVersion
-		if err := json.Unmarshal([]byte(jsonContent), &versions); err != nil {
-			results <- fetchResult{err: err}
-			return
-		}
-		results <- fetchResult{
-			name:     "Original",
-			versions: versions,
-			duration: time.Since(start),
-		}
-	}()
+	wg.Add(len(providers))
 
-	go func() {
-		defer wg.Done()
-		start := time.Now()
-		adoptiumJdks := strings.Split(adoptium_jdk_go.ApiListReleases(), "\n")
-		versions := make([]models.JdkVersion, 0, len(adoptiumJdks))
-		for _, adoptiumJdkUrl := range adoptiumJdks {
-			fileSeparatorIndex := strings.LastIndex(adoptiumJdkUrl, "/")
-			fileName := adoptiumJdkUrl[fileSeparatorIndex+1:]
-			fileVersion := strings.TrimSuffix(fileName, ".zip")
-			versions = append(versions, models.JdkVersion{
-				Version: fileVersion,
-				Url:     adoptiumJdkUrl,
-			})
-		}
-		results <- fetchResult{
-			name:     "Adoptium",
-			versions: versions,
-			duration: time.Since(start),
-		}
-	}()
+	for _, provider := range providers {
+		go func(provider jdkProvider) {
+			defer wg.Done()
 
-	go func() {
-		defer wg.Done()
+			start := time.Now()
+			count := 0
+			out := make(chan models.JdkVersion)
 
-		start := time.Now()
+			done := make(chan error, 1)
+			go func() {
+				done <- provider.Fetch(out)
+				close(out)
+			}()
 
-		versions, err := getAzulJdks()
-		if err != nil {
-			log.Printf("could not fetch azul jdk: %v", err)
-			results <- fetchResult{
-				name:     "Azul",
+			for version := range out {
+				count++
+				versionsOut <- version
+			}
+
+			results <- providerResult{
+				name:     provider.Name(),
+				count:    count,
+				err:      <-done,
 				duration: time.Since(start),
 			}
-			return
-		}
-		results <- fetchResult{
-			name:     "Azul",
-			versions: versions,
-			duration: time.Since(start),
-		}
-	}()
+		}(provider)
+	}
 
 	go func() {
 		wg.Wait()
+		close(versionsOut)
 		close(results)
 	}()
 
 	timeout := time.After(30 * time.Second)
 	var versions []models.JdkVersion
 
-collect:
-	for {
+	for versionsOut != nil || results != nil {
 		select {
+		case version, ok := <-versionsOut:
+			if !ok {
+				versionsOut = nil
+				continue
+			}
+			if !mute {
+				log.Printf("Got %s in %s", version.Version, time.Since(start))
+			}
+			versions = append(versions, version)
 		case result, ok := <-results:
 			if !ok {
-				break collect
+				results = nil
+				continue
 			}
 			if result.err != nil {
-				return nil, result.err
+				log.Printf("%s provider failed: %v", result.name, result.err)
+				errs = append(errs, result.err)
 			}
-
-			if result.name != "" {
-				log.Printf("%s: %d versions in %s", result.name, len(result.versions), result.duration)
-			}
-
-			versions = append(versions, result.versions...)
 		case <-timeout:
 			return nil, fmt.Errorf("timed out fetching JDK versions")
 		}
 	}
+
 	log.Printf("Fetched %d JDK versions in %s", len(versions), time.Since(start))
 
-	// Cache the fetched versions for future use
 	if err := cacheJdkVersions(config, versions); err != nil {
 		return nil, err
 	}

@@ -45,7 +45,7 @@ func startup(c *cli.Context) error {
 	config.Load() // Ensure the config is initialized with idempotence
 
 	go func() {
-		if _, err := jdk.GetJdkVersions(config); err != nil {
+		if _, err := jdk.GetJdkVersions(config, false); err != nil {
 			log.Printf("background JDK preload failed: %v", err)
 		}
 	}()

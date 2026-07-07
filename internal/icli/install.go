@@ -46,7 +46,7 @@ func installFunc(config *models.Config) func(*cli.Context) error {
 			fmt.Println("Version " + v + " is already installed.")
 			return nil
 		}
-		versions, err := jdk.GetJdkVersions(config)
+		versions, err := jdk.GetJdkVersions(config, false)
 		if err != nil {
 			return err
 		}

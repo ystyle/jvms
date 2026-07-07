@@ -27,7 +27,7 @@ func tui(config *models.Config) *cli.Command {
 
 func tuiFuncUse(config *models.Config) func(c *cli.Context) error {
 	return func(c *cli.Context) error {
-		versions, err := jdk.GetJdkVersions(config)
+		versions, err := jdk.GetJdkVersions(config, false)
 		if err != nil {
 			return err
 		}
@@ -71,7 +71,7 @@ func tuiFunc(config *models.Config) func(*cli.Context) error {
 			})
 
 		case c.Bool("i"):
-			versions, err := jdk.GetJdkVersions(config)
+			versions, err := jdk.GetJdkVersions(config, false)
 			if err != nil {
 				return err
 			}

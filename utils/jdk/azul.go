@@ -11,6 +11,8 @@ import (
 	"github.com/ystyle/jvms/internal/models"
 )
 
+type azulProvider struct{}
+
 type azulJdk struct {
 	PackageUUID        string `json:"package_uuid"`
 	Name               string `json:"name"`
@@ -24,33 +26,34 @@ type azulJdk struct {
 	ShortName          string
 }
 
-func getAzulJdks() ([]models.JdkVersion, error) {
-	url := AzulApiEndpoint()
-	body, err := call(url)
+func (p azulProvider) Name() string {
+	return "Azul"
+}
+
+func (p azulProvider) Fetch(out chan<- models.JdkVersion) error {
+	body, err := call(AzulApiEndpoint())
 	if err != nil {
-		return nil, fmt.Errorf("error %v", err)
+		return fmt.Errorf("error %v", err)
 	}
 
 	var jdks []azulJdk
 	if err := json.Unmarshal(body, &jdks); err != nil {
-		return nil, fmt.Errorf("error %v", err)
+		return fmt.Errorf("error %v", err)
 	}
 
-	versions := make([]models.JdkVersion, 0, len(jdks))
 	for _, jdk := range jdks {
 		lastIndex := strings.LastIndex(jdk.Name, "-")
 		if lastIndex <= 0 || jdk.DownloadURL == "" {
 			continue
 		}
 
-		jdk.ShortName = jdk.Name[:lastIndex]
-		versions = append(versions, models.JdkVersion{
-			Version: jdk.ShortName,
+		out <- models.JdkVersion{
+			Version: jdk.Name[:lastIndex],
 			Url:     jdk.DownloadURL,
-		})
+		}
 	}
 
-	return versions, nil
+	return nil
 }
 
 func AzulApiEndpoint() string {
