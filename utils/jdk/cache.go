@@ -9,8 +9,9 @@ import (
 )
 
 const (
-	cacheFileName    = "jdk_versions.json"
-	cacheTTL         = 24 * 60 * 60 // Cache time-to-live in seconds (24 hours)
+	cacheFileName = "jdk_versions.json"
+	cacheTTL      = 0
+	// cacheTTL         = 24 * 60 * 60 // Cache time-to-live in seconds (24 hours)
 	cacheFetchWindow = 30
 )
 

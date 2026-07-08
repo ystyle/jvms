@@ -16,7 +16,7 @@ import (
 
 var (
 	version = "2.1.0"
-	config  = models.NewConfigPtr()
+	config  = models.NewConfig()
 )
 
 func main() {

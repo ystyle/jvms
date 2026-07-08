@@ -26,6 +26,8 @@ type azulJdk struct {
 	ShortName          string
 }
 
+const azulApi = "https://api.azul.com/metadata/v1/zulu/packages"
+
 func (p azulProvider) Name() string {
 	return "Azul"
 }
@@ -56,16 +58,11 @@ func (p azulProvider) Fetch(out chan<- models.JdkVersion) error {
 	return nil
 }
 
-func AzulApiEndpoint() string {
-	//https://api.azul.com/metadata/v1/docs/swagger
-	var api = AzulApi() + "?os=$OS&arch=$ARCH&archive_type=zip&java_package_type=jdk&javafx_bundled=false&latest=true&release_status=ga&availability_types=CA&certifications=tck&page=1&page_size=100"
+func AzulApiEndpoint() string { //https://api.azul.com/metadata/v1/docs/swagger
+	var api = azulApi + "?os=$OS&arch=$ARCH&archive_type=zip&java_package_type=jdk&javafx_bundled=false&latest=true&release_status=ga&availability_types=CA&certifications=tck&page=1&page_size=100"
 	api = strings.Replace(api, "$OS", runtime.GOOS, 1)
 	api = strings.Replace(api, "$ARCH", runtime.GOARCH, 1)
 	return api
-}
-
-func AzulApi() string {
-	return "https://api.azul.com/metadata/v1/zulu/packages"
 }
 
 func call(url string) ([]byte, error) {
