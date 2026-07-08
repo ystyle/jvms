@@ -27,11 +27,7 @@ func tui(config *models.Config) *cli.Command {
 
 func tuiFuncUse(config *models.Config) func(c *cli.Context) error {
 	return func(c *cli.Context) error {
-		versions, err := jdk.GetJdkVersions(config, false)
-		if err != nil {
-			return err
-		}
-		return ui.RunJdkPicker(config, versions, ui.Action{
+		return ui.RunStreamingJdkPicker(config, ui.Action{
 			Title: "Use JDK/Install JDK",
 			ConfirmText: func(v models.JdkVersion) string {
 				return fmt.Sprintf("Use %s?", v.Version)
@@ -71,11 +67,7 @@ func tuiFunc(config *models.Config) func(*cli.Context) error {
 			})
 
 		case c.Bool("i"):
-			versions, err := jdk.GetJdkVersions(config, false)
-			if err != nil {
-				return err
-			}
-			return ui.RunJdkPicker(config, versions, ui.Action{
+			return ui.RunStreamingJdkPicker(config, ui.Action{
 				Title: "Install JDK",
 				ConfirmText: func(v models.JdkVersion) string {
 					return fmt.Sprintf("Install %s?", v.Version)

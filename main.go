@@ -10,8 +10,6 @@ import (
 	"github.com/tucnak/store"
 	"github.com/ystyle/jvms/internal/icli"
 	"github.com/ystyle/jvms/internal/models"
-	"github.com/ystyle/jvms/utils/jdk"
-	"github.com/ystyle/jvms/utils/web"
 )
 
 var (
@@ -30,7 +28,7 @@ func main() {
 	app.Before = startup
 	app.After = shutdown
 	if err := app.Run(os.Args); err != nil {
-		log.Fatal(err.Error()) // Fatal already calls os.Exit(1)
+		log.Fatal(err.Error())
 	}
 }
 
@@ -44,22 +42,11 @@ func startup(c *cli.Context) error {
 	}
 	config.Load() // Ensure the config is initialized with idempotence
 
-	go func() {
-		if _, err := jdk.GetJdkVersions(config, false); err != nil {
-			log.Printf("background JDK preload failed: %v", err)
-		}
-	}()
-	if config.Proxy != "" {
-		web.SetProxy(config.Proxy)
-	}
 	return nil
 }
 
 func shutdown(c *cli.Context) error {
-	if err := store.Save(models.ConfigFileName, config); err != nil {
-		return errors.New("failed to save the config:" + err.Error())
-	}
-	return nil
+	return config.Save()
 }
 
 func commandNotFound(c *cli.Context, command string) {

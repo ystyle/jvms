@@ -2,30 +2,23 @@ package icli
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/codegangsta/cli"
 	"github.com/ystyle/jvms/internal/models"
 	"github.com/ystyle/jvms/utils/jdk"
-	"github.com/ystyle/jvms/utils/web"
 )
 
 func rls(config *models.Config) *cli.Command {
 	return &cli.Command{
 		Name:  "rls",
 		Usage: "Show a list of versions available for download. ",
-		Flags: []cli.Flag{
-			cli.BoolFlag{
-				Name:  "a",
-				Usage: "list all the version",
-			},
-		},
+		Flags: []cli.Flag{cli.BoolFlag{Name: "a", Usage: "list all the version"}},
 		Action: func(c *cli.Context) error {
-			if config.Proxy != "" {
-				web.SetProxy(config.Proxy)
-			}
-			if err := jdk.InvalidateCache(config); err != nil {
-				return err
-			}
+			if err := jdk.InvalidateCache(); err != nil {
+				log.Printf("failed to invalidate cache: %v", err)
+			} // No more race
+
 			versions, err := jdk.GetJdkVersions(config, true)
 			if err != nil {
 				return err
@@ -38,7 +31,7 @@ func rls(config *models.Config) *cli.Command {
 				}
 			}
 			if len(versions) == 0 {
-				fmt.Println("No availabled jdk veriosn for download.")
+				fmt.Println("No available jdk version for download.")
 			}
 
 			fmt.Printf("\nFor a complete list, visit %s\n", config.OriginalPath)

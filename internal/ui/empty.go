@@ -3,6 +3,9 @@ package ui
 import tea "github.com/charmbracelet/bubbletea"
 
 func (m *pickerModel) emptyView() string {
+	if m.loadErr != nil {
+		return "\n  Failed to load JDK versions: " + m.loadErr.Error() + "\n\n" + helpStyle.Render("press any key to exit")
+	}
 	return "\n  No JDK versions available.\n\n" + helpStyle.Render("press any key to exit")
 }
 

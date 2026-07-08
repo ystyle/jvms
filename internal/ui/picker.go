@@ -6,18 +6,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 
 	"github.com/ystyle/jvms/internal/models"
+	"github.com/ystyle/jvms/utils/jdk"
 )
-
-type jdkItem struct{ models.JdkVersion }
-
-func (i jdkItem) Title() string { return i.Version }
-func (i jdkItem) Description() string {
-	if i.Url != "" {
-		return i.Url
-	}
-	return "installed"
-}
-func (i jdkItem) FilterValue() string { return i.Version }
 
 type execDoneMsg struct{ err error }
 type pickerState uint
@@ -28,6 +18,9 @@ type pickerModel struct {
 	list          bubbleView.Model
 	spinner       spinner.Model
 	spinnerActive bool
+	versionEvents <-chan jdk.VersionEvent
+	versionsDone  bool
+	loadErr       error
 
 	width, height int // terminal size
 	selected      models.JdkVersion
@@ -86,30 +79,12 @@ func newPickerModel(config *models.Config, versions []models.JdkVersion, action 
 	}
 }
 
-func (m *pickerModel) Init() tea.Cmd { return nil }
-
-func (m *pickerModel) selectItem(v models.JdkVersion) tea.Cmd {
-	m.selected = v
-	if !m.action.needsConfirm() {
-		return m.beginExecute()
+func (m *pickerModel) Init() tea.Cmd {
+	if m.versionEvents != nil {
+		if m.spinnerActive {
+			return tea.Batch(waitForVersionEvent(m.versionEvents), m.spinner.Tick)
+		}
+		return waitForVersionEvent(m.versionEvents)
 	}
-	m.state = stateConfirm
 	return nil
-}
-
-func (m *pickerModel) beginExecute() tea.Cmd {
-	m.state = stateExecuting
-	m.err = nil
-	m.spinnerActive = true
-	execute := m.action.Execute
-	config := m.config
-	v := m.selected
-	run := func() tea.Msg { return execDoneMsg{execute(config, v)} }
-	return tea.Batch(run, m.spinner.Tick)
-}
-
-func (m *pickerModel) finishExecute(err error) {
-	m.err = err
-	m.spinnerActive = false
-	m.state = stateDone
 }
