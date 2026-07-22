@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/ystyle/jvms/internal/models"
 	"github.com/ystyle/jvms/utils/web"
@@ -32,7 +33,7 @@ func (p azulProvider) Name() string {
 }
 
 func (p azulProvider) Fetch(out chan<- models.JdkVersion) error {
-	body, err := web.GetBytes(AzulApiEndpoint())
+	body, err := web.GetBytes(AzulApiEndpoint(), 30*time.Second)
 	if err != nil {
 		return fmt.Errorf("error %v", err)
 	}

@@ -1,7 +1,6 @@
 package web
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -94,8 +93,11 @@ func GetJDK(download string, v string, url string) (string, bool) {
 
 }
 
-func GetBytes(url string) ([]byte, error) {
-	response, err := client.Get(url)
+func GetBytes(url string, timeout time.Duration) ([]byte, error) {
+	httpClient := *client
+	httpClient.Timeout = timeout
+
+	response, err := httpClient.Get(url)
 	if err != nil {
 		return nil, err
 	}
@@ -110,9 +112,9 @@ func GetBytes(url string) ([]byte, error) {
 }
 
 func GetRemoteTextFile(url string) (string, error) {
-	contents, err := GetBytes(url)
+	contents, err := GetBytes(url, 0)
 	if err != nil {
-		return "", errors.New(fmt.Sprintf("\nCould not retrieve %s.\n\n%s\n", url, err.Error()))
+		return "", fmt.Errorf("\nCould not retrieve %s.\n\n%s\n", url, err.Error())
 	}
 	return string(contents), nil
 }
