@@ -3,12 +3,11 @@ package jdk
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 	"runtime"
 	"strings"
 
 	"github.com/ystyle/jvms/internal/models"
+	"github.com/ystyle/jvms/utils/web"
 )
 
 type azulProvider struct{}
@@ -33,7 +32,7 @@ func (p azulProvider) Name() string {
 }
 
 func (p azulProvider) Fetch(out chan<- models.JdkVersion) error {
-	body, err := call(AzulApiEndpoint())
+	body, err := web.GetBytes(AzulApiEndpoint())
 	if err != nil {
 		return fmt.Errorf("error %v", err)
 	}
@@ -65,22 +64,4 @@ func AzulApiEndpoint() string { //https://api.azul.com/metadata/v1/docs/swagger
 	return api
 }
 
-func call(url string) ([]byte, error) {
-	res, err := http.Get(url)
-	if err != nil {
-		return nil, err
-	}
-	defer res.Body.Close()
 
-	if res.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(res.Body)
-		return nil, fmt.Errorf("%s: %s", res.Status, body)
-	}
-
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	return body, nil
-}

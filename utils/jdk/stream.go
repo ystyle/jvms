@@ -31,11 +31,16 @@ func streamJdkVersions(config *models.Config, events chan<- VersionEvent) {
 		return
 	}
 
-	versions, _, err = fetchJdkVersionsWithSink(configuredProviders(config), true, func(version models.JdkVersion) {
+	versions, errs, err := fetchJdkVersionsWithSink(configuredProviders(config), true, func(version models.JdkVersion) {
 		events <- VersionEvent{Version: version}
 	})
 	if err != nil {
 		events <- VersionEvent{Err: err, Done: true}
+		return
+	}
+
+	if len(errs) > 0 {
+		events <- VersionEvent{Done: true}
 		return
 	}
 

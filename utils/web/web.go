@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -14,14 +13,21 @@ import (
 	pb "gopkg.in/cheggaaa/pb.v1"
 )
 
-var client = &http.Client{}
+var client = &http.Client{
+	Timeout: 30 * time.Second,
+}
 
 func SetProxy(p string) {
 	if p != "" && p != "none" {
 		proxyUrl, _ := url.Parse(p)
-		client = &http.Client{Transport: &http.Transport{Proxy: http.ProxyURL(proxyUrl)}}
+		client = &http.Client{
+			Timeout:   30 * time.Second,
+			Transport: &http.Transport{Proxy: http.ProxyURL(proxyUrl)},
+		}
 	} else {
-		client = &http.Client{}
+		client = &http.Client{
+			Timeout: 30 * time.Second,
+		}
 	}
 }
 
@@ -88,16 +94,25 @@ func GetJDK(download string, v string, url string) (string, bool) {
 
 }
 
-func GetRemoteTextFile(url string) (string, error) {
-	response, httperr := client.Get(url)
-	if httperr != nil {
-		return "", errors.New(fmt.Sprintf("\nCould not retrieve %s.\n\n%s\n", url, httperr.Error()))
-	} else {
-		defer response.Body.Close()
-		contents, readerr := ioutil.ReadAll(response.Body)
-		if readerr != nil {
-			return "", errors.New(fmt.Sprintf("%s", readerr))
-		}
-		return string(contents), nil
+func GetBytes(url string) ([]byte, error) {
+	response, err := client.Get(url)
+	if err != nil {
+		return nil, err
 	}
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(response.Body)
+		return nil, fmt.Errorf("%s: %s", response.Status, body)
+	}
+
+	return io.ReadAll(response.Body)
+}
+
+func GetRemoteTextFile(url string) (string, error) {
+	contents, err := GetBytes(url)
+	if err != nil {
+		return "", errors.New(fmt.Sprintf("\nCould not retrieve %s.\n\n%s\n", url, err.Error()))
+	}
+	return string(contents), nil
 }

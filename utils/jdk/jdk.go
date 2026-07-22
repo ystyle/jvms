@@ -30,6 +30,7 @@ func GetJdkVersions(config *models.Config, mute bool) ([]models.JdkVersion, erro
 	}
 	if len(errs) > 0 {
 		log.Printf("Fetched JDK versions with %d provider error(s)", len(errs))
+		return versions, nil
 	}
 
 	log.Printf("Fetched %d JDK versions in %s", len(versions), time.Since(start))

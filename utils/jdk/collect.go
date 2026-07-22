@@ -41,7 +41,7 @@ func collectProviderVersions(
 				errs = append(errs, result.err)
 			}
 		case <-timeout:
-			return nil, errs, fmt.Errorf("timed out fetching JDK versions")
+			return versions, errs, fmt.Errorf("timed out fetching JDK versions")
 		}
 	}
 
