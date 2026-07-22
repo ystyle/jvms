@@ -30,8 +30,11 @@ func SetProxy(p string) {
 	}
 }
 
-func Download(url string, target string) bool {
-	response, err := client.Get(url)
+func Download(url string, target string, timeout time.Duration) bool {
+	httpClient := *client
+	httpClient.Timeout = timeout
+
+	response, err := httpClient.Get(url)
 	if err != nil {
 		fmt.Println("Error while downloading", url, "-", err)
 		return false
@@ -82,7 +85,7 @@ func GetJDK(download string, v string, url string) (string, bool) {
 		fmt.Printf("JDK %s isn't available right now.", v)
 	} else {
 		fmt.Printf("Downloading jdk version %s...\n", v)
-		if Download(url, fileName) {
+		if Download(url, fileName, 0) {
 			fmt.Println("Complete")
 			return fileName, true
 		} else {
