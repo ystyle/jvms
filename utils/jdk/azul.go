@@ -3,28 +3,17 @@ package jdk
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 	"runtime"
 	"strings"
+	"time"
+
+	"github.com/ystyle/jvms/internal/models"
+	"github.com/ystyle/jvms/utils/web"
 )
 
-func AzulJDKs() []AzulJDK {
-	url := AzulApiEndpoint()
-	body := call(url)
-	var jdks []AzulJDK
-	err := json.Unmarshal(body, &jdks)
-	if err != nil {
-		fmt.Printf("error %v \n", err)
-	}
-	for i := 0; i < len(jdks); i++ {
-		lastIndex := strings.LastIndex(jdks[i].Name, "-")
-		jdks[i].ShortName = jdks[i].Name[0:lastIndex]
-	}
-	return jdks
-}
+type azulProvider struct{}
 
-type AzulJDK struct {
+type azulJdk struct {
 	PackageUUID        string `json:"package_uuid"`
 	Name               string `json:"name"`
 	JavaVersion        []int  `json:"java_version"`
@@ -37,26 +26,43 @@ type AzulJDK struct {
 	ShortName          string
 }
 
-func AzulApiEndpoint() string {
-	//https://api.azul.com/metadata/v1/docs/swagger
-	var api = AzulApi() + "?os=$OS&arch=$ARCH&archive_type=zip&java_package_type=jdk&javafx_bundled=false&latest=true&release_status=ga&availability_types=CA&certifications=tck&page=1&page_size=100"
+const azulApi = "https://api.azul.com/metadata/v1/zulu/packages"
+
+func (p azulProvider) Name() string {
+	return "Azul"
+}
+
+func (p azulProvider) Fetch(out chan<- models.JdkVersion) error {
+	body, err := web.GetBytes(AzulApiEndpoint(), 30*time.Second)
+	if err != nil {
+		return fmt.Errorf("error %v", err)
+	}
+
+	var jdks []azulJdk
+	if err := json.Unmarshal(body, &jdks); err != nil {
+		return fmt.Errorf("error %v", err)
+	}
+
+	for _, jdk := range jdks {
+		lastIndex := strings.LastIndex(jdk.Name, "-")
+		if lastIndex <= 0 || jdk.DownloadURL == "" {
+			continue
+		}
+
+		out <- models.JdkVersion{
+			Version: jdk.Name[:lastIndex],
+			Url:     jdk.DownloadURL,
+		}
+	}
+
+	return nil
+}
+
+func AzulApiEndpoint() string { //https://api.azul.com/metadata/v1/docs/swagger
+	var api = azulApi + "?os=$OS&arch=$ARCH&archive_type=zip&java_package_type=jdk&javafx_bundled=false&latest=true&release_status=ga&availability_types=CA&certifications=tck&page=1&page_size=100"
 	api = strings.Replace(api, "$OS", runtime.GOOS, 1)
 	api = strings.Replace(api, "$ARCH", runtime.GOARCH, 1)
 	return api
 }
 
-func AzulApi() string {
-	return "https://api.azul.com/metadata/v1/zulu/packages"
-}
 
-func call(url string) []byte {
-	res, err := http.Get(url)
-	if err != nil {
-		fmt.Printf("error: %v\n", err)
-	}
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		fmt.Printf("error: %v\n", err)
-	}
-	return body
-}

@@ -3,6 +3,8 @@ package ui
 import (
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
+
+	"github.com/ystyle/jvms/utils/jdk"
 )
 
 type subModelUpdate[T any] interface {
@@ -18,8 +20,7 @@ func updateSubModel[T subModelUpdate[T]](component *T, msg tea.Msg) tea.Cmd {
 }
 
 // globalFunc handles messages that apply regardless of state (quit,
-// spinner ticks, resize). It returns handled=true if it fully processed
-// the message, so Update should stop and return immediately.
+// spinner ticks, resize).
 func (m *pickerModel) globalFunc(msg tea.Msg) (tea.Model, tea.Cmd, bool) {
 	switch tm := msg.(type) {
 	case tea.KeyMsg:
@@ -33,6 +34,9 @@ func (m *pickerModel) globalFunc(msg tea.Msg) (tea.Model, tea.Cmd, bool) {
 		}
 		return m, updateSubModel(&m.spinner, tm), true
 
+	case versionEventMsg:
+		return m, m.handleVersionEvent(tm.event), true
+
 	case tea.WindowSizeMsg:
 		m.width, m.height = tm.Width, tm.Height
 		m.list.SetSize(tm.Width, tm.Height)
@@ -40,4 +44,20 @@ func (m *pickerModel) globalFunc(msg tea.Msg) (tea.Model, tea.Cmd, bool) {
 	}
 
 	return m, nil, false
+}
+
+func (m *pickerModel) handleVersionEvent(event jdk.VersionEvent) tea.Cmd {
+	if event.Done {
+		m.versionsDone = true
+		if m.state != stateExecuting {
+			m.spinnerActive = false
+		}
+		m.loadErr = event.Err
+		if len(m.list.Items()) == 0 {
+			m.state = stateEmpty
+		}
+		return nil
+	}
+
+	return tea.Batch(m.appendVersion(event.Version), waitForVersionEvent(m.versionEvents))
 }

@@ -1,10 +1,8 @@
 package web
 
 import (
-	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -14,19 +12,29 @@ import (
 	pb "gopkg.in/cheggaaa/pb.v1"
 )
 
-var client = &http.Client{}
+var client = &http.Client{
+	Timeout: 30 * time.Second,
+}
 
 func SetProxy(p string) {
 	if p != "" && p != "none" {
 		proxyUrl, _ := url.Parse(p)
-		client = &http.Client{Transport: &http.Transport{Proxy: http.ProxyURL(proxyUrl)}}
+		client = &http.Client{
+			Timeout:   30 * time.Second,
+			Transport: &http.Transport{Proxy: http.ProxyURL(proxyUrl)},
+		}
 	} else {
-		client = &http.Client{}
+		client = &http.Client{
+			Timeout: 30 * time.Second,
+		}
 	}
 }
 
-func Download(url string, target string) bool {
-	response, err := client.Get(url)
+func Download(url string, target string, timeout time.Duration) bool {
+	httpClient := *client
+	httpClient.Timeout = timeout
+
+	response, err := httpClient.Get(url)
 	if err != nil {
 		fmt.Println("Error while downloading", url, "-", err)
 		return false
@@ -77,7 +85,7 @@ func GetJDK(download string, v string, url string) (string, bool) {
 		fmt.Printf("JDK %s isn't available right now.", v)
 	} else {
 		fmt.Printf("Downloading jdk version %s...\n", v)
-		if Download(url, fileName) {
+		if Download(url, fileName, 0) {
 			fmt.Println("Complete")
 			return fileName, true
 		} else {
@@ -88,16 +96,28 @@ func GetJDK(download string, v string, url string) (string, bool) {
 
 }
 
-func GetRemoteTextFile(url string) (string, error) {
-	response, httperr := client.Get(url)
-	if httperr != nil {
-		return "", errors.New(fmt.Sprintf("\nCould not retrieve %s.\n\n%s\n", url, httperr.Error()))
-	} else {
-		defer response.Body.Close()
-		contents, readerr := ioutil.ReadAll(response.Body)
-		if readerr != nil {
-			return "", errors.New(fmt.Sprintf("%s", readerr))
-		}
-		return string(contents), nil
+func GetBytes(url string, timeout time.Duration) ([]byte, error) {
+	httpClient := *client
+	httpClient.Timeout = timeout
+
+	response, err := httpClient.Get(url)
+	if err != nil {
+		return nil, err
 	}
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(response.Body)
+		return nil, fmt.Errorf("%s: %s", response.Status, body)
+	}
+
+	return io.ReadAll(response.Body)
+}
+
+func GetRemoteTextFile(url string) (string, error) {
+	contents, err := GetBytes(url, 0)
+	if err != nil {
+		return "", fmt.Errorf("\nCould not retrieve %s.\n\n%s\n", url, err.Error())
+	}
+	return string(contents), nil
 }

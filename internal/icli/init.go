@@ -40,11 +40,11 @@ func initPrerequisites(c *cli.Context, config *models.Config) error {
 	}
 
 	if c.IsSet("java_home") || config.JavaHome == "" {
-		config.SetJavaHome(c.String("java_home"))
+		config.JavaHome = c.String("java_home")
 	}
 
 	if c.IsSet("originalpath") || config.OriginalPath == "" {
-		config.SetOriginalPath(c.String("originalpath"))
+		config.OriginalPath = c.String("originalpath")
 	}
 
 	return nil

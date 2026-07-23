@@ -6,6 +6,10 @@ import (
 )
 
 func (m *pickerModel) listView() string {
+	m.list.Title = m.action.Title
+	if m.versionEvents != nil && !m.versionsDone {
+		m.list.Title = m.spinner.View() + " " + m.list.Title
+	}
 	return m.list.View()
 }
 
