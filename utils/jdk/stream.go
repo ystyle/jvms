@@ -1,6 +1,10 @@
 package jdk
 
-import "github.com/ystyle/jvms/internal/models"
+import (
+	"log"
+
+	"github.com/ystyle/jvms/internal/models"
+)
 
 const versionEventBuffer = 256
 
@@ -35,13 +39,9 @@ func streamJdkVersions(config *models.Config, events chan<- VersionEvent) {
 		events <- VersionEvent{Version: version}
 	})
 	if err != nil {
-		events <- VersionEvent{Err: err, Done: true}
-		return
-	}
-
-	if len(errs) > 0 {
-		events <- VersionEvent{Done: true}
-		return
+		log.Printf("fetch timed out (partial results: %d versions): %v", len(versions), err)
+	} else if len(errs) > 0 {
+		log.Printf("Fetched JDK versions with %d provider error(s)", len(errs))
 	}
 
 	if err := cacheJdkVersions(versions); err != nil {

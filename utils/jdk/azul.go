@@ -45,7 +45,7 @@ func (p azulProvider) Fetch(out chan<- models.JdkVersion) error {
 
 	for _, jdk := range jdks {
 		lastIndex := strings.LastIndex(jdk.Name, "-")
-		if lastIndex <= 0 || jdk.DownloadURL == "" {
+		if lastIndex < 0 || jdk.DownloadURL == "" {
 			continue
 		}
 
