@@ -1,10 +1,10 @@
 package config
 
 const (
-	JavaHomeFlag     = "java-home"
-	OriginalPathFlag = "original-path"
+	JavaHomeFlag     = "java_home"
+	OriginalPathFlag = "originalpath"
 	ProxyFlag        = "proxy"
-	ResolutionFlag   = "resolution-priority"
-	CacheToggleFlag  = "cache-toggle"
-	CacheTTLFlag     = "cache-ttl"
+	ResolutionFlag   = "resolution_priority"
+	CacheToggleFlag  = "cache_toggle"
+	CacheTTLFlag     = "cache_ttl"
 )

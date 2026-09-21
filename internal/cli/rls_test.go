@@ -1,43 +1,42 @@
 package cli
 
 import (
-	"flag"
+	"bytes"
+	"errors"
+	"strings"
 	"testing"
 
 	"github.com/codegangsta/cli"
-	appcfg "github.com/ystyle/jvms/internal/config"
 	"github.com/ystyle/jvms/internal/jdk"
 )
 
 type refreshRecordingManager struct {
 	recordingManager
-	cacheInvalidated bool
-	config           *appcfg.Config
+	refreshed bool
+	err       error
 }
 
-func (m *refreshRecordingManager) Available() ([]jdk.Version, error) {
-	_, err := jdk.LoadCachedVersions(m.config, "refresh-test", false)
-	m.cacheInvalidated = err != nil
-	return []jdk.Version{{Version: "21.0.4-tem"}}, nil
+func (m *refreshRecordingManager) RefreshAvailable() ([]jdk.Version, error) {
+	m.refreshed = true
+	return []jdk.Version{{Version: "21.0.4-tem"}}, m.err
 }
 
-func TestRLSRefreshesCatalogBeforeListing(t *testing.T) {
-	configDir := t.TempDir()
-	t.Setenv("XDG_CONFIG_HOME", configDir)
-	t.Setenv("APPDATA", configDir)
-	config := &appcfg.Config{CacheEnabled: true, CacheTTL: appcfg.DefaultCacheTTL}
-	if err := jdk.CacheVersions(config, "refresh-test", []jdk.Version{{Version: "stale"}}); err != nil {
-		t.Fatal(err)
-	}
-
-	set := flag.NewFlagSet("rls", flag.ContinueOnError)
-	set.Bool("a", false, "")
-	manager := &refreshRecordingManager{config: config}
-	action := rls(manager).Action.(func(*cli.Context) error)
-	if err := action(cli.NewContext(cli.NewApp(), set, nil)); err != nil {
-		t.Fatal(err)
-	}
-	if !manager.cacheInvalidated {
-		t.Fatal("rls did not invalidate the cached catalog before loading available versions")
+func TestRLSRefreshesCatalogThroughProvider(t *testing.T) {
+	for _, providerErr := range []error{nil, errors.New("partial catalog")} {
+		manager := &refreshRecordingManager{err: providerErr}
+		var output bytes.Buffer
+		app := cli.NewApp()
+		app.Writer = &output
+		app.Commands = []cli.Command{*rls(manager)}
+		err := app.Run([]string{"jvms", "rls"})
+		if !errors.Is(err, providerErr) {
+			t.Fatalf("error = %v, want %v", err, providerErr)
+		}
+		if !manager.refreshed {
+			t.Fatal("rls did not request a provider refresh")
+		}
+		if !strings.Contains(output.String(), "1) 21.0.4-tem") {
+			t.Fatalf("catalog missing from app writer: %s", output.String())
+		}
 	}
 }

@@ -3,6 +3,7 @@ package cli
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/codegangsta/cli"
 	"github.com/ystyle/jvms/internal/platform"
@@ -14,22 +15,22 @@ func remove(manager platform.Provider) *cli.Command {
 		ShortName: "rm",
 		Usage:     "Remove a specific version.",
 		Action: func(c *cli.Context) error {
-			v := c.Args().Get(0)
+			v := strings.TrimSpace(c.Args().Get(0))
 			if v == "" {
-				return errors.New("you should input a version, Type \"jvms list\" to see what is installed")
+				return errors.New("a JDK version is required; run `jvms list` to see installed versions")
 			}
 			installed, err := platform.IsInstalled(manager, v)
 			if err != nil {
 				return err
 			}
 			if installed {
-				fmt.Printf("Remove JDK %s ...\n", v)
+				fmt.Fprintf(c.App.Writer, "Remove JDK %s ...\n", v)
 				if err := manager.Remove(v); err != nil {
 					return err
 				}
-				fmt.Println("done")
+				fmt.Fprintln(c.App.Writer, "done")
 			} else {
-				fmt.Println("jdk " + v + " is not installed. Type \"jvms list\" to see what is installed.")
+				fmt.Fprintln(c.App.Writer, "JDK "+v+" is not installed; run `jvms list` to see installed versions.")
 			}
 			return nil
 		},

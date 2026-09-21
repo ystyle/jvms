@@ -23,7 +23,7 @@ func proxy(config *appcfg.Config) *cli.Command {
 		},
 		Action: func(c *cli.Context) error {
 			if c.Bool("show") {
-				fmt.Printf("Current proxy: %s\n", config.Proxy)
+				fmt.Fprintf(c.App.Writer, "Current proxy: %s\n", config.Proxy)
 				return nil
 			}
 			if c.IsSet("set") {

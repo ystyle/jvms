@@ -32,7 +32,7 @@ func installFunc(config *appcfg.Config, manager platform.Provider) func(*cli.Con
 			return err
 		}
 
-		return installVersion(manager, v)
+		return installVersionWithOutput(manager, v, c.App.Writer)
 	}
 }
 

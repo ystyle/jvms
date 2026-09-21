@@ -7,6 +7,7 @@ type Provider interface {
 	Name() string
 	Ensure() error
 	Available() ([]jdk.Version, error)
+	RefreshAvailable() ([]jdk.Version, error)
 	StreamAvailable() <-chan VersionEvent
 	Installed() ([]Installation, error)
 	Install(version string) error

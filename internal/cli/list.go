@@ -13,7 +13,7 @@ func list(manager platform.Provider) *cli.Command {
 		ShortName: "ls",
 		Usage:     "List current JDK installations.",
 		Action: func(c *cli.Context) error {
-			fmt.Println("Installed jdk (* marks in use):")
+			fmt.Fprintln(c.App.Writer, "Installed jdk (* marks in use):")
 			v, err := manager.Installed()
 			if err != nil {
 				return err
@@ -25,10 +25,10 @@ func list(manager platform.Provider) *cli.Command {
 				} else {
 					str = fmt.Sprintf("%s    %d) %s", str, i+1, version.Version)
 				}
-				fmt.Println(str)
+				fmt.Fprintln(c.App.Writer, str)
 			}
 			if len(v) == 0 {
-				fmt.Println("No installations recognized.")
+				fmt.Fprintln(c.App.Writer, "No installations recognized.")
 			}
 			return nil
 		},

@@ -23,7 +23,7 @@ func configContext(t *testing.T, cfg *appcfg.Config, args ...string) *cli.Contex
 func TestConfigUpdatesAndClearsSettings(t *testing.T) {
 	cfg := appcfg.NewConfig()
 	cfg.Proxy = "http://localhost:8080"
-	ctx := configContext(t, cfg, "--java-home=C:/jdk", "--original-path=https://example.com/index.json", "--proxy=", "--resolution-priority=version,index", "--cache-toggle=false", "--cache-ttl=30m")
+	ctx := configContext(t, cfg, "--java_home=C:/jdk", "--originalpath=https://example.com/index.json", "--proxy=", "--resolution_priority=version,index", "--cache_toggle=false", "--cache_ttl=30m")
 	if err := configFunc(cfg)(ctx); err != nil {
 		t.Fatal(err)
 	}
@@ -32,7 +32,7 @@ func TestConfigUpdatesAndClearsSettings(t *testing.T) {
 	}
 }
 func TestConfigRejectsAllChangesWhenAnyOptionIsInvalid(t *testing.T) {
-	for _, invalidOption := range []string{"--resolution-priority=bad", "--cache-toggle=bad", "--cache-ttl=-1h"} {
+	for _, invalidOption := range []string{"--resolution_priority=bad", "--cache_toggle=bad", "--cache_ttl=-1h"} {
 		t.Run(invalidOption, func(t *testing.T) {
 			cfg := appcfg.NewConfig()
 			cfg.JavaHome = "test-original-java-home"
@@ -40,7 +40,7 @@ func TestConfigRejectsAllChangesWhenAnyOptionIsInvalid(t *testing.T) {
 
 			// Submit a valid Java home change together with an invalid option.
 			// The entire command must fail without applying either change.
-			ctx := configContext(t, cfg, "--java-home=test-changed-java-home", invalidOption)
+			ctx := configContext(t, cfg, "--java_home=test-changed-java-home", invalidOption)
 			if err := configFunc(cfg)(ctx); err == nil {
 				t.Fatalf("expected command to reject invalid option %s", invalidOption)
 			}
@@ -61,7 +61,7 @@ func TestConfigPersistsThroughApplicationLifecycle(t *testing.T) {
 	app.Commands = Commands(cfg, &recordingManager{})
 	app.Before = func(*cli.Context) error { return cfg.Load() }
 	app.After = func(*cli.Context) error { return cfg.Save() }
-	if err := app.Run([]string{"jvms", "config", "--cache-toggle=false", "--cache-ttl=45m", "--resolution-priority=version,index"}); err != nil {
+	if err := app.Run([]string{"jvms", "config", "--cache_toggle=false", "--cache_ttl=45m", "--resolution_priority=version,index"}); err != nil {
 		t.Fatal(err)
 	}
 	loaded := appcfg.NewConfig()

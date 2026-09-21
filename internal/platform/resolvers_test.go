@@ -159,3 +159,5 @@ func TestAvailableVersionPriorityFallback(t *testing.T) {
 		})
 	}
 }
+
+func (m fakeManager) RefreshAvailable() ([]jdk.Version, error) { return m.available, m.err }

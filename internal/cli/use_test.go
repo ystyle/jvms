@@ -86,3 +86,5 @@ func TestSwitchMissingVersionReturnsError(t *testing.T) {
 		t.Fatalf("unexpected switch to %q", manager.switchedV)
 	}
 }
+
+func (m *recordingManager) RefreshAvailable() ([]jdk.Version, error) { return m.available, nil }

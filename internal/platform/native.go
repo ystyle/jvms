@@ -33,6 +33,15 @@ func NewProvider(config *appcfg.Config) Provider {
 func (m *nativeManager) Name() string                         { return "JVMS native Windows" }
 func (m *nativeManager) Available() ([]jdk.Version, error)    { return jdk.GetJdkVersions(m.config, true) }
 func (m *nativeManager) StreamAvailable() <-chan VersionEvent { return jdk.StreamJdkVersions(m.config) }
+
+// RefreshAvailable discards the native catalog cache before fetching versions.
+func (m *nativeManager) RefreshAvailable() ([]jdk.Version, error) {
+	if err := jdk.InvalidateCache(); err != nil {
+		return nil, fmt.Errorf("refresh JDK catalog: %w", err)
+	}
+	return m.Available()
+}
+
 func (m *nativeManager) Installed() ([]Installation, error) {
 	var installed []Installation
 	for _, v := range jdk.GetInstalled(m.config.Store) {

@@ -115,6 +115,20 @@ Overall, this project brings together some ideas, a few battle-hardened pieces o
 
 I also wrote a simple [data feed](http://github.com/ystyle/jvms) containing a list of jdk versions. It's free for anyone to use.
 
+### Configuration flags
+
+Use the same `java_home` and `originalpath` names with `init` and `config`:
+
+```shell
+jvms config --java_home="C:/Program Files/jdk"
+jvms config --originalpath=https://example.com/index.json
+jvms config --resolution_priority=version,index --cache_toggle=true --cache_ttl=24h
+jvms switch --as_path "C:/Java/jdk-21"
+```
+
+`jvms config` displays the current settings. `jvms rls` refreshes the provider's
+catalog before listing available versions.
+
 ### add a local jdk version
 e.g: add the `jdk 17.0.1`
 

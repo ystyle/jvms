@@ -25,6 +25,6 @@ func useFunc(config *appcfg.Config, manager platform.Provider) func(*cli.Context
 		if v == "" {
 			return errors.New("a JDK version, available index, or path is required; run `jvms rls` to see available versions")
 		}
-		return switchVersion(config, manager, v, c.Bool("as_path") || c.Bool("p"), true)
+		return switchVersionWithOutput(config, manager, v, c.Bool("as_path") || c.Bool("p"), true, c.App.Writer)
 	}
 }

@@ -15,12 +15,12 @@ func init_(config *appcfg.Config, provider platform.Provider) *cli.Command {
 		Description: "Set up the platform-specific provider used to manage JDK installations.",
 		Flags: []cli.Flag{
 			cli.StringFlag{
-				Name:  "java_home",
+				Name:  appcfg.JavaHomeFlag,
 				Usage: "the JAVA_HOME location",
 				Value: appcfg.DefaultJavaHome,
 			},
 			cli.StringFlag{
-				Name:  "originalpath",
+				Name:  appcfg.OriginalPathFlag,
 				Usage: "the jdk download index file url.",
 				Value: appcfg.DefaultOriginalPath,
 			},
@@ -31,12 +31,12 @@ func init_(config *appcfg.Config, provider platform.Provider) *cli.Command {
 }
 
 func initPrerequisites(c *cli.Context, config *appcfg.Config) error {
-	if c.IsSet("java_home") || config.JavaHome == "" {
-		config.JavaHome = c.String("java_home")
+	if c.IsSet(appcfg.JavaHomeFlag) || config.JavaHome == "" {
+		config.JavaHome = c.String(appcfg.JavaHomeFlag)
 	}
 
-	if c.IsSet("originalpath") || config.OriginalPath == "" {
-		config.OriginalPath = c.String("originalpath")
+	if c.IsSet(appcfg.OriginalPathFlag) || config.OriginalPath == "" {
+		config.OriginalPath = c.String(appcfg.OriginalPathFlag)
 	}
 
 	return nil
@@ -50,7 +50,7 @@ func initFunc(config *appcfg.Config, provider platform.Provider) func(*cli.Conte
 		if err := provider.Ensure(); err != nil {
 			return err
 		}
-		fmt.Printf("%s provider is installed and working.\n", provider.Name())
+		fmt.Fprintf(c.App.Writer, "%s provider is installed and working.\n", provider.Name())
 		return nil
 	}
 }

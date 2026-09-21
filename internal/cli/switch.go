@@ -35,17 +35,17 @@ func switchFunc(config *appcfg.Config, manager platform.Provider) func(*cli.Cont
 		if v == "" {
 			return errors.New("a JDK version, index, or path is required; run `jvms list` to see installed versions")
 		}
-		return switchVersion(config, manager, v, c.Bool("as_path") || c.Bool("p"), false)
+		return switchVersionWithOutput(config, manager, v, c.Bool("as_path") || c.Bool("p"), false, c.App.Writer)
 	}
 }
 
-func switchVersion(config *appcfg.Config, manager platform.Provider, value string, asPath, installMissing bool) error {
+func switchVersionWithOutput(config *appcfg.Config, manager platform.Provider, value string, asPath, installMissing bool, output io.Writer) error {
 	if asPath {
 		if err := manager.SwitchPath(value); err != nil {
 			return err
 		}
 		config.CurrentJDKVersion = ""
-		fmt.Println("Switch success.\nNow using JDK at " + value)
+		fmt.Fprintln(output, "Switch success.\nNow using JDK at "+value)
 		return nil
 	}
 
@@ -59,7 +59,7 @@ func switchVersion(config *appcfg.Config, manager platform.Provider, value strin
 	if err != nil {
 		return err
 	}
-	return switchExactVersion(config, manager, version, installMissing)
+	return switchExactVersionWithOutput(config, manager, version, installMissing, output)
 }
 
 // switchExactVersion activates an exact identifier without interpreting it as an index.

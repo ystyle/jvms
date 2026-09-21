@@ -17,12 +17,15 @@ var _ Provider = (*unsupportedProvider)(nil)
 func NewProvider(_ *appcfg.Config) Provider { return &unsupportedProvider{} }
 
 func unsupportedPlatformError() error {
-	return fmt.Errorf("JVMS is not yet supported on %s yet; the native provider requires Windows", runtime.GOOS)
+	return fmt.Errorf("JVMS is not yet supported on %s; the native provider requires Windows", runtime.GOOS)
 }
 
 func (*unsupportedProvider) Name() string  { return "Unsupported platform: " + runtime.GOOS }
 func (*unsupportedProvider) Ensure() error { return unsupportedPlatformError() }
 func (*unsupportedProvider) Available() ([]jdk.Version, error) {
+	return nil, unsupportedPlatformError()
+}
+func (*unsupportedProvider) RefreshAvailable() ([]jdk.Version, error) {
 	return nil, unsupportedPlatformError()
 }
 func (*unsupportedProvider) StreamAvailable() <-chan VersionEvent {
