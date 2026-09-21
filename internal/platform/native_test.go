@@ -6,6 +6,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -55,8 +56,92 @@ func TestNativePrivilegeFailurePreventsCommands(t *testing.T) {
 	if err := m.Switch("21"); err == nil {
 		t.Fatal("switch accepted non-admin")
 	}
+	if err := m.SwitchPath(t.TempDir()); err == nil {
+		t.Fatal("path switch accepted non-admin")
+	}
 }
 
+func TestNativeSwitchPathOutsideStore(t *testing.T) {
+	m := nativeFixture(t)
+	home := filepath.Join(t.TempDir(), "external JDK")
+	if err := os.MkdirAll(filepath.Join(home, "bin"), 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(home, "bin", "javac.exe"), nil, 0644); err != nil {
+		t.Fatal(err)
+	}
+	old := addNativeJDK(t, m, "17")
+	if err := os.Symlink(old, m.config.JavaHome); err != nil {
+		t.Skipf("host cannot create symlinks: %v", err)
+	}
+	m.config.CurrentJDKVersion = "17"
+	if err := m.SwitchPath(home); err != nil {
+		t.Fatal(err)
+	}
+	target, err := os.Readlink(m.config.JavaHome)
+	if err != nil || target != home {
+		t.Fatalf("link = %q, %v; want %q", target, err, home)
+	}
+	if m.config.CurrentJDKVersion != "" {
+		t.Fatal("external JDK retained managed version")
+	}
+}
+
+func TestNativeSwitchReplacesDanglingLink(t *testing.T) {
+	for _, asPath := range []bool{false, true} {
+		t.Run(fmt.Sprintf("asPath=%t", asPath), func(t *testing.T) {
+			m := nativeFixture(t)
+			home := addNativeJDK(t, m, "21")
+			old := addNativeJDK(t, m, "17")
+			if err := os.Symlink(old, m.config.JavaHome); err != nil {
+				t.Skipf("host cannot create symlinks: %v", err)
+			}
+			if err := os.RemoveAll(old); err != nil {
+				t.Fatal(err)
+			}
+			var err error
+			if asPath {
+				err = m.SwitchPath(home)
+			} else {
+				err = m.Switch("21")
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			target, err := os.Readlink(m.config.JavaHome)
+			if err != nil || target != home {
+				t.Fatalf("link = %q, %v; want %q", target, err, home)
+			}
+		})
+	}
+}
+
+func TestNativeSwitchPathRejectsInvalidHome(t *testing.T) {
+	m := nativeFixture(t)
+	m.config.CurrentJDKVersion = "17"
+	m.run = func(string, ...string) error { t.Fatal("command executed for invalid JDK"); return nil }
+	if err := m.SwitchPath(t.TempDir()); err == nil {
+		t.Fatal("accepted directory without javac.exe")
+	}
+	if m.config.CurrentJDKVersion != "17" {
+		t.Fatal("invalid path changed current version")
+	}
+}
+
+func TestNativeSwitchPreservesNonSymlinkHome(t *testing.T) {
+	m := nativeFixture(t)
+	addNativeJDK(t, m, "21")
+	if err := os.Mkdir(m.config.JavaHome, 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := m.Switch("21"); err == nil {
+		t.Fatal("replaced a real directory")
+	}
+	info, err := os.Lstat(m.config.JavaHome)
+	if err != nil || !info.IsDir() || info.Mode()&os.ModeSymlink != 0 {
+		t.Fatalf("original directory not preserved: %v, %v", info, err)
+	}
+}
 func TestNativeSwitchAndRemove(t *testing.T) {
 	m := nativeFixture(t)
 	home := addNativeJDK(t, m, "21")

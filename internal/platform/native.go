@@ -201,8 +201,21 @@ func (m *nativeManager) Switch(v string) error {
 	if !jdk.IsVersionInstalled(config.Store, v) {
 		return fmt.Errorf("JDK %s is not installed", v)
 	}
+	if err := m.replaceJavaHomeTarget(filepath.Join(config.Store, v)); err != nil {
+		return err
+	}
+	fmt.Println("Switch success.\nNow using JDK " + v)
+	config.CurrentJDKVersion = v
+	return nil
+}
+
+func (m *nativeManager) replaceJavaHomeTarget(target string) error {
+	config := m.config
 	// Create or update the symlink
-	if fsutil.Exists(config.JavaHome) {
+	if info, err := os.Lstat(config.JavaHome); err == nil {
+		if info.Mode()&os.ModeSymlink == 0 {
+			return fmt.Errorf("refusing to replace non-symlink JAVA_HOME at %s", config.JavaHome)
+		}
 		err := os.Remove(config.JavaHome)
 		if err != nil {
 			return fmt.Errorf("failed to remove existing JavaHome symlink at %s: %w\n\nPossible reasons:\n"+
@@ -211,19 +224,31 @@ func (m *nativeManager) Switch(v string) error {
 				"- Path points to a directory instead of a symlink\n"+
 				"Please manually remove it and try again", config.JavaHome, err)
 		}
+	} else if !errors.Is(err, os.ErrNotExist) {
+		return err
 	}
 	err := m.run("cmd", "/C", "setx", "JAVA_HOME", config.JavaHome, "/M")
 	if err != nil {
 		return errors.New("set Environment variable `JAVA_HOME` failure: Please run as admin user")
 	}
-	err = os.Symlink(filepath.Join(config.Store, v), config.JavaHome)
+	err = os.Symlink(target, config.JavaHome)
 	if err != nil {
 		return errors.New("Switch jdk failed, " + err.Error())
 	}
-	fmt.Println("Switch success.\nNow using JDK " + v)
-	config.CurrentJDKVersion = v
 	return nil
 }
 
-// SwitchPath retains the upstream path handling; native path improvements are deferred.
-func (m *nativeManager) SwitchPath(path string) error { return m.Switch(path) }
+func (m *nativeManager) SwitchPath(path string) error {
+	if !m.isAdmin() {
+		return errors.New("this command requires administrator privileges.")
+	}
+	home, err := validateJavaHome(path, "javac.exe")
+	if err != nil {
+		return err
+	}
+	if err := m.replaceJavaHomeTarget(home); err != nil {
+		return err
+	}
+	m.config.CurrentJDKVersion = ""
+	return nil
+}
