@@ -8,8 +8,8 @@ import (
 
 	"github.com/codegangsta/cli"
 	"github.com/tucnak/store"
-	"github.com/ystyle/jvms/internal/icli"
-	"github.com/ystyle/jvms/internal/models"
+	icli "github.com/ystyle/jvms/internal/cli"
+	models "github.com/ystyle/jvms/internal/config"
 )
 
 var (
