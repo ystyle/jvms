@@ -3,8 +3,6 @@ package jdk
 import (
 	"sync"
 	"time"
-
-	models "github.com/ystyle/jvms/internal/config"
 )
 
 const providerFetchTimeout = 30 * time.Second
@@ -14,16 +12,18 @@ type providerResult struct {
 	err  error
 }
 
-func fetchJdkVersions(providers []jdkProvider, mute bool) ([]models.JdkVersion, []error, error) {
-	return fetchJdkVersionsWithSink(providers, mute, nil)
+func fetchJdkVersions(providers []jdkProvider, mute bool) ([]Version, []error, error) {
+	versions, errs, err := fetchJdkVersionsWithSink(providers, mute, nil)
+	sortCatalog(versions)
+	return versions, errs, err
 }
 
 func fetchJdkVersionsWithSink(
 	providers []jdkProvider,
 	mute bool,
-	sink func(models.JdkVersion),
-) ([]models.JdkVersion, []error, error) {
-	versionsOut := make(chan models.JdkVersion)
+	sink func(Version),
+) ([]Version, []error, error) {
+	versionsOut := make(chan Version)
 	results := make(chan providerResult, len(providers))
 
 	var wg sync.WaitGroup
@@ -44,7 +44,7 @@ func fetchJdkVersionsWithSink(
 
 func runProvider(
 	provider jdkProvider,
-	versionsOut chan<- models.JdkVersion,
+	versionsOut chan<- Version,
 	results chan<- providerResult,
 	wg *sync.WaitGroup,
 ) {

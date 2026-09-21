@@ -1,19 +1,23 @@
 package config
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/tucnak/store"
-	file "github.com/ystyle/jvms/internal/fsutil"
-	web "github.com/ystyle/jvms/internal/httpclient"
+	"github.com/ystyle/jvms/internal/fsutil"
+	"github.com/ystyle/jvms/internal/httpclient"
 )
 
 const (
-	ProjectConfigDir    = "jvms"
-	ConfigFileName      = "jvms.json"
-	DefaultOriginalPath = "https://raw.githubusercontent.com/ystyle/jvms/new/jdkdlindex.json"
+	ProjectConfigDir          = "jvms"
+	ConfigFileName            = "jvms.json"
+	DefaultResolutionPriority = IndexFirst
+	DefaultCacheTTL           = "24h"
+	DefaultOriginalPath       = "https://raw.githubusercontent.com/ystyle/jvms/new/jdkdlindex.json"
 )
 
 var DefaultJavaHome = filepath.Join(os.Getenv("ProgramFiles"), "jdk")
@@ -24,14 +28,19 @@ type Config struct {
 	OriginalPath      string `json:"original_path"`
 	Proxy             string `json:"proxy"`
 
+	ResolutionPriority ResolutionPriority `json:"resolution_priority"`
+	CacheEnabled       bool               `json:"cache_enabled"`
+	CacheTTL           string             `json:"cache_ttl"`
+
 	// Runtime values (not persisted)
-	Store    string `json:"-"`
-	Download string `json:"-"`
+	Store      string `json:"-"`
+	Download   string `json:"-"`
+	loadFailed bool
 }
 
 // NewConfig creates a new Config instance with default values
 func NewConfig() *Config {
-	return &Config{}
+	return &Config{ResolutionPriority: DefaultResolutionPriority, CacheEnabled: true, CacheTTL: DefaultCacheTTL}
 }
 
 func (c *Config) JavaHomeNotSet() bool {
@@ -39,6 +48,10 @@ func (c *Config) JavaHomeNotSet() bool {
 }
 
 func (c *Config) Save() error {
+	// CLI shutdown also runs after a failed startup; preserve the original file.
+	if c.loadFailed {
+		return nil
+	}
 	if err := store.Save(ConfigFileName, c); err != nil {
 		return errors.New("failed to save the config:" + err.Error())
 	}
@@ -46,8 +59,8 @@ func (c *Config) Save() error {
 	return nil
 }
 
-// Load initializes the config with default values if they are not set
-func (c *Config) Load() *Config {
+// applyDefaults initializes existing settings and runtime paths.
+func (c *Config) applyDefaults() {
 	if c.OriginalPath == "" {
 		c.OriginalPath = DefaultOriginalPath
 	}
@@ -56,7 +69,7 @@ func (c *Config) Load() *Config {
 		c.JavaHome = DefaultJavaHome
 	}
 
-	dir := file.GetCurrentPath()
+	dir := fsutil.GetCurrentPath()
 	if c.Store == "" {
 		c.Store = filepath.Join(dir, "store")
 		// Override store path by storepath file
@@ -70,8 +83,34 @@ func (c *Config) Load() *Config {
 	}
 
 	if c.Proxy != "" {
-		web.SetProxy(c.Proxy)
+		httpclient.SetProxy(c.Proxy)
 	}
 
-	return c
 }
+
+// Load owns store initialization and overlays persisted settings on policy defaults.
+func (c *Config) Load() error {
+	c.loadFailed = true
+	next := *NewConfig()
+	next.Store, next.Download = c.Store, c.Download
+	store.Register("json", marshalFunc, json.Unmarshal)
+	store.Init(ProjectConfigDir)
+	err := store.Load(ConfigFileName, &next)
+	if err != nil {
+		return fmt.Errorf("load config: %w", err)
+	}
+	if next.ResolutionPriority, err = ParseResolutionPriority(string(next.ResolutionPriority)); err != nil {
+		return err
+	}
+	if next.CacheTTL == "" {
+		next.CacheTTL = DefaultCacheTTL
+	}
+	if next.CacheTTL, err = ParseCacheTTL(next.CacheTTL); err != nil {
+		return err
+	}
+	next.applyDefaults()
+	*c = next
+	return nil
+}
+
+func marshalFunc(v interface{}) ([]byte, error) { return json.MarshalIndent(v, "", "    ") }

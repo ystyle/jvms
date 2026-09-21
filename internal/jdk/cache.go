@@ -2,46 +2,69 @@ package jdk
 
 import (
 	"errors"
+	"sync"
 	"time"
 
 	"github.com/tucnak/store"
-	models "github.com/ystyle/jvms/internal/config"
+	appcfg "github.com/ystyle/jvms/internal/config"
 )
 
-const (
-	cacheFileName = "jdk_versions.json"
-	cacheTTL      = 24 * 60 * 60 // Cache time-to-live in seconds (24 hours)
-)
+const cacheFileName = "jdk_versions.json"
+
+var cacheLock sync.Mutex
 
 type JdkVersionCache struct {
-	Versions    []models.JdkVersion `json:"versions"`
-	LastUpdated int64               `json:"last_updated"`
+	Versions    []Version `json:"versions"`
+	LastUpdated int64     `json:"last_updated"`
+	Source      string    `json:"source,omitempty"`
 }
 
-func InvalidateCache() error { // No more conflicting preload
+func InvalidateCache() error {
+	cacheLock.Lock()
+	defer cacheLock.Unlock()
+	store.Init(appcfg.ProjectConfigDir)
 	return store.Save(cacheFileName, &JdkVersionCache{})
 }
 
-func cacheJdkVersions(versions []models.JdkVersion) error {
+func CacheVersions(config *appcfg.Config, source string, versions []Version) error {
+	if config != nil && !config.CacheEnabled {
+		return nil
+	}
 	if len(versions) == 0 {
 		return errors.New("no JDK versions to cache")
 	}
 
+	cacheLock.Lock()
+	defer cacheLock.Unlock()
+	store.Init(appcfg.ProjectConfigDir)
 	return store.Save(cacheFileName, &JdkVersionCache{
 		Versions:    versions,
 		LastUpdated: time.Now().Unix(),
+		Source:      source,
 	})
 }
 
-// loadCachedJdkVersions returns the cached versions
-func loadCachedJdkVersions() ([]models.JdkVersion, error) {
+// LoadCachedVersions optionally accepts stale entries for offline fallback.
+func LoadCachedVersions(config *appcfg.Config, source string, allowStale bool) ([]Version, error) {
+	if config != nil && !config.CacheEnabled {
+		return nil, errors.New("JDK version cache is disabled")
+	}
+	cacheLock.Lock()
+	defer cacheLock.Unlock()
+	store.Init(appcfg.ProjectConfigDir)
 	versionsCached := &JdkVersionCache{}
 	if err := store.Load(cacheFileName, versionsCached); err != nil {
 		return nil, err
 	}
 
-	age := time.Now().Unix() - versionsCached.LastUpdated
-	if age > cacheTTL {
+	if len(versionsCached.Versions) == 0 {
+		return nil, errors.New("cached JDK versions are empty")
+	}
+	if versionsCached.Source != source && !(versionsCached.Source == "" && source == nativeCacheSource) {
+		return nil, errors.New("cached JDK versions belong to another provider")
+	}
+	age := time.Since(time.Unix(versionsCached.LastUpdated, 0))
+	if !allowStale && age > config.CacheDuration() {
 		return nil, errors.New("cached JDK versions are stale")
 	}
 

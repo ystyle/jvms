@@ -4,9 +4,10 @@ import (
 	"fmt"
 
 	"github.com/codegangsta/cli"
-	models "github.com/ystyle/jvms/internal/config"
+	appcfg "github.com/ystyle/jvms/internal/config"
 	"github.com/ystyle/jvms/internal/jdk"
-	ui "github.com/ystyle/jvms/internal/tui"
+	"github.com/ystyle/jvms/internal/platform"
+	apptui "github.com/ystyle/jvms/internal/tui"
 )
 
 var tuiFlags = []cli.Flag{
@@ -15,73 +16,77 @@ var tuiFlags = []cli.Flag{
 	cli.BoolFlag{Name: "s", Usage: "Switch to use the specified version or index number."},
 }
 
-func tui(config *models.Config) *cli.Command {
+func tui(config *appcfg.Config, manager platform.Provider) *cli.Command {
 	return &cli.Command{
 		Name:      "tui",
 		ShortName: "tui",
 		Usage:     "Run the interactive TUI interface.",
 		Flags:     tuiFlags,
-		Action:    tuiFunc(config),
+		Action:    tuiFunc(config, manager),
 	}
 }
 
-func tuiFuncUse(config *models.Config) func(c *cli.Context) error {
+func tuiFuncUse(config *appcfg.Config, manager platform.Provider) func(c *cli.Context) error {
 	return func(c *cli.Context) error {
-		return ui.RunStreamingJdkPicker(config, ui.Action{
+		return apptui.RunStreamingJdkPicker(config, manager.StreamAvailable(), apptui.Action{
 			Title: "Use JDK/Install JDK",
-			ConfirmText: func(v models.JdkVersion) string {
+			ConfirmText: func(v jdk.JdkVersion) string {
 				return fmt.Sprintf("Use %s?", v.Version)
 			},
-			Execute: func(config *models.Config, v models.JdkVersion) error {
-				return useFunc(config)(withArg(c, v.Version))
+			Execute: func(config *appcfg.Config, v jdk.JdkVersion) error {
+				return switchExactVersion(config, manager, v.Version, true)
 			},
-			SuccessText: func(v models.JdkVersion) string {
+			SuccessText: func(v jdk.JdkVersion) string {
 				return fmt.Sprintf("Now using JDK %s", v.Version)
 			},
 		})
 	}
 }
 
-func tuiFunc(config *models.Config) func(*cli.Context) error {
+func tuiFunc(config *appcfg.Config, manager platform.Provider) func(*cli.Context) error {
 	return func(c *cli.Context) error {
 		switch {
 		case c.Bool("u"):
-			return tuiFuncUse(config)(c)
+			return tuiFuncUse(config, manager)(c)
 
 		case c.Bool("s"):
-			versions := []models.JdkVersion{}
-			for _, v := range jdk.GetInstalled(config.Store) {
-				versions = append(versions, models.JdkVersion{Version: v})
+			versions := []jdk.JdkVersion{}
+			installed, err := manager.Installed()
+			if err != nil {
+				return err
 			}
-			return ui.RunJdkPicker(config, versions, ui.Action{
+			for _, v := range installed {
+				versions = append(versions, jdk.JdkVersion{Version: v.Version})
+			}
+			return apptui.RunJdkPicker(config, versions, apptui.Action{
 				Title: "Switch JDK",
-				ConfirmText: func(v models.JdkVersion) string {
+				ConfirmText: func(v jdk.JdkVersion) string {
 					return fmt.Sprintf("Switch to %s?", v.Version)
 				},
-				Execute: func(config *models.Config, v models.JdkVersion) error {
-					return switchFunc(config)(withArg(c, v.Version))
+				Execute: func(config *appcfg.Config, v jdk.JdkVersion) error {
+					return switchExactVersion(config, manager, v.Version, false)
 				},
-				SuccessText: func(v models.JdkVersion) string {
+				SuccessText: func(v jdk.JdkVersion) string {
 					return fmt.Sprintf("Now using JDK %s", v.Version)
 				},
 			})
 
 		case c.Bool("i"):
-			return ui.RunStreamingJdkPicker(config, ui.Action{
+			return apptui.RunStreamingJdkPicker(config, manager.StreamAvailable(), apptui.Action{
 				Title: "Install JDK",
-				ConfirmText: func(v models.JdkVersion) string {
+				ConfirmText: func(v jdk.JdkVersion) string {
 					return fmt.Sprintf("Install %s?", v.Version)
 				},
-				Execute: func(config *models.Config, v models.JdkVersion) error {
-					return installFunc(config)(withArg(c, v.Version))
+				Execute: func(config *appcfg.Config, v jdk.JdkVersion) error {
+					return installVersion(manager, v.Version)
 				},
-				SuccessText: func(v models.JdkVersion) string {
+				SuccessText: func(v jdk.JdkVersion) string {
 					return fmt.Sprintf("Installed %s", v.Version)
 				},
 			})
 
 		default:
-			return tuiFuncUse(config)(c)
+			return tuiFuncUse(config, manager)(c)
 		}
 	}
 }

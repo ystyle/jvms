@@ -2,40 +2,29 @@ package cli
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/codegangsta/cli"
-	models "github.com/ystyle/jvms/internal/config"
-	"github.com/ystyle/jvms/internal/jdk"
+	appcfg "github.com/ystyle/jvms/internal/config"
+	"github.com/ystyle/jvms/internal/platform"
 )
 
-func use(config *models.Config) *cli.Command {
-	cmd := &cli.Command{
+func use(config *appcfg.Config, manager platform.Provider) *cli.Command {
+	return &cli.Command{
 		Name:      "use",
 		ShortName: "u",
 		Usage:     "Switch to use the specified version or index number and install it if not installed.",
 		Flags:     switchFlags,
-		Action:    useFunc(config),
+		Action:    useFunc(config, manager),
 	}
-	return cmd
 }
 
-func useFunc(config *models.Config) func(*cli.Context) error {
+func useFunc(config *appcfg.Config, manager platform.Provider) func(*cli.Context) error {
 	return func(c *cli.Context) error {
 		v := strings.TrimSpace(c.Args().Get(0))
 		if v == "" {
-			return errors.New("you should input a version or index number, Type \"jvms list\" to see what is installed")
+			return errors.New("a JDK version, available index, or path is required; run `jvms rls` to see available versions")
 		}
-		isInstalled := jdk.IsVersionInstalled(config.Store, v)
-		if !isInstalled {
-			fmt.Printf("Version %s is not installed. Installing now...\n", v)
-			err := installFunc(config)(c)
-			if err != nil {
-				return err
-			}
-		}
-
-		return switchFunc(config)(c)
+		return switchVersion(config, manager, v, c.Bool("as_path") || c.Bool("p"), true)
 	}
 }

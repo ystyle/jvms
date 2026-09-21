@@ -4,18 +4,16 @@ import (
 	"fmt"
 	"log"
 	"time"
-
-	models "github.com/ystyle/jvms/internal/config"
 )
 
 func collectProviderVersions(
-	versionsOut <-chan models.JdkVersion,
+	versionsOut <-chan JdkVersion,
 	results <-chan providerResult,
 	mute bool,
-	sink func(models.JdkVersion),
-) ([]models.JdkVersion, []error, error) {
+	sink func(JdkVersion),
+) ([]JdkVersion, []error, error) {
 	timeout := time.After(providerFetchTimeout)
-	var versions []models.JdkVersion
+	var versions []JdkVersion
 	var errs []error
 
 	for versionsOut != nil || results != nil {

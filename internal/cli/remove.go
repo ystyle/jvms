@@ -3,15 +3,12 @@ package cli
 import (
 	"errors"
 	"fmt"
-	"os"
-	"path/filepath"
 
 	"github.com/codegangsta/cli"
-	models "github.com/ystyle/jvms/internal/config"
-	"github.com/ystyle/jvms/internal/jdk"
+	"github.com/ystyle/jvms/internal/platform"
 )
 
-func remove(config *models.Config) *cli.Command {
+func remove(manager platform.Provider) *cli.Command {
 	return &cli.Command{
 		Name:      "remove",
 		ShortName: "rm",
@@ -21,21 +18,16 @@ func remove(config *models.Config) *cli.Command {
 			if v == "" {
 				return errors.New("you should input a version, Type \"jvms list\" to see what is installed")
 			}
-			if jdk.IsVersionInstalled(config.Store, v) {
+			installed, err := platform.IsInstalled(manager, v)
+			if err != nil {
+				return err
+			}
+			if installed {
 				fmt.Printf("Remove JDK %s ...\n", v)
-				if config.CurrentJDKVersion == v {
-					if err := os.Remove(config.JavaHome); err != nil {
-						fmt.Printf("Warning: failed to remove JavaHome symlink: %v\n", err)
-					}
+				if err := manager.Remove(v); err != nil {
+					return err
 				}
-				dir := filepath.Join(config.Store, v)
-				e := os.RemoveAll(dir)
-				if e != nil {
-					fmt.Println("Error removing jdk " + v)
-					fmt.Println("Manually remove " + dir + ".")
-				} else {
-					fmt.Printf(" done")
-				}
+				fmt.Println("done")
 			} else {
 				fmt.Println("jdk " + v + " is not installed. Type \"jvms list\" to see what is installed.")
 			}

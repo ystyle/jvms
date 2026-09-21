@@ -47,12 +47,14 @@ func (m *pickerModel) globalFunc(msg tea.Msg) (tea.Model, tea.Cmd, bool) {
 }
 
 func (m *pickerModel) handleVersionEvent(event jdk.VersionEvent) tea.Cmd {
-	if event.Done {
+	if event.Done || event.Err != nil {
 		m.versionsDone = true
 		if m.state != stateExecuting {
 			m.spinnerActive = false
 		}
-		m.loadErr = event.Err
+		if event.Err != nil {
+			m.loadErr = event.Err
+		}
 		if len(m.list.Items()) == 0 {
 			m.state = stateEmpty
 		}

@@ -7,8 +7,7 @@ import (
 	"strings"
 	"time"
 
-	models "github.com/ystyle/jvms/internal/config"
-	web "github.com/ystyle/jvms/internal/httpclient"
+	"github.com/ystyle/jvms/internal/httpclient"
 )
 
 type azulProvider struct{}
@@ -32,8 +31,8 @@ func (p azulProvider) Name() string {
 	return "Azul"
 }
 
-func (p azulProvider) Fetch(out chan<- models.JdkVersion) error {
-	body, err := web.GetBytes(AzulApiEndpoint(), 30*time.Second)
+func (p azulProvider) Fetch(out chan<- JdkVersion) error {
+	body, err := httpclient.GetBytes(AzulApiEndpoint(), 30*time.Second)
 	if err != nil {
 		return fmt.Errorf("error %v", err)
 	}
@@ -49,7 +48,7 @@ func (p azulProvider) Fetch(out chan<- models.JdkVersion) error {
 			continue
 		}
 
-		out <- models.JdkVersion{
+		out <- JdkVersion{
 			Version: jdk.Name[:lastIndex],
 			Url:     jdk.DownloadURL,
 		}

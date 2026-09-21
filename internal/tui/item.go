@@ -1,8 +1,8 @@
 package tui
 
-import models "github.com/ystyle/jvms/internal/config"
+import "github.com/ystyle/jvms/internal/jdk"
 
-type jdkItem struct{ models.JdkVersion }
+type jdkItem struct{ jdk.JdkVersion }
 
 func (i jdkItem) Title() string { return i.Version }
 func (i jdkItem) Description() string {

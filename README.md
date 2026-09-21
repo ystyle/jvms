@@ -39,6 +39,7 @@ COMMANDS:
    use, u         Switch to use the specified version and install it if not installed.
    remove, rm     Remove a specific version.
    rls            Show a list of versions available for download.
+   config         Show or update configuration.
    proxy          Set a proxy to use for downloads.
    help, h        Shows a list of commands or help for one command
 

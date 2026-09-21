@@ -5,14 +5,14 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 
-	models "github.com/ystyle/jvms/internal/config"
+	"github.com/ystyle/jvms/internal/jdk"
 )
 
 func (m *pickerModel) executingView() string {
 	return fmt.Sprintf("\n  %s %s: %s...\n", m.spinner.View(), m.action.Title, m.selected.Version)
 }
 
-func (m *pickerModel) selectItem(v models.JdkVersion) tea.Cmd {
+func (m *pickerModel) selectItem(v jdk.JdkVersion) tea.Cmd {
 	m.selected = v
 	if !m.action.needsConfirm() {
 		return m.beginExecute()

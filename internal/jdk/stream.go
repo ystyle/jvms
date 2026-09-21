@@ -3,18 +3,18 @@ package jdk
 import (
 	"log"
 
-	models "github.com/ystyle/jvms/internal/config"
+	appcfg "github.com/ystyle/jvms/internal/config"
 )
 
 const versionEventBuffer = 256
 
 type VersionEvent struct {
-	Version models.JdkVersion
+	Version JdkVersion
 	Err     error
 	Done    bool
 }
 
-func StreamJdkVersions(config *models.Config) <-chan VersionEvent {
+func StreamJdkVersions(config *appcfg.Config) <-chan VersionEvent {
 	events := make(chan VersionEvent, versionEventBuffer)
 
 	go func() {
@@ -25,17 +25,17 @@ func StreamJdkVersions(config *models.Config) <-chan VersionEvent {
 	return events
 }
 
-func streamJdkVersions(config *models.Config, events chan<- VersionEvent) {
+func streamJdkVersions(config *appcfg.Config, events chan<- VersionEvent) {
 	getJdkLock.Lock()
 	defer getJdkLock.Unlock()
 
-	versions, err := loadCachedJdkVersions()
+	versions, err := LoadCachedVersions(config, nativeCacheSource, false)
 	if err == nil {
 		sendCachedVersions(versions, events)
 		return
 	}
 
-	versions, errs, err := fetchJdkVersionsWithSink(configuredProviders(config), true, func(version models.JdkVersion) {
+	versions, errs, err := fetchJdkVersionsWithSink(configuredProviders(config), true, func(version JdkVersion) {
 		events <- VersionEvent{Version: version}
 	})
 	if err != nil {
@@ -44,14 +44,14 @@ func streamJdkVersions(config *models.Config, events chan<- VersionEvent) {
 		log.Printf("Fetched JDK versions with %d provider error(s)", len(errs))
 	}
 
-	if err := cacheJdkVersions(versions); err != nil {
+	if err := CacheVersions(config, nativeCacheSource, versions); err != nil {
 		events <- VersionEvent{Err: err, Done: true}
 		return
 	}
 	events <- VersionEvent{Done: true}
 }
 
-func sendCachedVersions(versions []models.JdkVersion, events chan<- VersionEvent) {
+func sendCachedVersions(versions []JdkVersion, events chan<- VersionEvent) {
 	for _, version := range versions {
 		events <- VersionEvent{Version: version}
 	}

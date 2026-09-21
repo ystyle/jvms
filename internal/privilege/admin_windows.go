@@ -10,8 +10,7 @@ import (
 func IsAdmin() bool {
 	var sid *windows.SID
 
-	// Although this looks huge, it's the equivalent of
-	// set "sid=S-1-5-32-544"
+	// Build the well-known Administrators SID (S-1-5-32-544).
 	err := windows.AllocateAndInitializeSid(
 		&windows.SECURITY_NT_AUTHORITY,
 		2,
@@ -24,9 +23,7 @@ func IsAdmin() bool {
 	}
 	defer windows.FreeSid(sid)
 
-	// This appears to cast a null pointer, but that is actually fine.
-	// CheckTokenMembership allows the token handle to be 0 (current process token).
-	// It's checked against the sid created above.
+	// A zero token asks IsMember to check the current process token.
 	token := windows.Token(0)
 	member, err := token.IsMember(sid)
 	if err != nil {

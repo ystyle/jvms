@@ -4,7 +4,6 @@ import (
 	"strings"
 
 	"github.com/baneeishaque/adoptium_jdk_go"
-	models "github.com/ystyle/jvms/internal/config"
 )
 
 type adoptiumProvider struct{}
@@ -13,7 +12,7 @@ func (p adoptiumProvider) Name() string {
 	return "Adoptium"
 }
 
-func (p adoptiumProvider) Fetch(out chan<- models.JdkVersion) error {
+func (p adoptiumProvider) Fetch(out chan<- JdkVersion) error {
 	adoptiumJdks := strings.Split(adoptium_jdk_go.ApiListReleases(), "\n")
 
 	for _, adoptiumJdkUrl := range adoptiumJdks {
@@ -25,7 +24,7 @@ func (p adoptiumProvider) Fetch(out chan<- models.JdkVersion) error {
 		fileName := adoptiumJdkUrl[fileSeparatorIndex+1:]
 		fileVersion := strings.TrimSuffix(fileName, ".zip")
 
-		out <- models.JdkVersion{
+		out <- JdkVersion{
 			Version: fileVersion,
 			Url:     adoptiumJdkUrl,
 		}

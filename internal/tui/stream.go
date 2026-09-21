@@ -3,16 +3,16 @@ package tui
 import (
 	tea "github.com/charmbracelet/bubbletea"
 
-	models "github.com/ystyle/jvms/internal/config"
+	appcfg "github.com/ystyle/jvms/internal/config"
 	"github.com/ystyle/jvms/internal/jdk"
 )
 
 type versionEventMsg struct{ event jdk.VersionEvent }
 
-func RunStreamingJdkPicker(config *models.Config, action Action) error {
+func RunStreamingJdkPicker(config *appcfg.Config, events <-chan jdk.VersionEvent, action Action) error {
 	model := newPickerModel(config, nil, action)
 	model.state = stateList
-	model.versionEvents = jdk.StreamJdkVersions(config)
+	model.versionEvents = events
 	model.spinnerActive = true
 
 	finalModel, err := tea.NewProgram(model, tea.WithAltScreen()).Run()
@@ -40,7 +40,7 @@ func waitForVersionEvent(events <-chan jdk.VersionEvent) tea.Cmd {
 	}
 }
 
-func (m *pickerModel) appendVersion(v models.JdkVersion) tea.Cmd {
+func (m *pickerModel) appendVersion(v jdk.JdkVersion) tea.Cmd {
 	if m.state == stateEmpty && !m.versionsDone {
 		m.state = stateList
 	}

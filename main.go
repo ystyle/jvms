@@ -1,20 +1,18 @@
 package main
 
 import (
-	"encoding/json"
-	"errors"
 	"log"
 	"os"
 
 	"github.com/codegangsta/cli"
-	"github.com/tucnak/store"
-	icli "github.com/ystyle/jvms/internal/cli"
-	models "github.com/ystyle/jvms/internal/config"
+	appcli "github.com/ystyle/jvms/internal/cli"
+	appcfg "github.com/ystyle/jvms/internal/config"
+	"github.com/ystyle/jvms/internal/platform"
 )
 
 var (
 	version = "2.1.0"
-	config  = models.NewConfig()
+	config  = appcfg.NewConfig()
 )
 
 func main() {
@@ -22,37 +20,12 @@ func main() {
 	app.Name = "jvms"
 	app.Usage = `JDK Version Manager (JVMS) for Windows`
 	app.Version = version
-	app.CommandNotFound = commandNotFound
-	app.Commands = icli.Commands(config)
+	app.CommandNotFound = appcli.CommandNotFound
+	app.Commands = appcli.Commands(config, platform.NewProvider(config))
 
-	app.Before = startup
-	app.After = shutdown
+	app.Before = func(c *cli.Context) error { return config.Load() }
+	app.After = func(c *cli.Context) error { return config.Save() }
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err.Error())
 	}
-}
-
-func startup(c *cli.Context) error {
-	store.Register("json", marshalFunc, json.Unmarshal)
-	store.Init(models.ProjectConfigDir)
-
-	// Load the config and store with idempotent initialization
-	if err := store.Load(models.ConfigFileName, config); err != nil {
-		return errors.New("failed to load the config:" + err.Error())
-	}
-	config.Load() // Ensure the config is initialized with idempotence
-
-	return nil
-}
-
-func shutdown(c *cli.Context) error {
-	return config.Save()
-}
-
-func commandNotFound(c *cli.Context, command string) {
-	log.Fatal("Command Not Found")
-}
-
-func marshalFunc(v interface{}) ([]byte, error) {
-	return json.MarshalIndent(v, "", "    ")
 }

@@ -1,23 +1,27 @@
 package jdk
 
 import (
+	"cmp"
 	"fmt"
 	"log"
+	"slices"
 	"sync"
 	"time"
 
-	models "github.com/ystyle/jvms/internal/config"
+	appcfg "github.com/ystyle/jvms/internal/config"
 )
 
 var getJdkLock sync.Mutex
 
-// GetJdkVersions returns cached versions when available, otherwise it fetches
-// from remote providers and refreshes the cache.
-func GetJdkVersions(config *models.Config, mute bool) ([]models.JdkVersion, error) {
+const nativeCacheSource = "native-windows"
+
+// GetJdkVersions returns cached versions or refreshes them from remote providers.
+func GetJdkVersions(config *appcfg.Config, mute bool) ([]Version, error) {
 	getJdkLock.Lock()
 	defer getJdkLock.Unlock()
 
-	if versions, err := loadCachedJdkVersions(); err == nil {
+	if versions, err := LoadCachedVersions(config, nativeCacheSource, false); err == nil {
+		sortCatalog(versions)
 		return versions, nil
 	}
 
@@ -35,9 +39,19 @@ func GetJdkVersions(config *models.Config, mute bool) ([]models.JdkVersion, erro
 
 	log.Printf("Fetched %d JDK versions in %s", len(versions), time.Since(start))
 
-	if err := cacheJdkVersions(versions); err != nil {
+	if err := CacheVersions(config, nativeCacheSource, versions); err != nil {
 		return nil, err
 	}
 
 	return versions, nil
+}
+
+// sortCatalog keeps CLI indexes independent of provider response order
+func sortCatalog(versions []Version) {
+	slices.SortFunc(versions, func(a, b Version) int {
+		if order := cmp.Compare(b.Version, a.Version); order != 0 {
+			return order
+		}
+		return cmp.Compare(a.Url, b.Url)
+	})
 }

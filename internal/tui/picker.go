@@ -5,14 +5,14 @@ import (
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 
-	models "github.com/ystyle/jvms/internal/config"
+	appcfg "github.com/ystyle/jvms/internal/config"
 	"github.com/ystyle/jvms/internal/jdk"
 )
 
 type execDoneMsg struct{ err error }
 type pickerState uint
 type pickerModel struct {
-	config        *models.Config
+	config        *appcfg.Config
 	action        Action
 	state         pickerState
 	list          bubbleView.Model
@@ -23,7 +23,7 @@ type pickerModel struct {
 	loadErr       error
 
 	width, height int // terminal size
-	selected      models.JdkVersion
+	selected      jdk.JdkVersion
 	err           error // set only on execute failure
 }
 
@@ -36,7 +36,7 @@ const (
 )
 
 // RunJdkPicker starts the picker TUI over the given versions and blocks.
-func RunJdkPicker(config *models.Config, versions []models.JdkVersion, action Action) error {
+func RunJdkPicker(config *appcfg.Config, versions []jdk.JdkVersion, action Action) error {
 	finalModel, err := tea.NewProgram(newPickerModel(config, versions, action), tea.WithAltScreen()).Run()
 	if err != nil {
 		return err
@@ -47,7 +47,7 @@ func RunJdkPicker(config *models.Config, versions []models.JdkVersion, action Ac
 	return nil
 }
 
-func newPickerModel(config *models.Config, versions []models.JdkVersion, action Action) *pickerModel {
+func newPickerModel(config *appcfg.Config, versions []jdk.JdkVersion, action Action) *pickerModel {
 	if action.Execute == nil || action.SuccessText == nil {
 		panic("ui: Action.Execute and Action.SuccessText are required")
 	}
