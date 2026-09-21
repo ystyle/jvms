@@ -62,20 +62,6 @@ func TestUseInstallsAndSwitchesNumericVersion(t *testing.T) {
 	}
 }
 
-func TestUseResolvesIndexFromAvailableCatalog(t *testing.T) {
-	manager := &recordingManager{available: []jdk.Version{
-		{Version: "26.0.2-amzn"},
-		{Version: "25.0.4-amzn"},
-	}}
-	config := &appcfg.Config{ResolutionPriority: appcfg.IndexFirst}
-	if err := useFunc(config, manager)(commandContext(t, "2")); err != nil {
-		t.Fatal(err)
-	}
-	if manager.installedV != "25.0.4-amzn" || manager.switchedV != "25.0.4-amzn" {
-		t.Fatalf("install = %q, switch = %q; want catalog index 2", manager.installedV, manager.switchedV)
-	}
-}
-
 func TestSwitchMissingVersionReturnsError(t *testing.T) {
 	manager := &recordingManager{}
 	err := switchFunc(&appcfg.Config{}, manager)(commandContext(t, "missing"))

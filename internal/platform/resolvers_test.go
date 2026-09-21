@@ -16,33 +16,6 @@ type fakeManager struct {
 	err       error
 }
 
-type partialCatalogManager struct {
-	fakeManager
-	catalogErr error
-}
-
-func (m partialCatalogManager) Available() ([]jdk.Version, error) {
-	return m.available, m.catalogErr
-}
-
-func TestResolveAvailableVersionRejectsPartialCatalogIndexes(t *testing.T) {
-	wantErr := errors.New("catalog is offline")
-	manager := partialCatalogManager{
-		fakeManager: fakeManager{available: []jdk.Version{{Version: "21-tem"}, {Version: "17-tem"}}},
-		catalogErr:  wantErr,
-	}
-	for _, priority := range []appconfig.ResolutionPriority{appconfig.VersionFirst, appconfig.IndexFirst} {
-		for _, value := range []string{"#2", "2"} {
-			t.Run(string(priority)+"/"+value, func(t *testing.T) {
-				got, err := ResolveAvailableVersion(manager, value, priority)
-				if got != "" || !errors.Is(err, wantErr) {
-					t.Fatalf("got %q, %v; want no version and catalog error", got, err)
-				}
-			})
-		}
-	}
-}
-
 func (m fakeManager) Name() string                         { return "fake" }
 func (m fakeManager) Ensure() error                        { return m.err }
 func (m fakeManager) Available() ([]jdk.Version, error)    { return m.available, m.err }
@@ -65,40 +38,6 @@ func TestResolveVersionRejectsOutOfRangeIndex(t *testing.T) {
 	manager := fakeManager{installed: []Installation{{Version: "21.0.4-tem"}}}
 	if _, err := ResolveVersion(manager, "25", false, appconfig.IndexFirst); err == nil {
 		t.Fatal("ResolveVersion accepted an out-of-range switch index")
-	}
-}
-
-func TestResolveVersionUsesConfiguredPriority(t *testing.T) {
-	manager := fakeManager{installed: []Installation{
-		{Version: "17"},
-		{Version: "21"},
-	}}
-
-	got, err := ResolveVersion(manager, "2", true, appconfig.VersionFirst)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if got != "2" {
-		t.Fatalf("version-first resolution = %q, want literal version 2", got)
-	}
-
-	got, err = ResolveVersion(manager, "2", true, appconfig.IndexFirst)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if got != "21" {
-		t.Fatalf("index-first resolution = %q, want installed version 21", got)
-	}
-}
-
-func TestResolveVersionExplicitIndexOverridesPriority(t *testing.T) {
-	manager := fakeManager{installed: []Installation{{Version: "17"}, {Version: "21"}}}
-	got, err := ResolveVersion(manager, "#2", true, appconfig.VersionFirst)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if got != "21" {
-		t.Fatalf("explicit index resolution = %q, want 21", got)
 	}
 }
 

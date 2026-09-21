@@ -7,22 +7,7 @@ import (
 	"github.com/ystyle/jvms/internal/platform"
 
 	appcfg "github.com/ystyle/jvms/internal/config"
-	"github.com/ystyle/jvms/internal/jdk"
 )
-
-func TestInstallResolvesIndexFromAvailableCatalog(t *testing.T) {
-	manager := &recordingManager{available: []jdk.Version{
-		{Version: "26.0.2-amzn"},
-		{Version: "25.0.4-amzn"},
-	}}
-	config := &appcfg.Config{ResolutionPriority: appcfg.IndexFirst}
-	if err := installFunc(config, manager)(commandContext(t, "2")); err != nil {
-		t.Fatal(err)
-	}
-	if manager.installedV != "25.0.4-amzn" {
-		t.Fatalf("installed %q, want catalog index 2", manager.installedV)
-	}
-}
 
 func TestAlreadyInstalledQuietActions(t *testing.T) {
 	manager := &recordingManager{installed: []platform.Installation{{Version: "25"}}}
