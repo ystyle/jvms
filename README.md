@@ -162,6 +162,20 @@ e.g: add the `jdk 17.0.1`
 - add this zip file link to index.json
 
 
+## Development: install the Git hook
+
+From the repository root, tell Git to use the hooks included in this checkout:
+
+```sh
+git config --local core.hooksPath .githooks
+```
+
+On macOS or Linux, ensure the hook is executable:
+
+```sh
+chmod +x .githooks/pre-commit
+```
+
 ## License
 
 MIT.
