@@ -1,6 +1,6 @@
 //go:build windows
 
-package platform
+package native
 
 import (
 	"archive/zip"
@@ -17,7 +17,7 @@ import (
 	"github.com/ystyle/jvms/internal/jdk"
 )
 
-func nativeFixture(t *testing.T) *nativeManager {
+func nativeFixture(t *testing.T) *service {
 	t.Helper()
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 	t.Setenv("APPDATA", t.TempDir())
@@ -29,13 +29,13 @@ func nativeFixture(t *testing.T) *nativeManager {
 	cfg.Store = filepath.Join(root, "store")
 	cfg.Download = filepath.Join(root, "download")
 	cfg.JavaHome = filepath.Join(root, "current")
-	m := NewProvider(cfg).(*nativeManager)
+	m := NewService(cfg).(*service)
 	m.isAdmin = func() bool { return true }
 	m.run = func(string, ...string) error { return nil }
 	return m
 }
 
-func addNativeJDK(t *testing.T, m *nativeManager, v string) string {
+func addNativeJDK(t *testing.T, m *service, v string) string {
 	t.Helper()
 	home := filepath.Join(m.config.Store, v)
 	if err := os.MkdirAll(filepath.Join(home, "bin"), 0755); err != nil {

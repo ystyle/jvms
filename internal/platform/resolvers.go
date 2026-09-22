@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	appconfig "github.com/ystyle/jvms/internal/config"
+	"github.com/ystyle/jvms/internal/jdk"
 )
 
 type installationLister interface {
@@ -14,7 +15,7 @@ type installationLister interface {
 }
 
 func IsInstalled(manager installationLister, version string) (bool, error) {
-	if err := validateVersionIdentifier(version); err != nil {
+	if err := jdk.ValidateVersionIdentifier(version); err != nil {
 		return false, err
 	}
 

@@ -1,13 +1,13 @@
 //go:build windows
 
-package privilege
+package native
 
 import (
 	"golang.org/x/sys/windows"
 )
 
-// IsAdmin checks if the current process has administrative privileges
-func IsAdmin() bool {
+// isAdmin checks if the current process has administrative privileges
+func isAdmin() bool {
 	var sid *windows.SID
 
 	// Build the well-known Administrators SID (S-1-5-32-544).

@@ -2,8 +2,6 @@ package platform
 
 import (
 	"errors"
-	"os"
-	"path/filepath"
 	"testing"
 
 	appconfig "github.com/ystyle/jvms/internal/config"
@@ -38,39 +36,6 @@ func TestResolveVersionRejectsOutOfRangeIndex(t *testing.T) {
 	manager := fakeManager{installed: []Installation{{Version: "21.0.4-tem"}}}
 	if _, err := ResolveVersion(manager, "25", false, appconfig.IndexFirst); err == nil {
 		t.Fatal("ResolveVersion accepted an out-of-range switch index")
-	}
-}
-
-func TestValidateVersionIdentifier(t *testing.T) {
-	for _, valid := range []string{"21.0.8-tem", "8.0.472.fx-zulu", "22.3.r17-grl"} {
-		if err := validateVersionIdentifier(valid); err != nil {
-			t.Errorf("validateVersionIdentifier(%q): %v", valid, err)
-		}
-	}
-	for _, invalid := range []string{"", "../java", "21 tem", "/tmp/jdk"} {
-		if err := validateVersionIdentifier(invalid); err == nil {
-			t.Errorf("validateVersionIdentifier(%q) unexpectedly succeeded", invalid)
-		}
-	}
-}
-
-func TestValidateJavaHome(t *testing.T) {
-	home := t.TempDir()
-	if err := os.MkdirAll(filepath.Join(home, "bin"), 0755); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := validateJavaHome(home, "java"); err == nil {
-		t.Fatal("validateJavaHome accepted a directory without bin/java")
-	}
-	if err := os.WriteFile(filepath.Join(home, "bin", "java"), nil, 0755); err != nil {
-		t.Fatal(err)
-	}
-	got, err := validateJavaHome(home, "java")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if got != home {
-		t.Fatalf("validateJavaHome() = %q, want %q", got, home)
 	}
 }
 

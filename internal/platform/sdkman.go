@@ -10,6 +10,7 @@ import (
 	"github.com/ystyle/jvms/internal/jdk"
 )
 
+// Placeholder for the planned SDKMAN provider; currently unsupported.
 type unsupportedProvider struct{}
 
 var _ Provider = (*unsupportedProvider)(nil)
