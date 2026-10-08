@@ -49,9 +49,7 @@ func ResolveVersion(manager Provider, value string) (string, error) {
 		return "", fmt.Errorf("invalid installed JDK index %s (expected #1-#%d)", value, len(installed))
 	}
 
-	version := installed[index-1].Version
-	fmt.Printf("Using index %d to select JDK %s\n", index, version)
-	return version, nil
+	return installed[index-1].Version, nil
 }
 
 // ResolveAvailableVersion treats bare values as versions and #N as an available index.
@@ -77,9 +75,7 @@ func ResolveAvailableVersion(manager Provider, value string) (string, error) {
 		return "", fmt.Errorf("resolve available JDK index: %w", err)
 	}
 	if index <= len(available) {
-		version := available[index-1].Version
-		fmt.Printf("Using available index %d to select JDK %s\n", index, version)
-		return version, nil
+		return available[index-1].Version, nil
 	}
 	return "", fmt.Errorf("invalid available JDK index %s (expected #1-#%d)", value, len(available))
 }

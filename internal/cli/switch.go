@@ -59,6 +59,14 @@ func switchVersionWithOutput(config *appcfg.Config, manager platform.Provider, v
 	if err != nil {
 		return err
 	}
+	if version != value {
+		indexKind := "index"
+		if installMissing {
+			indexKind = "available index"
+		}
+		fmt.Fprintf(output, "Using %s %s to select JDK %s\n", indexKind, strings.TrimPrefix(value, "#"), version)
+	}
+
 	return switchExactVersionWithOutput(config, manager, version, installMissing, output)
 }
 

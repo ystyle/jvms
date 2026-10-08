@@ -27,7 +27,6 @@ func installPrerequisites(config *appcfg.Config) {
 func (m *service) Install(v string) error {
 	config := m.config
 	if jdk.IsVersionInstalled(config.Store, v) {
-		fmt.Println("Version " + v + " is already installed.")
 		return nil
 	}
 	if err := jdk.ValidateVersionIdentifier(v); err != nil {
@@ -37,10 +36,6 @@ func (m *service) Install(v string) error {
 	if config.Proxy != "" {
 		httpclient.SetProxy(config.Proxy)
 	}
-	if v == "" {
-		return errors.New("invalid version., Type \"jvms rls\" to see what is available for install")
-	}
-
 	versions, err := jdk.GetJdkVersions(config, false)
 	if err != nil {
 		return err
@@ -51,8 +46,6 @@ func (m *service) Install(v string) error {
 		if version.Version == v {
 			dlzipfile, success := httpclient.GetJDK(config.Download, v, version.Url)
 			if success {
-				fmt.Printf("Installing JDK %s ...\n", v)
-
 				// Extract jdk to the temp directory
 				jdktempfile := filepath.Join(config.Download, fmt.Sprintf("%s_temp", v))
 				if fsutil.Exists(jdktempfile) {
@@ -76,17 +69,8 @@ func (m *service) Install(v string) error {
 				// Remove the temp directory
 				// may consider keep the temp files here
 				os.RemoveAll(jdktempfile)
-				fmt.Printf("Installation completedly succesfully. Use: jvms switch %v, if you'd like to use this version", v)
 			} else {
-				fmt.Printf("\nCould not download JDK %s executable.\n\n", v)
-				fmt.Println("Possible solutions:")
-				fmt.Println("1. Check your internet connection")
-				fmt.Println("2. Set a proxy if you're behind a firewall:")
-				fmt.Println("   jvms config proxy http://127.0.0.1:1080")
-				fmt.Println("   or set environment variable: set http_proxy=http://127.0.0.1:1080")
-				fmt.Println("3. Try again later as the server might be temporarily unavailable")
-				fmt.Println("4. Or manually download and add the JDK (see README for details)")
-				return fmt.Errorf("could not download JDK %s", v)
+				return fmt.Errorf("could not download JDK %s; check your connection or configure a proxy with `jvms config --proxy=<url>`", v)
 			}
 			return nil
 		}

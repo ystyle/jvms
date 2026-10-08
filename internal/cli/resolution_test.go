@@ -1,10 +1,13 @@
 package cli
 
 import (
+	"bytes"
+	"io"
+	"os"
+	"strings"
 	"testing"
 
 	"github.com/codegangsta/cli"
-
 	appcfg "github.com/ystyle/jvms/internal/config"
 	"github.com/ystyle/jvms/internal/jdk"
 	"github.com/ystyle/jvms/internal/platform"
@@ -40,6 +43,83 @@ func TestInstallAndUseNumericResolution(t *testing.T) {
 				}
 			})
 		}
+	}
+}
+
+func TestManualJDKSwitchAndRemove(t *testing.T) {
+	manager := &recordingManager{installed: []platform.Installation{{Version: "jdk 17"}}}
+	config := appcfg.NewConfig()
+	for _, value := range []string{"#1", "jdk 17"} {
+		if err := switchFunc(config, manager)(commandContext(t, value)); err != nil {
+			t.Fatal(err)
+		}
+		if manager.switchedV != "jdk 17" {
+			t.Fatalf("switched %q, want jdk 17", manager.switchedV)
+		}
+	}
+	if err := remove(manager).Action.(func(*cli.Context) error)(commandContext(t, "jdk 17")); err != nil {
+		t.Fatal(err)
+	}
+	if manager.removedV != "jdk 17" {
+		t.Fatalf("removed %q, want jdk 17", manager.removedV)
+	}
+}
+
+func TestCommandResolutionWritesToAppWriter(t *testing.T) {
+	for _, operation := range []string{"install", "use", "switch", "remove"} {
+		t.Run(operation, func(t *testing.T) {
+			manager := &recordingManager{available: []jdk.Version{{Version: "jdk-17"}}}
+			config := appcfg.NewConfig()
+			value := "#1"
+			action := installFunc(manager)
+			if operation == "use" {
+				action = useFunc(config, manager)
+			} else if operation == "switch" {
+				manager.installed = []platform.Installation{{Version: "jdk-17"}}
+				action = switchFunc(config, manager)
+			} else if operation == "remove" {
+				manager.installed = []platform.Installation{{Version: "jdk-17"}}
+				action = remove(manager).Action.(func(*cli.Context) error)
+				value = "jdk-17"
+			}
+
+			stdoutReader, stdoutWriter, err := os.Pipe()
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer stdoutReader.Close()
+			defer stdoutWriter.Close()
+			originalStdout := os.Stdout
+			os.Stdout = stdoutWriter
+			defer func() { os.Stdout = originalStdout }()
+
+			context := commandContext(t, value)
+			var output bytes.Buffer
+			context.App.Writer = &output
+			if err := action(context); err != nil {
+				t.Fatal(err)
+			}
+			stdoutWriter.Close()
+			stdout, err := io.ReadAll(stdoutReader)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(stdout) != 0 {
+				t.Fatalf("command bypassed App.Writer: %s", stdout)
+			}
+			if operation != "remove" && !strings.Contains(output.String(), "to select JDK jdk-17\n") {
+				t.Fatalf("missing selection in App.Writer: %s", output.String())
+			}
+			if (operation == "install" || operation == "use") && strings.Count(output.String(), "Installed JDK jdk-17.") != 1 {
+				t.Fatalf("expected one install completion: %s", output.String())
+			}
+			if (operation == "use" || operation == "switch") && strings.Count(output.String(), "Switch success.") != 1 {
+				t.Fatalf("expected one switch completion: %s", output.String())
+			}
+			if operation == "remove" && (strings.Count(output.String(), "Remove JDK jdk-17") != 1 || strings.Count(output.String(), "done\n") != 1) {
+				t.Fatalf("expected one removal message and completion: %s", output.String())
+			}
+		})
 	}
 }
 
@@ -102,24 +182,5 @@ func TestSwitchBareNumberIsAlwaysAVersion(t *testing.T) {
 	}
 	if manager.switchedV != "1" || config.CurrentJDKVersion != "1" {
 		t.Fatalf("switched %q, current %q; want version 1", manager.switchedV, config.CurrentJDKVersion)
-	}
-}
-
-func TestManualJDKSwitchAndRemove(t *testing.T) {
-	manager := &recordingManager{installed: []platform.Installation{{Version: "jdk 17"}}}
-	config := appcfg.NewConfig()
-	for _, value := range []string{"#1", "jdk 17"} {
-		if err := switchFunc(config, manager)(commandContext(t, value)); err != nil {
-			t.Fatal(err)
-		}
-		if manager.switchedV != "jdk 17" {
-			t.Fatalf("switched %q, want jdk 17", manager.switchedV)
-		}
-	}
-	if err := remove(manager).Action.(func(*cli.Context) error)(commandContext(t, "jdk 17")); err != nil {
-		t.Fatal(err)
-	}
-	if manager.removedV != "jdk 17" {
-		t.Fatalf("removed %q, want jdk 17", manager.removedV)
 	}
 }

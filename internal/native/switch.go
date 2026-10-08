@@ -42,7 +42,6 @@ func (m *service) Switch(v string) error {
 	if err := m.replaceJavaHomeTarget(filepath.Join(config.Store, v)); err != nil {
 		return err
 	}
-	fmt.Println("Switch success.\nNow using JDK " + v)
 	config.CurrentJDKVersion = v
 	return nil
 }

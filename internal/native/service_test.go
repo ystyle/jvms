@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -248,7 +249,7 @@ func TestNativeInstallReturnsDownloadFailure(t *testing.T) {
 	}
 }
 
-func TestNativeManualJDKActions(t *testing.T) {
+func TestNativeManualJDKActionsDoNotPrint(t *testing.T) {
 	m := nativeFixture(t)
 	version := "jdk 17"
 	home := addNativeJDK(t, m, version)
@@ -260,6 +261,16 @@ func TestNativeManualJDKActions(t *testing.T) {
 	if err != nil || len(installed) != 1 || installed[0].Version != version {
 		t.Fatalf("installed = %v, %v; want %q", installed, err, version)
 	}
+
+	stdoutReader, stdoutWriter, err := os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer stdoutReader.Close()
+	defer stdoutWriter.Close()
+	originalStdout := os.Stdout
+	os.Stdout = stdoutWriter
+	defer func() { os.Stdout = originalStdout }()
 
 	if err := m.Install(version); err != nil {
 		t.Fatal(err)
@@ -279,6 +290,14 @@ func TestNativeManualJDKActions(t *testing.T) {
 	}
 	if m.config.CurrentJDKVersion != "" {
 		t.Fatal("removed version remains current")
+	}
+	stdoutWriter.Close()
+	stdout, err := io.ReadAll(stdoutReader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(stdout) != 0 {
+		t.Fatalf("native actions printed CLI messages: %s", stdout)
 	}
 }
 

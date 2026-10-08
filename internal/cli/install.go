@@ -31,6 +31,10 @@ func installFunc(manager platform.Provider) func(*cli.Context) error {
 			return err
 		}
 
+		if version != v {
+			fmt.Fprintf(c.App.Writer, "Using available index %s to select JDK %s\n", strings.TrimPrefix(v, "#"), version)
+		}
+
 		return installVersionWithOutput(manager, version, c.App.Writer)
 	}
 }
