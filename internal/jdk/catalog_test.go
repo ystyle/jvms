@@ -14,11 +14,45 @@ type catalogTestProvider struct {
 }
 
 func (p catalogTestProvider) Name() string { return "test" }
+
 func (p catalogTestProvider) Fetch(out chan<- Version) error {
 	for _, version := range p.versions {
 		out <- version
 	}
 	return p.err
+}
+
+func TestCatalogSortsNumericComponentsDescending(t *testing.T) {
+	versions := []Version{
+		{Version: "zulu9.0.1"},
+		{Version: "zulu27.0.2"},
+		{Version: "zulu8.0.1"},
+		{Version: "zulu25.0.9"},
+		{Version: "zulu6.0.1"},
+		{Version: "zulu27.0.10"},
+		{Version: "zulu7.0.1"},
+		{Version: "17.0.9"},
+		{Version: "17.0.10"},
+		{Version: "zulu25.0.10"},
+		{Version: "temurin17.0.10"},
+	}
+	want := []Version{
+		{Version: "zulu27.0.10"},
+		{Version: "zulu27.0.2"},
+		{Version: "zulu25.0.10"},
+		{Version: "zulu25.0.9"},
+		{Version: "temurin17.0.10"},
+		{Version: "17.0.10"},
+		{Version: "17.0.9"},
+		{Version: "zulu9.0.1"},
+		{Version: "zulu8.0.1"},
+		{Version: "zulu7.0.1"},
+		{Version: "zulu6.0.1"},
+	}
+	sortCatalog(versions)
+	if !reflect.DeepEqual(versions, want) {
+		t.Fatalf("catalog = %v, want %v", versions, want)
+	}
 }
 
 func TestCatalogIndexesIgnoreResponseOrder(t *testing.T) {
@@ -51,7 +85,7 @@ func TestCachedCatalogUsesSameIndexesAsFreshCatalog(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 	t.Setenv("APPDATA", t.TempDir())
 	config := &appcfg.Config{CacheEnabled: true, CacheTTL: appcfg.DefaultCacheTTL}
-	versions := []Version{{Version: "17"}, {Version: "21"}}
+	versions := []Version{{Version: "17"}, {Version: "zulu8.0.1"}, {Version: "21"}, {Version: "zulu27.0.1"}}
 	// Streaming and older releases can cache versions in arrival order.
 	if err := CacheVersions(config, nativeCacheSource, versions); err != nil {
 		t.Fatal(err)
