@@ -17,7 +17,6 @@ func configCommand(config *appcfg.Config) *cli.Command {
 			cli.StringFlag{Name: appcfg.JavaHomeFlag, Usage: "set the JAVA_HOME location"},
 			cli.StringFlag{Name: appcfg.OriginalPathFlag, Usage: "set the Windows JDK download index URL or path"},
 			cli.StringFlag{Name: appcfg.ProxyFlag, Usage: "set the download proxy; pass an empty value to clear it"},
-			cli.StringFlag{Name: appcfg.ResolutionFlag, Usage: `resolve ambiguous numbers as "version,index" or "index,version"`},
 			cli.StringFlag{Name: appcfg.CacheToggleFlag, Usage: "enable or disable the JDK catalog cache (true or false)"},
 			cli.StringFlag{Name: appcfg.CacheTTLFlag, Usage: "set cache lifetime, for example 30m or 24h"},
 		},
@@ -36,13 +35,6 @@ func configFunc(config *appcfg.Config) func(*cli.Context) error {
 		}
 		if c.IsSet(appcfg.ProxyFlag) {
 			next.Proxy = strings.TrimSpace(c.String(appcfg.ProxyFlag))
-		}
-		if c.IsSet(appcfg.ResolutionFlag) {
-			value, err := appcfg.ParseResolutionPriority(c.String(appcfg.ResolutionFlag))
-			if err != nil {
-				return err
-			}
-			next.ResolutionPriority = value
 		}
 		if err := next.SetBool(c, appcfg.CacheToggleFlag, &next.CacheEnabled); err != nil {
 			return err
@@ -66,7 +58,6 @@ func printConfig(w io.Writer, config *appcfg.Config) {
 	fmt.Fprintf(w, "  --%s=%s\n", appcfg.JavaHomeFlag, config.JavaHome)
 	fmt.Fprintf(w, "  --%s=%s\n", appcfg.OriginalPathFlag, config.OriginalPath)
 	fmt.Fprintf(w, "  --%s=%s  (empty clears it)\n", appcfg.ProxyFlag, config.Proxy)
-	fmt.Fprintf(w, "  --%s=%s  (%s | %s)\n", appcfg.ResolutionFlag, config.ResolutionPriority, appcfg.VersionFirst, appcfg.IndexFirst)
 	fmt.Fprintf(w, "  --%s=%t  (true | false)\n", appcfg.CacheToggleFlag, config.CacheEnabled)
 	fmt.Fprintf(w, "  --%s=%s  (duration, e.g. 30m or 24h)\n", appcfg.CacheTTLFlag, config.CacheTTL)
 }

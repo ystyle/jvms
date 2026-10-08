@@ -37,7 +37,7 @@ func TestLoadSetsDefaultsForUnsetFields(t *testing.T) {
 			if err := c.Load(); err != nil {
 				t.Fatal(err)
 			}
-			if c.JavaHome != DefaultJavaHome || c.OriginalPath != DefaultOriginalPath || c.ResolutionPriority != DefaultResolutionPriority || c.CacheTTL != DefaultCacheTTL || !c.CacheEnabled {
+			if c.JavaHome != DefaultJavaHome || c.OriginalPath != DefaultOriginalPath || c.CacheTTL != DefaultCacheTTL || !c.CacheEnabled {
 				t.Fatalf("unexpected defaults: %+v", c)
 			}
 			if c.Store == "" || c.Download == "" {
@@ -51,10 +51,13 @@ func TestConfigRoundTripAndRepeatedLoad(t *testing.T) {
 	for _, legacy := range []bool{false, true} {
 		path := isolateConfig(t)
 		want := Config{
-			JavaHome: "C:/Java/current", CurrentJDKVersion: "21",
-			OriginalPath:       "https://example.com/index.json",
-			ResolutionPriority: VersionFirst, CacheEnabled: false, CacheTTL: "45m",
-			Store: "test-store", Download: "test-download",
+			JavaHome:          "C:/Java/current",
+			CurrentJDKVersion: "21",
+			OriginalPath:      "https://example.com/index.json",
+			CacheEnabled:      false,
+			CacheTTL:          "45m",
+			Store:             "test-store",
+			Download:          "test-download",
 		}
 		data, err := json.Marshal(want)
 		if err != nil {
@@ -62,7 +65,7 @@ func TestConfigRoundTripAndRepeatedLoad(t *testing.T) {
 		}
 		if legacy {
 			data = []byte(`{"java_home":"C:/Java/current","current_jdk_version":"21","original_path":"https://example.com/index.json","proxy":""}`)
-			want.ResolutionPriority, want.CacheEnabled, want.CacheTTL = IndexFirst, true, DefaultCacheTTL
+			want.CacheEnabled, want.CacheTTL = true, DefaultCacheTTL
 		}
 		writeConfig(t, path, string(data))
 		c := Config{Store: want.Store, Download: want.Download}
@@ -94,22 +97,45 @@ func TestConfigRoundTripAndRepeatedLoad(t *testing.T) {
 		if err := json.Unmarshal(data, &saved); err != nil {
 			t.Fatal(err)
 		}
-		if len(saved) != 7 || saved["Store"] != nil || saved["store"] != nil || saved["Download"] != nil || saved["download"] != nil {
+		if len(saved) != 6 || saved["Store"] != nil || saved["store"] != nil || saved["Download"] != nil || saved["download"] != nil {
 			t.Fatalf("unexpected persisted fields: %v", saved)
 		}
 	}
 }
 
-func TestParsePolicies(t *testing.T) {
-	for input, want := range map[string]ResolutionPriority{"": IndexFirst, " INDEX, version ": IndexFirst, "version,index": VersionFirst} {
-		got, err := ParseResolutionPriority(input)
-		if err != nil || got != want {
-			t.Fatalf("%q: %q, %v", input, got, err)
-		}
+func TestLoadIgnoresRetiredResolutionPriority(t *testing.T) {
+	for _, priority := range []string{"version,index", "index,version", "invalid"} {
+		t.Run(priority, func(t *testing.T) {
+			path := isolateConfig(t)
+			data := `{"java_home":"C:/Java/current","resolution_priority":"` + priority + `","cache_enabled":false,"cache_ttl":"45m"}`
+			writeConfig(t, path, data)
+
+			var config Config
+			if err := config.Load(); err != nil {
+				t.Fatal(err)
+			}
+			if config.JavaHome != "C:/Java/current" || config.CacheEnabled || config.CacheTTL != "45m" {
+				t.Fatalf("settings changed while ignoring retired field: %+v", config)
+			}
+			if err := config.Save(); err != nil {
+				t.Fatal(err)
+			}
+			savedData, err := os.ReadFile(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var saved map[string]any
+			if err := json.Unmarshal(savedData, &saved); err != nil {
+				t.Fatal(err)
+			}
+			if _, exists := saved["resolution_priority"]; exists {
+				t.Fatalf("retired field persisted: %s", savedData)
+			}
+		})
 	}
-	if _, err := ParseResolutionPriority("random"); err == nil {
-		t.Fatal("invalid priority accepted")
-	}
+}
+
+func TestParseCacheTTL(t *testing.T) {
 	for _, input := range []string{"30m", "24h", "1h30m"} {
 		if _, err := ParseCacheTTL(input); err != nil {
 			t.Fatal(err)

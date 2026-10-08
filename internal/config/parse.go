@@ -23,24 +23,6 @@ func (config *Config) SetBool(c *cli.Context, name string, target *bool) error {
 	return nil
 }
 
-type ResolutionPriority string
-
-const (
-	VersionFirst ResolutionPriority = "version,index"
-	IndexFirst   ResolutionPriority = "index,version"
-)
-
-func ParseResolutionPriority(value string) (ResolutionPriority, error) {
-	priority := ResolutionPriority(strings.ToLower(strings.ReplaceAll(strings.TrimSpace(value), " ", "")))
-	if priority == "" {
-		return DefaultResolutionPriority, nil
-	}
-	if priority != VersionFirst && priority != IndexFirst {
-		return "", fmt.Errorf("resolution priority must be %q or %q", VersionFirst, IndexFirst)
-	}
-	return priority, nil
-}
-
 func ParseCacheTTL(value string) (string, error) {
 	value = strings.TrimSpace(value)
 	duration, err := time.ParseDuration(value)

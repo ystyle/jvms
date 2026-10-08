@@ -13,7 +13,7 @@ import (
 var tuiFlags = []cli.Flag{
 	cli.BoolFlag{Name: "u", Usage: "Launch the switch picker"},
 	cli.BoolFlag{Name: "i", Usage: "Launch the install picker"},
-	cli.BoolFlag{Name: "s", Usage: "Switch to use the specified version or index number."},
+	cli.BoolFlag{Name: "s", Usage: "Choose an installed JDK to activate."},
 }
 
 func tui(config *appcfg.Config, manager platform.Provider) *cli.Command {

@@ -18,7 +18,7 @@ func CommandNotFound(c *cli.Context, command string) {
 // Commands registers all CLI commands.
 func Commands(c *appcfg.Config, m platform.Provider) []cli.Command {
 	return []cli.Command{
-		*tui(c, m), *switch_(c, m), *install(c, m), *remove(m),
+		*tui(c, m), *switch_(c, m), *install(m), *remove(m),
 		*init_(c, m), *proxy(c), *configCommand(c), *list(m), *use(c, m), *rls(m),
 	}
 }
@@ -72,6 +72,8 @@ func list(manager platform.Provider) *cli.Command {
 			}
 			if len(v) == 0 {
 				fmt.Fprintln(c.App.Writer, "No installations recognized.")
+			} else {
+				fmt.Fprintln(c.App.Writer, "\nUse `jvms switch \"#<index>\"` to select a numbered row.")
 			}
 			return nil
 		},
@@ -97,6 +99,8 @@ func rls(manager platform.Provider) *cli.Command {
 			}
 			if len(versions) == 0 {
 				fmt.Fprintln(c.App.Writer, "No JDK versions are available for installation.")
+			} else {
+				fmt.Fprintln(c.App.Writer, "\nUse `jvms install \"#<index>\"` or `jvms use \"#<index>\"` to select a numbered row.")
 			}
 			if err != nil {
 				return fmt.Errorf("showing versions recognized from partial provider output: %w", err)

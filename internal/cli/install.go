@@ -8,31 +8,30 @@ import (
 	"strings"
 
 	"github.com/codegangsta/cli"
-	appcfg "github.com/ystyle/jvms/internal/config"
 	"github.com/ystyle/jvms/internal/platform"
 )
 
-func install(config *appcfg.Config, manager platform.Provider) *cli.Command {
+func install(manager platform.Provider) *cli.Command {
 	return &cli.Command{
 		Name:      "install",
 		ShortName: "i",
-		Usage:     "Install a JDK by version or available-catalog index.",
-		Action:    installFunc(config, manager),
+		Usage:     "Install a JDK by version or explicit available index (for example, \"#17\").",
+		Action:    installFunc(manager),
 	}
 }
 
-func installFunc(config *appcfg.Config, manager platform.Provider) func(*cli.Context) error {
+func installFunc(manager platform.Provider) func(*cli.Context) error {
 	return func(c *cli.Context) error {
 		v := strings.TrimSpace(c.Args().Get(0))
 		if v == "" {
 			return errors.New("a JDK version or available index is required; run `jvms rls` to see available versions")
 		}
-		v, err := platform.ResolveAvailableVersion(manager, v, config.ResolutionPriority)
+		version, err := platform.ResolveAvailableVersion(manager, v)
 		if err != nil {
 			return err
 		}
 
-		return installVersionWithOutput(manager, v, c.App.Writer)
+		return installVersionWithOutput(manager, version, c.App.Writer)
 	}
 }
 

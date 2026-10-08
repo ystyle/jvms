@@ -4,7 +4,6 @@ import (
 	"errors"
 	"testing"
 
-	appconfig "github.com/ystyle/jvms/internal/config"
 	"github.com/ystyle/jvms/internal/jdk"
 )
 
@@ -24,43 +23,66 @@ func (m fakeManager) Remove(string) error                  { return m.err }
 func (m fakeManager) Switch(string) error                  { return m.err }
 func (m fakeManager) SwitchPath(string) error              { return m.err }
 
-func TestResolveVersionPropagatesProviderError(t *testing.T) {
-	want := errors.New("provider unavailable")
-	_, got := ResolveVersion(fakeManager{err: want}, "1", false, appconfig.IndexFirst)
-	if !errors.Is(got, want) {
-		t.Fatalf("ResolveVersion error = %v, want %v", got, want)
+func TestVersionAndExplicitIndexResolution(t *testing.T) {
+	manager := fakeManager{
+		installed: []Installation{{Version: "21-tem"}, {Version: "jdk 17"}, {Version: "1"}},
+		available: []jdk.Version{{Version: "21-tem"}, {Version: "jdk 17"}, {Version: "1"}},
 	}
-}
-
-func TestResolveVersionRejectsOutOfRangeIndex(t *testing.T) {
-	manager := fakeManager{installed: []Installation{{Version: "21.0.4-tem"}}}
-	if _, err := ResolveVersion(manager, "25", false, appconfig.IndexFirst); err == nil {
-		t.Fatal("ResolveVersion accepted an out-of-range switch index")
-	}
-}
-
-func TestAvailableVersionPriorityFallback(t *testing.T) {
-	for _, test := range []struct {
-		name      string
-		value     string
-		priority  appconfig.ResolutionPriority
-		installed []Installation
-		want      string
-	}{
-		{name: "default falls back", value: "2", want: "17-tem"},
-		{name: "version first falls back", value: "2", priority: appconfig.VersionFirst, want: "17-tem"},
-		{name: "exact installed wins", priority: appconfig.VersionFirst, value: "2", installed: []Installation{{Version: "2"}}, want: "2"},
-		{name: "exact available wins", priority: appconfig.VersionFirst, value: "1", want: "1"},
-		{name: "explicit index wins", value: "#1", want: "21-tem"},
-		{name: "index first wins", value: "1", priority: appconfig.IndexFirst, want: "21-tem"},
+	for name, resolve := range map[string]func(Provider, string) (string, error){
+		"installed": ResolveVersion,
+		"available": ResolveAvailableVersion,
 	} {
-		t.Run(test.name, func(t *testing.T) {
-			manager := fakeManager{installed: test.installed, available: []jdk.Version{{Version: "21-tem"}, {Version: "17-tem"}, {Version: "1"}}}
-			got, err := ResolveAvailableVersion(manager, test.value, test.priority)
-			if err != nil || got != test.want {
-				t.Fatalf("got %q, %v; want %q", got, err, test.want)
+		t.Run(name, func(t *testing.T) {
+			for _, test := range []struct {
+				value   string
+				want    string
+				wantErr bool
+			}{
+				{value: "1", want: "1"},
+				{value: "17", want: "17"},
+				{value: "jdk 17", want: "jdk 17"},
+				{value: " #1 ", want: "21-tem"},
+				{value: "#2", want: "jdk 17"},
+				{value: "#3", want: "1"},
+				{value: "", wantErr: true},
+				{value: " ", wantErr: true},
+				{value: "#", wantErr: true},
+				{value: "#0", wantErr: true},
+				{value: "#-1", wantErr: true},
+				{value: "#4", wantErr: true},
+				{value: "#invalid", wantErr: true},
+				{value: "#999999999999999999999999", wantErr: true},
+			} {
+				t.Run(test.value, func(t *testing.T) {
+					got, err := resolve(manager, test.value)
+					if (err != nil) != test.wantErr || got != test.want {
+						t.Fatalf("got %q, %v; want %q, error=%t", got, err, test.want, test.wantErr)
+					}
+				})
 			}
 		})
+	}
+}
+
+func TestBareVersionsDoNotQueryProvider(t *testing.T) {
+	manager := fakeManager{err: errors.New("provider unavailable")}
+	for _, resolve := range []func(Provider, string) (string, error){ResolveVersion, ResolveAvailableVersion} {
+		for _, value := range []string{"1", "17", "jdk 17"} {
+			got, err := resolve(manager, value)
+			if err != nil || got != value {
+				t.Fatalf("got %q, %v; want %q without a provider lookup", got, err, value)
+			}
+		}
+	}
+}
+
+func TestExplicitIndexPropagatesProviderError(t *testing.T) {
+	want := errors.New("provider unavailable")
+	for _, resolve := range []func(Provider, string) (string, error){ResolveVersion, ResolveAvailableVersion} {
+		_, got := resolve(fakeManager{err: want}, "#1")
+		if !errors.Is(got, want) {
+			t.Fatalf("error = %v, want %v", got, want)
+		}
 	}
 }
 

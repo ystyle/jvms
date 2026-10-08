@@ -12,7 +12,7 @@ import (
 	"github.com/ystyle/jvms/internal/platform"
 )
 
-var asPathUsage = "Interpret the argument as a direct path rather than a version or index number."
+var asPathUsage = "Interpret the argument as a direct path rather than a version or explicit index (#N)."
 
 // Shared flags for the switch and use commands.
 var switchFlags = []cli.Flag{
@@ -23,7 +23,7 @@ func switch_(config *appcfg.Config, manager platform.Provider) *cli.Command {
 	return &cli.Command{
 		Name:      "switch",
 		ShortName: "s",
-		Usage:     "Switch to use the specified version or index number.",
+		Usage:     "Activate an installed JDK by version or explicit installed index (for example, \"#1\").",
 		Flags:     switchFlags,
 		Action:    switchFunc(config, manager),
 	}
@@ -52,9 +52,9 @@ func switchVersionWithOutput(config *appcfg.Config, manager platform.Provider, v
 	var version string
 	var err error
 	if installMissing {
-		version, err = platform.ResolveAvailableVersion(manager, value, config.ResolutionPriority)
+		version, err = platform.ResolveAvailableVersion(manager, value)
 	} else {
-		version, err = platform.ResolveVersion(manager, value, false, config.ResolutionPriority)
+		version, err = platform.ResolveVersion(manager, value)
 	}
 	if err != nil {
 		return err

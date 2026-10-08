@@ -13,7 +13,7 @@ func use(config *appcfg.Config, manager platform.Provider) *cli.Command {
 	return &cli.Command{
 		Name:      "use",
 		ShortName: "u",
-		Usage:     "Switch to use the specified version or index number and install it if not installed.",
+		Usage:     "Activate a JDK by version or explicit available index (for example, \"#17\"), installing it if needed.",
 		Flags:     switchFlags,
 		Action:    useFunc(config, manager),
 	}

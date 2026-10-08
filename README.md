@@ -35,7 +35,7 @@ COMMANDS:
    init           Initialize config file
    list, ls       List current JDK installations.
    install, i     Install available remote jdk
-   switch, s      Switch to use the specified version or index number.
+   switch, s      Activate an installed JDK by version or explicit index (#N).
    use, u         Switch to use the specified version and install it if not installed.
    remove, rm     Remove a specific version.
    rls            Show a list of versions available for download.
@@ -122,12 +122,20 @@ Use the same `java_home` and `originalpath` names with `init` and `config`:
 ```shell
 jvms config --java_home="C:/Program Files/jdk"
 jvms config --originalpath=https://example.com/index.json
-jvms config --resolution_priority=version,index --cache_toggle=true --cache_ttl=24h
+jvms config --cache_toggle=true --cache_ttl=24h
 jvms switch --as_path "C:/Java/jdk-21"
 ```
 
 `jvms config` displays the current settings. `jvms rls` refreshes the provider's
 catalog before listing available versions.
+
+Bare values, including numbers such as `17`, are always version identifiers.
+Use `jvms install "#17"` or `jvms use "#17"` to select row 17 from `jvms rls`.
+`switch` uses the installed list: `jvms switch "#1"` selects its first row.
+Quote explicit indexes so PowerShell passes them as arguments.
+
+Older configuration files containing `resolution_priority` still load. The
+retired setting is ignored and omitted when the configuration is saved.
 
 ### add a local jdk version
 e.g: add the `jdk 17.0.1`

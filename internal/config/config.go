@@ -13,11 +13,10 @@ import (
 )
 
 const (
-	ProjectConfigDir          = "jvms"
-	ConfigFileName            = "jvms.json"
-	DefaultResolutionPriority = IndexFirst
-	DefaultCacheTTL           = "24h"
-	DefaultOriginalPath       = "https://raw.githubusercontent.com/ystyle/jvms/new/jdkdlindex.json"
+	ProjectConfigDir    = "jvms"
+	ConfigFileName      = "jvms.json"
+	DefaultCacheTTL     = "24h"
+	DefaultOriginalPath = "https://raw.githubusercontent.com/ystyle/jvms/new/jdkdlindex.json"
 )
 
 var DefaultJavaHome = filepath.Join(os.Getenv("ProgramFiles"), "jdk")
@@ -28,9 +27,8 @@ type Config struct {
 	OriginalPath      string `json:"original_path"`
 	Proxy             string `json:"proxy"`
 
-	ResolutionPriority ResolutionPriority `json:"resolution_priority"`
-	CacheEnabled       bool               `json:"cache_enabled"`
-	CacheTTL           string             `json:"cache_ttl"`
+	CacheEnabled bool   `json:"cache_enabled"`
+	CacheTTL     string `json:"cache_ttl"`
 
 	// Runtime values (not persisted)
 	Store      string `json:"-"`
@@ -40,7 +38,10 @@ type Config struct {
 
 // NewConfig creates a new Config instance with default values
 func NewConfig() *Config {
-	return &Config{ResolutionPriority: DefaultResolutionPriority, CacheEnabled: true, CacheTTL: DefaultCacheTTL}
+	return &Config{
+		CacheEnabled: true,
+		CacheTTL:     DefaultCacheTTL,
+	}
 }
 
 func (c *Config) JavaHomeNotSet() bool {
@@ -98,9 +99,6 @@ func (c *Config) Load() error {
 	err := store.Load(ConfigFileName, &next)
 	if err != nil {
 		return fmt.Errorf("load config: %w", err)
-	}
-	if next.ResolutionPriority, err = ParseResolutionPriority(string(next.ResolutionPriority)); err != nil {
-		return err
 	}
 	if next.CacheTTL == "" {
 		next.CacheTTL = DefaultCacheTTL
