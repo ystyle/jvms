@@ -39,6 +39,7 @@ func Download(url string, target string, timeout time.Duration) bool {
 		fmt.Println("Error while downloading", url, "-", err)
 		return false
 	}
+
 	if response.StatusCode != 200 {
 		fmt.Println("Error status while downloading", url, "-", response.StatusCode)
 		return false
@@ -72,6 +73,7 @@ func Download(url string, target string, timeout time.Duration) bool {
 		fmt.Println("Error while downloading", url, "-", err)
 		return false
 	}
+
 	bar.Finish()
 
 	return true
@@ -92,6 +94,7 @@ func GetJDK(download string, v string, url string) (string, bool) {
 			return "", false
 		}
 	}
+
 	return "", false
 
 }
@@ -119,5 +122,6 @@ func GetRemoteTextFile(url string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("\nCould not retrieve %s.\n\n%s\n", url, err.Error())
 	}
+
 	return string(contents), nil
 }

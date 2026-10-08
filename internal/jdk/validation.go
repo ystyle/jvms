@@ -15,6 +15,7 @@ func ValidateVersionIdentifier(version string) error {
 	if !versionIdentifierPattern.MatchString(version) {
 		return fmt.Errorf("invalid JDK version identifier %q", version)
 	}
+
 	return nil
 }
 
@@ -29,5 +30,6 @@ func ValidateJavaHome(path, executable string) (string, error) {
 	if err != nil || !info.Mode().IsRegular() {
 		return "", fmt.Errorf("%s is not a JDK home (missing bin/%s)", path, executable)
 	}
+
 	return home, nil
 }

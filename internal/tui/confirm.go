@@ -14,6 +14,7 @@ func (m *pickerModel) confirmFunc(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if !ok {
 		return m, nil
 	}
+
 	switch km.String() {
 	case "y", "enter":
 		return m, m.beginExecute()
@@ -21,5 +22,6 @@ func (m *pickerModel) confirmFunc(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.state = stateList
 		return m, nil
 	}
+
 	return m, nil
 }

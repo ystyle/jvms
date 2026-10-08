@@ -25,6 +25,7 @@ func main() {
 
 	app.Before = func(c *cli.Context) error { return config.Load() }
 	app.After = func(c *cli.Context) error { return config.Save() }
+
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err.Error())
 	}

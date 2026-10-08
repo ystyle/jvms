@@ -16,6 +16,7 @@ func (m *service) Remove(v string) error {
 	if v == "" {
 		return errors.New("you should input a version, Type \"jvms list\" to see what is installed")
 	}
+
 	if !jdk.IsVersionInstalled(config.Store, v) {
 		return fmt.Errorf("JDK %s is not installed", v)
 	}
@@ -30,8 +31,10 @@ func (m *service) Remove(v string) error {
 	if err := os.RemoveAll(dir); err != nil {
 		return fmt.Errorf("remove JDK %s at %s: %w", v, dir, err)
 	}
+
 	if config.CurrentJDKVersion == v {
 		config.CurrentJDKVersion = ""
 	}
+
 	return nil
 }

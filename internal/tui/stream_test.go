@@ -16,6 +16,7 @@ func TestStreamErrorDisplaysFailureWithoutAddingJDK(t *testing.T) {
 		if done {
 			name = "terminal error"
 		}
+
 		t.Run(name, func(t *testing.T) {
 			wantErr := errors.New("provider requires Windows")
 			model := newPickerModel(appcfg.NewConfig(), nil, Action{
@@ -33,16 +34,20 @@ func TestStreamErrorDisplaysFailureWithoutAddingJDK(t *testing.T) {
 			if len(model.list.Items()) != 0 {
 				t.Fatal("error event added a selectable JDK")
 			}
+
 			if !errors.Is(model.loadErr, wantErr) || !strings.Contains(model.View(), wantErr.Error()) {
 				t.Fatalf("provider error not displayed: %s", model.View())
 			}
+
 			if !model.versionsDone || model.spinnerActive {
 				t.Fatal("picker still loading after stream failure")
 			}
+
 			_, quit := model.Update(tea.KeyMsg{Type: tea.KeyEnter})
 			if quit == nil {
 				t.Fatal("error screen did not allow exit")
 			}
+
 			if _, ok := quit().(tea.QuitMsg); !ok {
 				t.Fatal("expected quit command from error screen")
 			}

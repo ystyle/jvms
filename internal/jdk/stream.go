@@ -48,6 +48,7 @@ func streamJdkVersions(config *appcfg.Config, events chan<- VersionEvent) {
 		events <- VersionEvent{Err: err, Done: true}
 		return
 	}
+
 	events <- VersionEvent{Done: true}
 }
 
@@ -55,5 +56,6 @@ func sendCachedVersions(versions []JdkVersion, events chan<- VersionEvent) {
 	for _, version := range versions {
 		events <- VersionEvent{Version: version}
 	}
+
 	events <- VersionEvent{Done: true}
 }

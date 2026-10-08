@@ -32,6 +32,7 @@ func (m *pickerModel) globalFunc(msg tea.Msg) (tea.Model, tea.Cmd, bool) {
 		if !m.spinnerActive {
 			return m, nil, true // stale tick from a state we've already left
 		}
+
 		return m, updateSubModel(&m.spinner, tm), true
 
 	case versionEventMsg:
@@ -52,12 +53,15 @@ func (m *pickerModel) handleVersionEvent(event jdk.VersionEvent) tea.Cmd {
 		if m.state != stateExecuting {
 			m.spinnerActive = false
 		}
+
 		if event.Err != nil {
 			m.loadErr = event.Err
 		}
+
 		if len(m.list.Items()) == 0 {
 			m.state = stateEmpty
 		}
+
 		return nil
 	}
 

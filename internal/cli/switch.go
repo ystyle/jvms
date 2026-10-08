@@ -35,6 +35,7 @@ func switchFunc(config *appcfg.Config, manager platform.Provider) func(*cli.Cont
 		if v == "" {
 			return errors.New("a JDK version, index, or path is required; run `jvms list` to see installed versions")
 		}
+
 		return switchVersionWithOutput(config, manager, v, c.Bool("as_path") || c.Bool("p"), false, c.App.Writer)
 	}
 }
@@ -44,6 +45,7 @@ func switchVersionWithOutput(config *appcfg.Config, manager platform.Provider, v
 		if err := manager.SwitchPath(value); err != nil {
 			return err
 		}
+
 		config.CurrentJDKVersion = ""
 		fmt.Fprintln(output, "Switch success.\nNow using JDK at "+value)
 		return nil
@@ -59,11 +61,13 @@ func switchVersionWithOutput(config *appcfg.Config, manager platform.Provider, v
 	if err != nil {
 		return err
 	}
+
 	if version != value {
 		indexKind := "index"
 		if installMissing {
 			indexKind = "available index"
 		}
+
 		fmt.Fprintf(output, "Using %s %s to select JDK %s\n", indexKind, strings.TrimPrefix(value, "#"), version)
 	}
 
@@ -80,20 +84,25 @@ func switchExactVersionWithOutput(config *appcfg.Config, manager platform.Provid
 	if err != nil {
 		return err
 	}
+
 	if !installed {
 		if !installMissing {
 			return fmt.Errorf("JDK %s is not installed", version)
 		}
+
 		fmt.Fprintf(output, "Version %s is not installed. Installing now...\n", version)
 		fmt.Fprintf(output, "Installing JDK %s with %s ...\n", version, manager.Name())
 		if err := manager.Install(version); err != nil {
 			return err
 		}
+
 		fmt.Fprintf(output, "Installed JDK %s. Use `jvms switch %s` to activate it.\n", version, version)
 	}
+
 	if err := manager.Switch(version); err != nil {
 		return err
 	}
+
 	config.CurrentJDKVersion = version
 	fmt.Fprintln(output, "Switch success.\nNow using JDK "+version)
 	return nil

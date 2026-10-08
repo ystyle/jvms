@@ -14,13 +14,21 @@ type fakeManager struct {
 }
 
 func (m fakeManager) Name() string                         { return "fake" }
+
 func (m fakeManager) Ensure() error                        { return m.err }
+
 func (m fakeManager) Available() ([]jdk.Version, error)    { return m.available, m.err }
+
 func (m fakeManager) StreamAvailable() <-chan VersionEvent { return nil }
+
 func (m fakeManager) Installed() ([]Installation, error)   { return m.installed, m.err }
+
 func (m fakeManager) Install(string) error                 { return m.err }
+
 func (m fakeManager) Remove(string) error                  { return m.err }
+
 func (m fakeManager) Switch(string) error                  { return m.err }
+
 func (m fakeManager) SwitchPath(string) error              { return m.err }
 
 func TestVersionAndExplicitIndexResolution(t *testing.T) {
@@ -28,6 +36,7 @@ func TestVersionAndExplicitIndexResolution(t *testing.T) {
 		installed: []Installation{{Version: "21-tem"}, {Version: "jdk 17"}, {Version: "1"}},
 		available: []jdk.Version{{Version: "21-tem"}, {Version: "jdk 17"}, {Version: "1"}},
 	}
+
 	for name, resolve := range map[string]func(Provider, string) (string, error){
 		"installed": ResolveVersion,
 		"available": ResolveAvailableVersion,
@@ -66,6 +75,7 @@ func TestVersionAndExplicitIndexResolution(t *testing.T) {
 
 func TestBareVersionsDoNotQueryProvider(t *testing.T) {
 	manager := fakeManager{err: errors.New("provider unavailable")}
+
 	for _, resolve := range []func(Provider, string) (string, error){ResolveVersion, ResolveAvailableVersion} {
 		for _, value := range []string{"1", "17", "jdk 17"} {
 			got, err := resolve(manager, value)
@@ -78,6 +88,7 @@ func TestBareVersionsDoNotQueryProvider(t *testing.T) {
 
 func TestExplicitIndexPropagatesProviderError(t *testing.T) {
 	want := errors.New("provider unavailable")
+
 	for _, resolve := range []func(Provider, string) (string, error){ResolveVersion, ResolveAvailableVersion} {
 		_, got := resolve(fakeManager{err: want}, "#1")
 		if !errors.Is(got, want) {

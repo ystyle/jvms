@@ -30,20 +30,25 @@ func configFunc(config *appcfg.Config) func(*cli.Context) error {
 		if c.IsSet(appcfg.JavaHomeFlag) {
 			next.JavaHome = strings.TrimSpace(c.String(appcfg.JavaHomeFlag))
 		}
+
 		if c.IsSet(appcfg.OriginalPathFlag) {
 			next.OriginalPath = strings.TrimSpace(c.String(appcfg.OriginalPathFlag))
 		}
+
 		if c.IsSet(appcfg.ProxyFlag) {
 			next.Proxy = strings.TrimSpace(c.String(appcfg.ProxyFlag))
 		}
+
 		if err := next.SetBool(c, appcfg.CacheToggleFlag, &next.CacheEnabled); err != nil {
 			return err
 		}
+
 		if c.IsSet(appcfg.CacheTTLFlag) {
 			value, err := appcfg.ParseCacheTTL(c.String(appcfg.CacheTTLFlag))
 			if err != nil {
 				return err
 			}
+
 			next.CacheTTL = value
 		}
 

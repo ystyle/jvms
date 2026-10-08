@@ -22,6 +22,7 @@ func IsInstalled(manager installationLister, version string) (bool, error) {
 			return true, nil
 		}
 	}
+
 	return false, nil
 }
 
@@ -31,6 +32,7 @@ func ResolveVersion(manager Provider, value string) (string, error) {
 	if value == "" {
 		return "", errors.New("a JDK version or explicit index (#N) is required")
 	}
+
 	if !strings.HasPrefix(value, "#") {
 		return value, nil
 	}
@@ -58,6 +60,7 @@ func ResolveAvailableVersion(manager Provider, value string) (string, error) {
 	if value == "" {
 		return "", errors.New("a JDK version or explicit available index (#N) is required")
 	}
+
 	if !strings.HasPrefix(value, "#") {
 		return value, nil
 	}
@@ -74,8 +77,10 @@ func ResolveAvailableVersion(manager Provider, value string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("resolve available JDK index: %w", err)
 	}
+
 	if index <= len(available) {
 		return available[index-1].Version, nil
 	}
+
 	return "", fmt.Errorf("invalid available JDK index %s (expected #1-#%d)", value, len(available))
 }

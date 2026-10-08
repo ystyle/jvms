@@ -55,9 +55,11 @@ func tuiFunc(config *appcfg.Config, manager platform.Provider) func(*cli.Context
 			if err != nil {
 				return err
 			}
+
 			for _, v := range installed {
 				versions = append(versions, jdk.JdkVersion{Version: v.Version})
 			}
+
 			return apptui.RunJdkPicker(config, versions, apptui.Action{
 				Title: "Switch JDK",
 				ConfirmText: func(v jdk.JdkVersion) string {

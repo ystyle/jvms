@@ -21,9 +21,11 @@ func (m *pickerModel) doneFunc(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if !ok {
 		return m, nil
 	}
+
 	switch km.String() {
 	case "enter", "q", "esc":
 		return m, tea.Quit
 	}
+
 	return m, nil
 }

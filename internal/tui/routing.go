@@ -18,6 +18,7 @@ func (m *pickerModel) View() string {
 	case stateDone:
 		return m.doneView()
 	}
+
 	return ""
 }
 
@@ -38,5 +39,6 @@ func (m *pickerModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case stateDone:
 		return m.doneFunc(msg)
 	}
+
 	return m, nil
 }

@@ -25,6 +25,7 @@ func (m *service) Ensure() error {
 			"- Invalid path format\n"+
 			"Please run Command Prompt as Administrator and try again", config.JavaHome, err)
 	}
+
 	fmt.Println("set `JAVA_HOME` Environment variable to ", config.JavaHome)
 	path := fmt.Sprintf(`%s/bin;%s;%s`, config.JavaHome, os.Getenv("PATH"), fsutil.GetCurrentPath())
 	err = m.run("cmd", "/C", "setx", "path", path, "/m")
@@ -36,6 +37,7 @@ func (m *service) Ensure() error {
 			"- Command execution failed\n"+
 			"Please run Command Prompt as Administrator and try again", err)
 	}
+
 	fmt.Println("add jvms.exe to `path` Environment variable")
 	return nil
 }

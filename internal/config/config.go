@@ -53,6 +53,7 @@ func (c *Config) Save() error {
 	if c.loadFailed {
 		return nil
 	}
+
 	if err := store.Save(ConfigFileName, c); err != nil {
 		return errors.New("failed to save the config:" + err.Error())
 	}
@@ -92,20 +93,26 @@ func (c *Config) applyDefaults() {
 // Load owns store initialization and overlays persisted settings on policy defaults.
 func (c *Config) Load() error {
 	c.loadFailed = true
+
 	next := *NewConfig()
 	next.Store, next.Download = c.Store, c.Download
+
 	store.Register("json", marshalFunc, json.Unmarshal)
 	store.Init(ProjectConfigDir)
+
 	err := store.Load(ConfigFileName, &next)
 	if err != nil {
 		return fmt.Errorf("load config: %w", err)
 	}
+
 	if next.CacheTTL == "" {
 		next.CacheTTL = DefaultCacheTTL
 	}
+
 	if next.CacheTTL, err = ParseCacheTTL(next.CacheTTL); err != nil {
 		return err
 	}
+
 	next.applyDefaults()
 	*c = next
 	return nil

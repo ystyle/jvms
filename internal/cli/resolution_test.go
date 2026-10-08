@@ -32,12 +32,15 @@ func TestInstallAndUseNumericResolution(t *testing.T) {
 				if operation == "use" {
 					action = useFunc(config, manager)
 				}
+
 				if err := action(commandContext(t, test.value)); err != nil {
 					t.Fatal(err)
 				}
+
 				if manager.installedV != test.want {
 					t.Fatalf("installed %q, want %q", manager.installedV, test.want)
 				}
+
 				if operation == "use" && manager.switchedV != test.want {
 					t.Fatalf("switched %q, want %q", manager.switchedV, test.want)
 				}
@@ -49,17 +52,21 @@ func TestInstallAndUseNumericResolution(t *testing.T) {
 func TestManualJDKSwitchAndRemove(t *testing.T) {
 	manager := &recordingManager{installed: []platform.Installation{{Version: "jdk 17"}}}
 	config := appcfg.NewConfig()
+
 	for _, value := range []string{"#1", "jdk 17"} {
 		if err := switchFunc(config, manager)(commandContext(t, value)); err != nil {
 			t.Fatal(err)
 		}
+
 		if manager.switchedV != "jdk 17" {
 			t.Fatalf("switched %q, want jdk 17", manager.switchedV)
 		}
 	}
+
 	if err := remove(manager).Action.(func(*cli.Context) error)(commandContext(t, "jdk 17")); err != nil {
 		t.Fatal(err)
 	}
+
 	if manager.removedV != "jdk 17" {
 		t.Fatalf("removed %q, want jdk 17", manager.removedV)
 	}
@@ -99,23 +106,29 @@ func TestCommandResolutionWritesToAppWriter(t *testing.T) {
 			if err := action(context); err != nil {
 				t.Fatal(err)
 			}
+
 			stdoutWriter.Close()
 			stdout, err := io.ReadAll(stdoutReader)
 			if err != nil {
 				t.Fatal(err)
 			}
+
 			if len(stdout) != 0 {
 				t.Fatalf("command bypassed App.Writer: %s", stdout)
 			}
+
 			if operation != "remove" && !strings.Contains(output.String(), "to select JDK jdk-17\n") {
 				t.Fatalf("missing selection in App.Writer: %s", output.String())
 			}
+
 			if (operation == "install" || operation == "use") && strings.Count(output.String(), "Installed JDK jdk-17.") != 1 {
 				t.Fatalf("expected one install completion: %s", output.String())
 			}
+
 			if (operation == "use" || operation == "switch") && strings.Count(output.String(), "Switch success.") != 1 {
 				t.Fatalf("expected one switch completion: %s", output.String())
 			}
+
 			if operation == "remove" && (strings.Count(output.String(), "Remove JDK jdk-17") != 1 || strings.Count(output.String(), "done\n") != 1) {
 				t.Fatalf("expected one removal message and completion: %s", output.String())
 			}
@@ -133,6 +146,7 @@ func TestUseAlreadyInstalledNumericVersionWithLargeCatalog(t *testing.T) {
 	if err := useFunc(appcfg.NewConfig(), manager)(commandContext(t, "17")); err != nil {
 		t.Fatal(err)
 	}
+
 	if manager.installedV != "" || manager.switchedV != "17" {
 		t.Fatalf("installed %q, switched %q; want no install and switch to 17", manager.installedV, manager.switchedV)
 	}
@@ -144,6 +158,7 @@ func TestExactPickerOperationsPreserveNumericIdentifier(t *testing.T) {
 			manager := &recordingManager{available: []jdk.Version{{Version: "21-tem"}, {Version: "17-tem"}, {Version: "2"}}}
 			config := appcfg.NewConfig()
 			var err error
+
 			switch operation {
 			case "install":
 				err = installVersion(manager, "2")
@@ -156,9 +171,11 @@ func TestExactPickerOperationsPreserveNumericIdentifier(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+
 			if operation != "switch" && manager.installedV != "2" {
 				t.Fatalf("installed %q, want 2", manager.installedV)
 			}
+
 			if operation != "install" && (manager.switchedV != "2" || config.CurrentJDKVersion != "2") {
 				t.Fatalf("switched %q, current %q; want 2", manager.switchedV, config.CurrentJDKVersion)
 			}
@@ -172,6 +189,7 @@ func TestSwitchBareNumberIsAlwaysAVersion(t *testing.T) {
 	if err := switchFunc(config, manager)(commandContext(t, "1")); err == nil {
 		t.Fatal("bare 1 selected an installed index")
 	}
+
 	if manager.switchedV != "" {
 		t.Fatalf("unexpected switch to %q", manager.switchedV)
 	}
@@ -180,6 +198,7 @@ func TestSwitchBareNumberIsAlwaysAVersion(t *testing.T) {
 	if err := switchFunc(config, manager)(commandContext(t, "1")); err != nil {
 		t.Fatal(err)
 	}
+
 	if manager.switchedV != "1" || config.CurrentJDKVersion != "1" {
 		t.Fatalf("switched %q, current %q; want version 1", manager.switchedV, config.CurrentJDKVersion)
 	}

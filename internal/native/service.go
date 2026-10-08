@@ -40,12 +40,15 @@ func NewService(config *appcfg.Config) Service {
 
 func (m *service) Installed() ([]Installation, error) {
 	var installed []Installation
+
 	for _, v := range jdk.GetInstalled(m.config.Store) {
 		if !jdk.IsVersionInstalled(m.config.Store, v) {
 			continue
 		}
+
 		installed = append(installed, Installation{Version: v, Current: v == m.config.CurrentJDKVersion})
 	}
+
 	return installed, nil
 }
 
@@ -56,6 +59,7 @@ func (m *service) replaceJavaHomeTarget(target string) error {
 		if info.Mode()&os.ModeSymlink == 0 {
 			return fmt.Errorf("refusing to replace non-symlink JAVA_HOME at %s", config.JavaHome)
 		}
+
 		err := os.Remove(config.JavaHome)
 		if err != nil {
 			return fmt.Errorf("failed to remove existing JavaHome symlink at %s: %w\n\nPossible reasons:\n"+
@@ -67,13 +71,16 @@ func (m *service) replaceJavaHomeTarget(target string) error {
 	} else if !errors.Is(err, os.ErrNotExist) {
 		return err
 	}
+
 	err := m.run("cmd", "/C", "setx", "JAVA_HOME", config.JavaHome, "/M")
 	if err != nil {
 		return errors.New("set Environment variable `JAVA_HOME` failure: Please run as admin user")
 	}
+
 	err = os.Symlink(target, config.JavaHome)
 	if err != nil {
 		return errors.New("Switch jdk failed, " + err.Error())
 	}
+
 	return nil
 }

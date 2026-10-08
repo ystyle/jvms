@@ -47,9 +47,11 @@ func initFunc(config *appcfg.Config, provider platform.Provider) func(*cli.Conte
 		if err := initPrerequisites(c, config); err != nil {
 			return err
 		}
+
 		if err := provider.Ensure(); err != nil {
 			return err
 		}
+
 		fmt.Fprintf(c.App.Writer, "%s provider is installed and working.\n", provider.Name())
 		return nil
 	}

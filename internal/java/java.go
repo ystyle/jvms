@@ -15,6 +15,7 @@ func GetJavaHome(jdkTempFile string) string {
 			javaHome = filepath.Join(jdkTempFile, temPath)
 			return fs.SkipDir
 		}
+
 		return nil
 	})
 	return javaHome

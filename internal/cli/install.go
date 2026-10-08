@@ -26,6 +26,7 @@ func installFunc(manager platform.Provider) func(*cli.Context) error {
 		if v == "" {
 			return errors.New("a JDK version or available index is required; run `jvms rls` to see available versions")
 		}
+
 		version, err := platform.ResolveAvailableVersion(manager, v)
 		if err != nil {
 			return err
@@ -49,14 +50,17 @@ func installVersionWithOutput(manager platform.Provider, v string, output io.Wri
 	if err != nil {
 		return err
 	}
+
 	if isInstalled {
 		fmt.Fprintln(output, "Version "+v+" is already installed.")
 		return nil
 	}
+
 	fmt.Fprintf(output, "Installing JDK %s with %s ...\n", v, manager.Name())
 	if err := manager.Install(v); err != nil {
 		return err
 	}
+
 	fmt.Fprintf(output, "Installed JDK %s. Use `jvms switch %s` to activate it.\n", v, v)
 	return nil
 }

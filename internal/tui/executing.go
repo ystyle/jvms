@@ -17,6 +17,7 @@ func (m *pickerModel) selectItem(v jdk.JdkVersion) tea.Cmd {
 	if !m.action.needsConfirm() {
 		return m.beginExecute()
 	}
+
 	m.state = stateConfirm
 	return nil
 }
@@ -25,10 +26,12 @@ func (m *pickerModel) beginExecute() tea.Cmd {
 	m.state = stateExecuting
 	m.err = nil
 	m.spinnerActive = true
+
 	execute := m.action.Execute
 	config := m.config
 	v := m.selected
 	run := func() tea.Msg { return execDoneMsg{execute(config, v)} }
+
 	return tea.Batch(run, m.spinner.Tick)
 }
 
@@ -43,6 +46,7 @@ func (m *pickerModel) executeFunc(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if !ok {
 		return m, nil // keypresses while executing are swallowed here -- can't double-run
 	}
+
 	m.finishExecute(dm.err)
 	return m, nil
 }

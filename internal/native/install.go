@@ -19,6 +19,7 @@ func installPrerequisites(config *appcfg.Config) {
 	if !fsutil.Exists(config.Download) {
 		os.MkdirAll(config.Download, 0777)
 	}
+
 	if !fsutil.Exists(config.Store) {
 		os.MkdirAll(config.Store, 0777)
 	}
@@ -29,6 +30,7 @@ func (m *service) Install(v string) error {
 	if jdk.IsVersionInstalled(config.Store, v) {
 		return nil
 	}
+
 	if err := jdk.ValidateVersionIdentifier(v); err != nil {
 		return err
 	}
@@ -36,12 +38,14 @@ func (m *service) Install(v string) error {
 	if config.Proxy != "" {
 		httpclient.SetProxy(config.Proxy)
 	}
+
 	versions, err := jdk.GetJdkVersions(config, false)
 	if err != nil {
 		return err
 	}
 
 	installPrerequisites(config)
+
 	for _, version := range versions {
 		if version.Version == v {
 			dlzipfile, success := httpclient.GetJDK(config.Download, v, version.Url)
@@ -54,6 +58,7 @@ func (m *service) Install(v string) error {
 						panic(err)
 					}
 				}
+
 				err := fsutil.Unzip(dlzipfile, jdktempfile)
 				if err != nil {
 					return fmt.Errorf("unzip failed: %w", err)
@@ -72,8 +77,10 @@ func (m *service) Install(v string) error {
 			} else {
 				return fmt.Errorf("could not download JDK %s; check your connection or configure a proxy with `jvms config --proxy=<url>`", v)
 			}
+
 			return nil
 		}
 	}
+
 	return errors.New("invalid version., Type \"jvms rls\" to see what is available for install")
 }

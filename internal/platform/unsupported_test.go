@@ -14,6 +14,7 @@ func TestUnsupportedProviderStreamEndsWithError(t *testing.T) {
 	if !ok || event.Err == nil || !event.Done {
 		t.Fatalf("expected terminal platform error, got %+v, open=%t", event, ok)
 	}
+
 	if _, ok := <-events; ok {
 		t.Fatal("stream must close after the platform error")
 	}

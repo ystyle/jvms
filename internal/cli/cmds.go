@@ -42,9 +42,11 @@ func proxy(config *appcfg.Config) *cli.Command {
 				fmt.Fprintf(c.App.Writer, "Current proxy: %s\n", config.Proxy)
 				return nil
 			}
+
 			if c.IsSet("set") {
 				config.Proxy = c.String("set")
 			}
+
 			return nil
 		},
 	}
@@ -61,6 +63,7 @@ func list(manager platform.Provider) *cli.Command {
 			if err != nil {
 				return err
 			}
+
 			for i, version := range v {
 				str := ""
 				if version.Current {
@@ -68,13 +71,16 @@ func list(manager platform.Provider) *cli.Command {
 				} else {
 					str = fmt.Sprintf("%s    %d) %s", str, i+1, version.Version)
 				}
+
 				fmt.Fprintln(c.App.Writer, str)
 			}
+
 			if len(v) == 0 {
 				fmt.Fprintln(c.App.Writer, "No installations recognized.")
 			} else {
 				fmt.Fprintln(c.App.Writer, "\nUse `jvms switch \"#<index>\"` to select a numbered row.")
 			}
+
 			return nil
 		},
 	}
@@ -90,6 +96,7 @@ func rls(manager platform.Provider) *cli.Command {
 			if err != nil && len(versions) == 0 {
 				return err
 			}
+
 			for i, version := range versions {
 				fmt.Fprintf(c.App.Writer, "    %d) %s\n", i+1, version.Version)
 				if !c.Bool("a") && i >= 9 {
@@ -97,6 +104,7 @@ func rls(manager platform.Provider) *cli.Command {
 					break
 				}
 			}
+
 			if len(versions) == 0 {
 				fmt.Fprintln(c.App.Writer, "No JDK versions are available for installation.")
 			} else {
@@ -122,19 +130,23 @@ func remove(manager platform.Provider) *cli.Command {
 			if v == "" {
 				return errors.New("a JDK version is required; run `jvms list` to see installed versions")
 			}
+
 			installed, err := platform.IsInstalled(manager, v)
 			if err != nil {
 				return err
 			}
+
 			if installed {
 				fmt.Fprintf(c.App.Writer, "Remove JDK %s ...\n", v)
 				if err := manager.Remove(v); err != nil {
 					return err
 				}
+
 				fmt.Fprintln(c.App.Writer, "done")
 			} else {
 				fmt.Fprintln(c.App.Writer, "JDK "+v+" is not installed; run `jvms list` to see installed versions.")
 			}
+
 			return nil
 		},
 	}

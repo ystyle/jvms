@@ -36,6 +36,7 @@ func GetJdkVersions(config *appcfg.Config, mute bool) ([]Version, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	if len(errs) > 0 {
 		log.Printf("Fetched JDK versions with %d provider error(s)", len(errs))
 		return versions, nil
@@ -56,9 +57,11 @@ func sortCatalog(versions []Version) {
 		if order := compareCatalogVersions(b.Version, a.Version); order != 0 {
 			return order
 		}
+
 		if order := cmp.Compare(b.Version, a.Version); order != 0 {
 			return order
 		}
+
 		return cmp.Compare(a.Url, b.Url)
 	})
 }

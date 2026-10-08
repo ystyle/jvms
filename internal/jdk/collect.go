@@ -23,6 +23,7 @@ func collectProviderVersions(
 				versionsOut = nil
 				continue
 			}
+
 			versions = append(versions, version)
 			if sink != nil {
 				sink(version)
@@ -32,10 +33,12 @@ func collectProviderVersions(
 				results = nil
 				continue
 			}
+
 			if result.err != nil {
 				if !mute {
 					log.Printf("%s provider failed: %v", result.name, result.err)
 				}
+
 				errs = append(errs, result.err)
 			}
 		case <-timeout:

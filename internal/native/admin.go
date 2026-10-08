@@ -29,5 +29,6 @@ func isAdmin() bool {
 	if err != nil {
 		return false
 	}
+
 	return member
 }

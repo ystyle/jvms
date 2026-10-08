@@ -39,6 +39,7 @@ func Unzip(src, dest string) error {
 				log.Fatal(err)
 				return err
 			}
+
 			f, err := os.OpenFile(fpath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
 			if err != nil {
 				return err
@@ -51,6 +52,7 @@ func Unzip(src, dest string) error {
 			}
 		}
 	}
+
 	return nil
 }
 
@@ -63,9 +65,11 @@ func ReadLines(path string) ([]string, error) {
 
 	var lines []string
 	scanner := bufio.NewScanner(file)
+
 	for scanner.Scan() {
 		lines = append(lines, scanner.Text())
 	}
+
 	return lines, scanner.Err()
 }
 
@@ -79,5 +83,6 @@ func GetCurrentPath() string {
 	if err != nil {
 		return ""
 	}
+
 	return filepath.Dir(currentDir)
 }

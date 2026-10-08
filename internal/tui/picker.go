@@ -41,9 +41,11 @@ func RunJdkPicker(config *appcfg.Config, versions []jdk.JdkVersion, action Actio
 	if err != nil {
 		return err
 	}
+
 	if pm, ok := finalModel.(*pickerModel); ok {
 		return pm.err
 	}
+
 	return nil
 }
 
@@ -57,9 +59,11 @@ func newPickerModel(config *appcfg.Config, versions []jdk.JdkVersion, action Act
 	l.SetFilteringEnabled(true)
 
 	items := make([]bubbleView.Item, len(versions))
+
 	for i, v := range versions {
 		items[i] = jdkItem{v}
 	}
+
 	l.SetItems(items)
 
 	sp := spinner.New()
@@ -84,7 +88,9 @@ func (m *pickerModel) Init() tea.Cmd {
 		if m.spinnerActive {
 			return tea.Batch(waitForVersionEvent(m.versionEvents), m.spinner.Tick)
 		}
+
 		return waitForVersionEvent(m.versionEvents)
 	}
+
 	return nil
 }

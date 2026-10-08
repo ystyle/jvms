@@ -22,7 +22,9 @@ type JdkVersionCache struct {
 func InvalidateCache() error {
 	cacheLock.Lock()
 	defer cacheLock.Unlock()
+
 	store.Init(appcfg.ProjectConfigDir)
+
 	return store.Save(cacheFileName, &JdkVersionCache{})
 }
 
@@ -30,13 +32,16 @@ func CacheVersions(config *appcfg.Config, source string, versions []Version) err
 	if config != nil && !config.CacheEnabled {
 		return nil
 	}
+
 	if len(versions) == 0 {
 		return errors.New("no JDK versions to cache")
 	}
 
 	cacheLock.Lock()
 	defer cacheLock.Unlock()
+
 	store.Init(appcfg.ProjectConfigDir)
+
 	return store.Save(cacheFileName, &JdkVersionCache{
 		Versions:    versions,
 		LastUpdated: time.Now().Unix(),
@@ -49,9 +54,12 @@ func LoadCachedVersions(config *appcfg.Config, source string, allowStale bool) (
 	if config != nil && !config.CacheEnabled {
 		return nil, errors.New("JDK version cache is disabled")
 	}
+
 	cacheLock.Lock()
 	defer cacheLock.Unlock()
+
 	store.Init(appcfg.ProjectConfigDir)
+
 	versionsCached := &JdkVersionCache{}
 	if err := store.Load(cacheFileName, versionsCached); err != nil {
 		return nil, err
@@ -60,9 +68,11 @@ func LoadCachedVersions(config *appcfg.Config, source string, allowStale bool) (
 	if len(versionsCached.Versions) == 0 {
 		return nil, errors.New("cached JDK versions are empty")
 	}
+
 	if versionsCached.Source != source && !(versionsCached.Source == "" && source == nativeCacheSource) {
 		return nil, errors.New("cached JDK versions belong to another provider")
 	}
+
 	age := time.Since(time.Unix(versionsCached.LastUpdated, 0))
 	if !allowStale && age > config.CacheDuration() {
 		return nil, errors.New("cached JDK versions are stale")
