@@ -21,7 +21,7 @@ func unsupportedPlatformError() error {
 	return fmt.Errorf("JVMS is not yet supported on %s; the native provider requires Windows", runtime.GOOS)
 }
 
-func (*unsupportedProvider) Name() string  { return "Unsupported platform: " + runtime.GOOS }
+func (*unsupportedProvider) Name() string { return "Unsupported platform: " + runtime.GOOS }
 
 func (*unsupportedProvider) Ensure() error { return unsupportedPlatformError() }
 
@@ -44,10 +44,10 @@ func (*unsupportedProvider) Installed() ([]Installation, error) {
 	return nil, unsupportedPlatformError()
 }
 
-func (*unsupportedProvider) Install(string) error    { return unsupportedPlatformError() }
+func (*unsupportedProvider) Install(string) error { return unsupportedPlatformError() }
 
-func (*unsupportedProvider) Remove(string) error     { return unsupportedPlatformError() }
+func (*unsupportedProvider) Remove(string) error { return unsupportedPlatformError() }
 
-func (*unsupportedProvider) Switch(string) error     { return unsupportedPlatformError() }
+func (*unsupportedProvider) Switch(string) error { return unsupportedPlatformError() }
 
 func (*unsupportedProvider) SwitchPath(string) error { return unsupportedPlatformError() }

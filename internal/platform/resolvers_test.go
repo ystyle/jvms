@@ -13,23 +13,23 @@ type fakeManager struct {
 	err       error
 }
 
-func (m fakeManager) Name() string                         { return "fake" }
+func (m fakeManager) Name() string { return "fake" }
 
-func (m fakeManager) Ensure() error                        { return m.err }
+func (m fakeManager) Ensure() error { return m.err }
 
-func (m fakeManager) Available() ([]jdk.Version, error)    { return m.available, m.err }
+func (m fakeManager) Available() ([]jdk.Version, error) { return m.available, m.err }
 
 func (m fakeManager) StreamAvailable() <-chan VersionEvent { return nil }
 
-func (m fakeManager) Installed() ([]Installation, error)   { return m.installed, m.err }
+func (m fakeManager) Installed() ([]Installation, error) { return m.installed, m.err }
 
-func (m fakeManager) Install(string) error                 { return m.err }
+func (m fakeManager) Install(string) error { return m.err }
 
-func (m fakeManager) Remove(string) error                  { return m.err }
+func (m fakeManager) Remove(string) error { return m.err }
 
-func (m fakeManager) Switch(string) error                  { return m.err }
+func (m fakeManager) Switch(string) error { return m.err }
 
-func (m fakeManager) SwitchPath(string) error              { return m.err }
+func (m fakeManager) SwitchPath(string) error { return m.err }
 
 func TestVersionAndExplicitIndexResolution(t *testing.T) {
 	manager := fakeManager{

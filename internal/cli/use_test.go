@@ -19,9 +19,9 @@ type recordingManager struct {
 	switchedP  string
 }
 
-func (m *recordingManager) Name() string                      { return "recording" }
+func (m *recordingManager) Name() string { return "recording" }
 
-func (m *recordingManager) Ensure() error                     { return nil }
+func (m *recordingManager) Ensure() error { return nil }
 
 func (m *recordingManager) Available() ([]jdk.Version, error) { return m.available, nil }
 
