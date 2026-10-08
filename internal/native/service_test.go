@@ -247,3 +247,57 @@ func TestNativeInstallReturnsDownloadFailure(t *testing.T) {
 		t.Fatal("download failure swallowed")
 	}
 }
+
+func TestNativeManualJDKActions(t *testing.T) {
+	m := nativeFixture(t)
+	version := "jdk 17"
+	home := addNativeJDK(t, m, version)
+	probe := filepath.Join(t.TempDir(), "link")
+	if err := os.Symlink(home, probe); err != nil {
+		t.Skipf("host cannot create symlinks: %v", err)
+	}
+	installed, err := m.Installed()
+	if err != nil || len(installed) != 1 || installed[0].Version != version {
+		t.Fatalf("installed = %v, %v; want %q", installed, err, version)
+	}
+
+	if err := m.Install(version); err != nil {
+		t.Fatal(err)
+	}
+	if err := m.Switch(version); err != nil {
+		t.Fatal(err)
+	}
+	target, err := os.Readlink(m.config.JavaHome)
+	if err != nil || target != home || m.config.CurrentJDKVersion != version {
+		t.Fatalf("switch target = %q, %v; current = %q", target, err, m.config.CurrentJDKVersion)
+	}
+	if err := m.Remove(version); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(home); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("manual JDK was not removed: %v", err)
+	}
+	if m.config.CurrentJDKVersion != "" {
+		t.Fatal("removed version remains current")
+	}
+}
+
+func TestNativeActionsRejectStoreTraversal(t *testing.T) {
+	m := nativeFixture(t)
+	outside := addNativeJDK(t, m, "../outside")
+	m.run = func(string, ...string) error {
+		t.Fatal("command executed for a JDK outside the store")
+		return nil
+	}
+	for _, version := range []string{"../outside", `..\outside`, outside} {
+		if err := m.Switch(version); err == nil {
+			t.Errorf("switch accepted %q", version)
+		}
+		if err := m.Remove(version); err == nil {
+			t.Errorf("remove accepted %q", version)
+		}
+	}
+	if _, err := os.Stat(outside); err != nil {
+		t.Fatalf("JDK outside the store was changed: %v", err)
+	}
+}

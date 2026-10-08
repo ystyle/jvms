@@ -145,6 +145,9 @@ e.g: add the `jdk 17.0.1`
 3. `jvms list ` check this
 4. `jvms switch 17.0.1`
 5. `java -version` check jdk verison
+
+Existing folder names containing spaces also work: quote the name, for example
+`jvms switch "jdk 17"` or `jvms rm "jdk 17"`, or switch by its explicit installed index.
 ![jdk dir example](https://user-images.githubusercontent.com/4478635/168568154-3fef53a4-1660-4b87-b99a-4580bd61ad0d.png)
 
 

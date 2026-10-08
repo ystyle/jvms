@@ -26,6 +26,10 @@ func installPrerequisites(config *appcfg.Config) {
 
 func (m *service) Install(v string) error {
 	config := m.config
+	if jdk.IsVersionInstalled(config.Store, v) {
+		fmt.Println("Version " + v + " is already installed.")
+		return nil
+	}
 	if err := jdk.ValidateVersionIdentifier(v); err != nil {
 		return err
 	}
@@ -37,10 +41,6 @@ func (m *service) Install(v string) error {
 		return errors.New("invalid version., Type \"jvms rls\" to see what is available for install")
 	}
 
-	if jdk.IsVersionInstalled(config.Store, v) {
-		fmt.Println("Version " + v + " is already installed.")
-		return nil
-	}
 	versions, err := jdk.GetJdkVersions(config, false)
 	if err != nil {
 		return err

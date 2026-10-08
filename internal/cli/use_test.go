@@ -14,6 +14,7 @@ type recordingManager struct {
 	installed  []platform.Installation
 	available  []jdk.Version
 	installedV string
+	removedV   string
 	switchedV  string
 	switchedP  string
 }
@@ -30,7 +31,12 @@ func (m *recordingManager) Install(version string) error {
 	m.installed = append(m.installed, platform.Installation{Version: version})
 	return nil
 }
-func (m *recordingManager) Remove(string) error { return nil }
+
+func (m *recordingManager) Remove(version string) error {
+	m.removedV = version
+	return nil
+}
+
 func (m *recordingManager) Switch(version string) error {
 	m.switchedV = version
 	return nil

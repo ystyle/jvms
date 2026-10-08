@@ -3,6 +3,7 @@ package jdk
 import (
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/ystyle/jvms/internal/fsutil"
 )
@@ -19,6 +20,11 @@ func GetInstalled(root string) []string {
 }
 
 func IsVersionInstalled(root string, version string) bool {
+	// Existing folders may contain spaces, but must be direct children of the store.
+	if version == "." || !filepath.IsLocal(version) || filepath.Base(version) != version || strings.ContainsAny(version, `/\:`) {
+		return false
+	}
+
 	path := filepath.Join(root, version, "bin", "javac.exe")
 	isInstalled := fsutil.Exists(path)
 	return isInstalled

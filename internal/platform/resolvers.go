@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-
-	"github.com/ystyle/jvms/internal/jdk"
 )
 
 type installationLister interface {
@@ -14,10 +12,6 @@ type installationLister interface {
 }
 
 func IsInstalled(manager installationLister, version string) (bool, error) {
-	if err := jdk.ValidateVersionIdentifier(version); err != nil {
-		return false, err
-	}
-
 	installed, err := manager.Installed()
 	if err != nil {
 		return false, err

@@ -3,6 +3,8 @@ package cli
 import (
 	"testing"
 
+	"github.com/codegangsta/cli"
+
 	appcfg "github.com/ystyle/jvms/internal/config"
 	"github.com/ystyle/jvms/internal/jdk"
 	"github.com/ystyle/jvms/internal/platform"
@@ -100,5 +102,24 @@ func TestSwitchBareNumberIsAlwaysAVersion(t *testing.T) {
 	}
 	if manager.switchedV != "1" || config.CurrentJDKVersion != "1" {
 		t.Fatalf("switched %q, current %q; want version 1", manager.switchedV, config.CurrentJDKVersion)
+	}
+}
+
+func TestManualJDKSwitchAndRemove(t *testing.T) {
+	manager := &recordingManager{installed: []platform.Installation{{Version: "jdk 17"}}}
+	config := appcfg.NewConfig()
+	for _, value := range []string{"#1", "jdk 17"} {
+		if err := switchFunc(config, manager)(commandContext(t, value)); err != nil {
+			t.Fatal(err)
+		}
+		if manager.switchedV != "jdk 17" {
+			t.Fatalf("switched %q, want jdk 17", manager.switchedV)
+		}
+	}
+	if err := remove(manager).Action.(func(*cli.Context) error)(commandContext(t, "jdk 17")); err != nil {
+		t.Fatal(err)
+	}
+	if manager.removedV != "jdk 17" {
+		t.Fatalf("removed %q, want jdk 17", manager.removedV)
 	}
 }

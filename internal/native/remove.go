@@ -13,10 +13,6 @@ import (
 
 func (m *service) Remove(v string) error {
 	config := m.config
-	if err := jdk.ValidateVersionIdentifier(v); err != nil {
-		return err
-	}
-
 	if v == "" {
 		return errors.New("you should input a version, Type \"jvms list\" to see what is installed")
 	}
@@ -40,7 +36,7 @@ func (m *service) Remove(v string) error {
 			fmt.Printf(" done")
 		}
 	} else {
-		fmt.Println("jdk " + v + " is not installed. Type \"jvms list\" to see what is installed.")
+		return fmt.Errorf("JDK %s is not installed", v)
 	}
 	return nil
 }

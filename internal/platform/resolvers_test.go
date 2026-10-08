@@ -86,4 +86,12 @@ func TestExplicitIndexPropagatesProviderError(t *testing.T) {
 	}
 }
 
+func TestIsInstalledAcceptsManualFolderNames(t *testing.T) {
+	manager := fakeManager{installed: []Installation{{Version: "jdk 17"}}}
+	installed, err := IsInstalled(manager, "jdk 17")
+	if err != nil || !installed {
+		t.Fatalf("IsInstalled = %t, %v; want true", installed, err)
+	}
+}
+
 func (m fakeManager) RefreshAvailable() ([]jdk.Version, error) { return m.available, m.err }
