@@ -187,6 +187,10 @@ On macOS or Linux, ensure the hook is executable:
 chmod +x .githooks/pre-commit
 ```
 
+The hook checks Go formatting, runs tests on the current platform, and builds
+Linux amd64/arm64, macOS amd64/arm64, and Windows amd64/386. Build outputs use a
+temporary directory that is removed when the hook exits.
+
 ## License
 
 MIT.

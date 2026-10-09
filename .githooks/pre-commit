@@ -9,3 +9,23 @@ test -z "$unformatted" || {
 }
 
 go test ./...
+
+build_dir=$(mktemp -d "${TMPDIR:-/tmp}/jvms-pre-commit.XXXXXX")
+trap 'rm -rf "$build_dir"' EXIT
+trap 'exit 1' HUP INT TERM
+
+for target in \
+    linux/amd64 \
+    linux/arm64 \
+    darwin/amd64 \
+    darwin/arm64 \
+    windows/amd64 \
+    windows/386
+do
+    target_os=${target%/*}
+    target_arch=${target#*/}
+
+    printf 'Building %s\n' "$target"
+    GOOS="$target_os" GOARCH="$target_arch" CGO_ENABLED=0 \
+        go build -o "$build_dir/jvms-$target_os-$target_arch" .
+done
