@@ -58,6 +58,7 @@ func TestConfigRoundTripAndRepeatedLoad(t *testing.T) {
 			JavaHome:          "C:/Java/current",
 			CurrentJDKVersion: "21",
 			OriginalPath:      "https://example.com/index.json",
+			SDKMANInstallURL:  DefaultSDKMANInstallURL,
 			CacheEnabled:      false,
 			CacheTTL:          "45m",
 			Store:             "test-store",
@@ -112,7 +113,7 @@ func TestConfigRoundTripAndRepeatedLoad(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if len(saved) != 6 || saved["Store"] != nil || saved["store"] != nil || saved["Download"] != nil || saved["download"] != nil {
+		if len(saved) != 8 || saved["Store"] != nil || saved["store"] != nil || saved["Download"] != nil || saved["download"] != nil {
 			t.Fatalf("unexpected persisted fields: %v", saved)
 		}
 	}

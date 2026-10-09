@@ -13,19 +13,22 @@ import (
 )
 
 const (
-	ProjectConfigDir    = "jvms"
-	ConfigFileName      = "jvms.json"
-	DefaultCacheTTL     = "24h"
-	DefaultOriginalPath = "https://raw.githubusercontent.com/ystyle/jvms/new/jdkdlindex.json"
+	ProjectConfigDir        = "jvms"
+	ConfigFileName          = "jvms.json"
+	DefaultCacheTTL         = "24h"
+	DefaultOriginalPath     = "https://raw.githubusercontent.com/ystyle/jvms/new/jdkdlindex.json"
+	DefaultSDKMANInstallURL = "https://get.sdkman.io?ci=true"
 )
 
-var DefaultJavaHome = filepath.Join(os.Getenv("ProgramFiles"), "jdk")
+var DefaultJavaHome = DefaultPlatformJavaHome()
 
 type Config struct {
-	JavaHome          string `json:"java_home"`
-	CurrentJDKVersion string `json:"current_jdk_version"`
-	OriginalPath      string `json:"original_path"`
-	Proxy             string `json:"proxy"`
+	JavaHome               string `json:"java_home"`
+	CurrentJDKVersion      string `json:"current_jdk_version"`
+	OriginalPath           string `json:"original_path"`
+	Proxy                  string `json:"proxy"`
+	AllowAutoInstallSDKMAN bool   `json:"allow_auto_install_sdkman"`
+	SDKMANInstallURL       string `json:"sdkman_install_url"`
 
 	CacheEnabled bool   `json:"cache_enabled"`
 	CacheTTL     string `json:"cache_ttl"`
@@ -39,8 +42,9 @@ type Config struct {
 // NewConfig creates a new Config instance with default values
 func NewConfig() *Config {
 	return &Config{
-		CacheEnabled: true,
-		CacheTTL:     DefaultCacheTTL,
+		CacheEnabled:     true,
+		CacheTTL:         DefaultCacheTTL,
+		SDKMANInstallURL: DefaultSDKMANInstallURL,
 	}
 }
 
@@ -63,12 +67,16 @@ func (c *Config) Save() error {
 
 // applyDefaults initializes existing settings and runtime paths.
 func (c *Config) applyDefaults() {
+	if c.SDKMANInstallURL == "" {
+		c.SDKMANInstallURL = DefaultSDKMANInstallURL
+	}
+
 	if c.OriginalPath == "" {
 		c.OriginalPath = DefaultOriginalPath
 	}
 
 	if c.JavaHome == "" {
-		c.JavaHome = DefaultJavaHome
+		c.JavaHome = DefaultPlatformJavaHome()
 	}
 
 	dir := fsutil.GetCurrentPath()
@@ -109,7 +117,15 @@ func (c *Config) Load() error {
 		next.CacheTTL = DefaultCacheTTL
 	}
 
+	if next.SDKMANInstallURL == "" {
+		next.SDKMANInstallURL = DefaultSDKMANInstallURL
+	}
+
 	if next.CacheTTL, err = ParseCacheTTL(next.CacheTTL); err != nil {
+		return err
+	}
+
+	if next.SDKMANInstallURL, err = ParseSDKMANInstallURL(next.SDKMANInstallURL); err != nil {
 		return err
 	}
 

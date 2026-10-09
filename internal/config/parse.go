@@ -3,12 +3,46 @@ package config
 import (
 	"errors"
 	"fmt"
+	"net/url"
+	"os"
+	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/codegangsta/cli"
 )
+
+func ParseSDKMANInstallURL(value string) (string, error) {
+	value = strings.TrimSpace(value)
+	parsed, err := url.Parse(value)
+	if err != nil || parsed.Host == "" || parsed.Scheme != "https" {
+		return "", errors.New("SDKMAN installer URL must be an HTTPS URL")
+	}
+
+	return value, nil
+}
+
+func DefaultPlatformJavaHome() string {
+	if runtime.GOOS == "windows" {
+		return filepath.Join(os.Getenv("ProgramFiles"), "jdk")
+	}
+
+	dir := strings.TrimSpace(os.Getenv("SDKMAN_DIR"))
+	if dir == "" {
+		home, err := os.UserHomeDir()
+		if err == nil {
+			dir = filepath.Join(home, ".sdkman")
+		}
+	}
+
+	if dir == "" {
+		return ""
+	}
+
+	return filepath.Join(dir, "candidates", "java", "current")
+}
 
 // SetBool applies a boolean flag only when it is explicitly set.
 func (config *Config) SetBool(c *cli.Context, name string, target *bool) error {
