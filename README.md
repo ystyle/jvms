@@ -8,6 +8,20 @@ There are situations where the ability to switch between different versions of J
 useful. For example, if you want to test a project you're developing with the latest
 bleeding edge version without uninstalling the stable version of JDK, this utility can help.
 
+### Linux and macOS support
+
+JVMS now supports Linux and macOS through [SDKMAN!](https://sdkman.io/install/).
+With SDKMAN installed, run `jvms init` and use the same JDK management commands
+with SDKMAN's Java version identifiers. Requires `bash`, `curl`, `zip`, and
+`unzip`; run as your regular user without `sudo`.
+
+To let JVMS install SDKMAN automatically (disabled by default):
+
+```shell
+jvms config --allow-auto-install-sdkman=true
+jvms init
+```
+
 ### Installation
 - [Download Now](https://github.com/ystyle/jvms/releases)
 - decompression zip and copy jvms.exe to a path what you want
