@@ -3,51 +3,59 @@
 package platform
 
 import (
-	"fmt"
-	"runtime"
-
 	appcfg "github.com/ystyle/jvms/internal/config"
 	"github.com/ystyle/jvms/internal/jdk"
+	"github.com/ystyle/jvms/internal/sdkman"
 )
 
-// Placeholder for the planned SDKMAN provider; currently unsupported.
-type unsupportedProvider struct{}
-
-var _ Provider = (*unsupportedProvider)(nil)
-
-func NewProvider(_ *appcfg.Config) Provider { return &unsupportedProvider{} }
-
-func unsupportedPlatformError() error {
-	return fmt.Errorf("JVMS is not yet supported on %s; the native provider requires Windows", runtime.GOOS)
+type sdkmanManager struct {
+	service sdkman.Service
 }
 
-func (*unsupportedProvider) Name() string { return "Unsupported platform: " + runtime.GOOS }
+var _ Provider = (*sdkmanManager)(nil)
 
-func (*unsupportedProvider) Ensure() error { return unsupportedPlatformError() }
-
-func (*unsupportedProvider) Available() ([]jdk.Version, error) {
-	return nil, unsupportedPlatformError()
+func NewProvider(config *appcfg.Config) Provider {
+	return &sdkmanManager{
+		service: sdkman.NewService(config),
+	}
 }
 
-func (*unsupportedProvider) RefreshAvailable() ([]jdk.Version, error) {
-	return nil, unsupportedPlatformError()
+func (m *sdkmanManager) Name() string {
+	return "SDKMAN!"
 }
 
-func (*unsupportedProvider) StreamAvailable() <-chan VersionEvent {
-	events := make(chan VersionEvent, 1)
-	events <- VersionEvent{Err: unsupportedPlatformError(), Done: true}
-	close(events)
-	return events
+func (m *sdkmanManager) Available() ([]jdk.Version, error) {
+	return m.service.Available()
 }
 
-func (*unsupportedProvider) Installed() ([]Installation, error) {
-	return nil, unsupportedPlatformError()
+func (m *sdkmanManager) StreamAvailable() <-chan VersionEvent {
+	return m.service.StreamAvailable()
 }
 
-func (*unsupportedProvider) Install(string) error { return unsupportedPlatformError() }
+func (m *sdkmanManager) RefreshAvailable() ([]jdk.Version, error) {
+	return m.service.RefreshAvailable()
+}
 
-func (*unsupportedProvider) Remove(string) error { return unsupportedPlatformError() }
+func (m *sdkmanManager) Ensure() error {
+	return m.service.Ensure()
+}
 
-func (*unsupportedProvider) Switch(string) error { return unsupportedPlatformError() }
+func (m *sdkmanManager) Installed() ([]Installation, error) {
+	return m.service.Installed()
+}
 
-func (*unsupportedProvider) SwitchPath(string) error { return unsupportedPlatformError() }
+func (m *sdkmanManager) Install(version string) error {
+	return m.service.Install(version)
+}
+
+func (m *sdkmanManager) Remove(version string) error {
+	return m.service.Remove(version)
+}
+
+func (m *sdkmanManager) Switch(version string) error {
+	return m.service.Switch(version)
+}
+
+func (m *sdkmanManager) SwitchPath(path string) error {
+	return m.service.SwitchPath(path)
+}
