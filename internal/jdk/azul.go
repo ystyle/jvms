@@ -1,0 +1,65 @@
+package jdk
+
+import (
+	"encoding/json"
+	"fmt"
+	"runtime"
+	"strings"
+	"time"
+
+	"github.com/ystyle/jvms/internal/httpclient"
+)
+
+type azulProvider struct{}
+
+type azulJdk struct {
+	PackageUUID        string `json:"package_uuid"`
+	Name               string `json:"name"`
+	JavaVersion        []int  `json:"java_version"`
+	OpenjdkBuildNumber int    `json:"openjdk_build_number"`
+	Latest             bool   `json:"latest"`
+	DownloadURL        string `json:"download_url"`
+	Product            string `json:"product"`
+	DistroVersion      []int  `json:"distro_version"`
+	AvailabilityType   string `json:"availability_type"`
+	ShortName          string
+}
+
+const azulApi = "https://api.azul.com/metadata/v1/zulu/packages"
+
+func (p azulProvider) Name() string {
+	return "Azul"
+}
+
+func (p azulProvider) Fetch(out chan<- JdkVersion) error {
+	body, err := httpclient.GetBytes(AzulApiEndpoint(), 30*time.Second)
+	if err != nil {
+		return fmt.Errorf("error %v", err)
+	}
+
+	var jdks []azulJdk
+	if err := json.Unmarshal(body, &jdks); err != nil {
+		return fmt.Errorf("error %v", err)
+	}
+
+	for _, jdk := range jdks {
+		lastIndex := strings.LastIndex(jdk.Name, "-")
+		if lastIndex < 0 || jdk.DownloadURL == "" {
+			continue
+		}
+
+		out <- JdkVersion{
+			Version: jdk.Name[:lastIndex],
+			Url:     jdk.DownloadURL,
+		}
+	}
+
+	return nil
+}
+
+func AzulApiEndpoint() string { //https://api.azul.com/metadata/v1/docs/swagger
+	var api = azulApi + "?os=$OS&arch=$ARCH&archive_type=zip&java_package_type=jdk&javafx_bundled=false&latest=true&release_status=ga&availability_types=CA&certifications=tck&page=1&page_size=100"
+	api = strings.Replace(api, "$OS", runtime.GOOS, 1)
+	api = strings.Replace(api, "$ARCH", runtime.GOARCH, 1)
+	return api
+}

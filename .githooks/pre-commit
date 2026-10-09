@@ -1,0 +1,11 @@
+#!/bin/sh
+set -e
+
+unformatted=$(gofmt -l .)
+test -z "$unformatted" || {
+    echo "gofmt check failed:"
+    printf '%s\n' "$unformatted"
+    exit 1
+}
+
+go test ./...

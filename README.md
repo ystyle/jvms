@@ -35,10 +35,11 @@ COMMANDS:
    init           Initialize config file
    list, ls       List current JDK installations.
    install, i     Install available remote jdk
-   switch, s      Switch to use the specified version or index number.
+   switch, s      Activate an installed JDK by version or explicit index (#N).
    use, u         Switch to use the specified version and install it if not installed.
    remove, rm     Remove a specific version.
    rls            Show a list of versions available for download.
+   config         Show or update configuration.
    proxy          Set a proxy to use for downloads.
    help, h        Shows a list of commands or help for one command
 
@@ -114,6 +115,28 @@ Overall, this project brings together some ideas, a few battle-hardened pieces o
 
 I also wrote a simple [data feed](http://github.com/ystyle/jvms) containing a list of jdk versions. It's free for anyone to use.
 
+### Configuration flags
+
+Use the same `java_home` and `originalpath` names with `init` and `config`:
+
+```shell
+jvms config --java_home="C:/Program Files/jdk"
+jvms config --originalpath=https://example.com/index.json
+jvms config --cache_toggle=true --cache_ttl=24h
+jvms switch --as_path "C:/Java/jdk-21"
+```
+
+`jvms config` displays the current settings. `jvms rls` refreshes the provider's
+catalog before listing available versions.
+
+Bare values, including numbers such as `17`, are always version identifiers.
+Use `jvms install "#17"` or `jvms use "#17"` to select row 17 from `jvms rls`.
+`switch` uses the installed list: `jvms switch "#1"` selects its first row.
+Quote explicit indexes so PowerShell passes them as arguments.
+
+Older configuration files containing `resolution_priority` still load. The
+retired setting is ignored and omitted when the configuration is saved.
+
 ### add a local jdk version
 e.g: add the `jdk 17.0.1`
 
@@ -122,6 +145,9 @@ e.g: add the `jdk 17.0.1`
 3. `jvms list ` check this
 4. `jvms switch 17.0.1`
 5. `java -version` check jdk verison
+
+Existing folder names containing spaces also work: quote the name, for example
+`jvms switch "jdk 17"` or `jvms rm "jdk 17"`, or switch by its explicit installed index.
 ![jdk dir example](https://user-images.githubusercontent.com/4478635/168568154-3fef53a4-1660-4b87-b99a-4580bd61ad0d.png)
 
 
@@ -146,6 +172,20 @@ e.g: add the `jdk 17.0.1`
 - copy zip file to your server
 - add this zip file link to index.json
 
+
+## Development: install the Git hook
+
+From the repository root, tell Git to use the hooks included in this checkout:
+
+```sh
+git config --local core.hooksPath .githooks
+```
+
+On macOS or Linux, ensure the hook is executable:
+
+```sh
+chmod +x .githooks/pre-commit
+```
 
 ## License
 
