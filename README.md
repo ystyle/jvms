@@ -235,8 +235,10 @@ Existing folder names containing spaces also work: quote the name, for example
 
 ## Continuous integration
 
-The `Build and tests` workflow runs on branch pushes, pull requests, and manual
-runs. It checks Go formatting, runs tests on Linux, macOS, and Windows, and
+The `Build and tests` workflow runs only when manually started. In GitHub,
+open Actions, select Build and tests, then choose Run workflow and the branch
+to check. The workflow file must be on the default branch to enable manual runs.
+It checks Go formatting, runs tests on Linux, macOS, and Windows, and
 builds all eight release targets. Tests use `-short` to skip live SDKMAN checks
 that depend on an existing installation and network access.
 
