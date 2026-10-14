@@ -13,10 +13,9 @@ Download and extract the matching ZIP from the
 [releases page](https://github.com/ystyle/jvms/releases). Archive names
 start with `jvms_<version>_` and end with:
 
-| Platform | Archive suffixes |
-| --- | --- |
-| Linux | `linux_amd64.zip`, `linux_386.zip`, `linux_armv6.zip`, `linux_arm64.zip` |
-| macOS | `darwin_amd64.zip` (Intel), `darwin_arm64.zip` (Apple Silicon) |
+Platform | Archive suffixes
+Linux | `linux_amd64.zip`, `linux_386.zip`, `linux_armv6.zip`, `linux_arm64.zip`
+macOS | `darwin_amd64.zip` (Intel), `darwin_arm64.zip` (Apple Silicon)
 
 The ARMv6 binary also supports ARMv7 and ARMv8 in 32 bit mode. Place `jvms` in
 a directory on your `PATH`, such as `~/.local/bin`, and make it executable with
