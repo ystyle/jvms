@@ -30,7 +30,45 @@ jvms config --allow-auto-install-sdkman=true
 jvms init
 ```
 
-### Installation
+### Release binaries
+
+Each published release includes ZIP archives for these platforms:
+
+| Platform | Architecture | Archive suffix |
+| --- | --- | --- |
+| Linux | x86-64 | `linux_amd64.zip` |
+| Linux | x86 (32 bit) | `linux_386.zip` |
+| Linux | ARM32 (ARMv6, ARMv7, ARMv8 in 32 bit mode) | `linux_armv6.zip` |
+| Linux | ARM64 | `linux_arm64.zip` |
+| macOS | Intel | `darwin_amd64.zip` |
+| macOS | Apple Silicon | `darwin_arm64.zip` |
+| Windows | x86-64 | `amd64.zip` |
+| Windows | x86 (32 bit) | `386.zip` |
+
+Linux and macOS targets follow the architectures recognized by the
+[SDKMAN installer](https://get.sdkman.io). Available JDK distributions and
+versions are supplied by SDKMAN for the host platform.
+
+### Installation on Linux and macOS
+
+Download and extract the matching archive from the
+[releases page](https://github.com/ystyle/jvms/releases), then place `jvms` in a
+directory on your `PATH`, such as `~/.local/bin`. Ensure it is executable with
+`chmod +x ~/.local/bin/jvms`.
+
+Install SDKMAN using its [installation instructions](https://sdkman.io/install/),
+or let JVMS run its installation script:
+
+```sh
+jvms config --allow-auto-install-sdkman=true
+jvms init
+```
+
+Open a new terminal after SDKMAN installation so its shell setup takes effect.
+Run `jvms rls` to see Java identifiers available for your platform, or `jvms tui`
+to open the picker. Run these commands as your regular user without `sudo`.
+
+### Installation on Windows
 - [Download Now](https://github.com/ystyle/jvms/releases)
 - decompression zip and copy jvms.exe to a path what you want
 - run cmd or powershell as administrator
@@ -210,8 +248,8 @@ chmod +x .githooks/pre-commit
 ```
 
 The hook checks Go formatting, runs tests on the current platform, and builds
-Linux amd64/arm64, macOS amd64/arm64, and Windows amd64/386. Build outputs use a
-temporary directory that is removed when the hook exits.
+Linux amd64/386/armv6/arm64, macOS amd64/arm64, and Windows amd64/386. Build
+outputs use a temporary directory that is removed when the hook exits.
 
 ## License
 
