@@ -57,10 +57,23 @@ func installVersionWithOutput(manager platform.Provider, v string, output io.Wri
 	}
 
 	fmt.Fprintf(output, "Installing JDK %s with %s ...\n", v, manager.Name())
+	if warning := installWarning(manager); warning != "" {
+		fmt.Fprintln(output, warning)
+	}
+
 	if err := manager.Install(v); err != nil {
 		return err
 	}
 
-	fmt.Fprintf(output, "Installed JDK %s. Use `jvms switch %s` to activate it.\n", v, v)
+	fmt.Fprintf(output, "Installed JDK %s.\n", v)
 	return nil
+}
+
+func installWarning(manager platform.Provider) string {
+	provider, ok := manager.(interface{ InstallWarning() string })
+	if !ok {
+		return ""
+	}
+
+	return provider.InstallWarning()
 }

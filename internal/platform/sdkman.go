@@ -10,6 +10,7 @@ import (
 
 type sdkmanManager struct {
 	service sdkman.Service
+	config  *appcfg.Config
 }
 
 var _ Provider = (*sdkmanManager)(nil)
@@ -17,11 +18,20 @@ var _ Provider = (*sdkmanManager)(nil)
 func NewProvider(config *appcfg.Config) Provider {
 	return &sdkmanManager{
 		service: sdkman.NewService(config),
+		config:  config,
 	}
 }
 
 func (m *sdkmanManager) Name() string {
 	return "SDKMAN!"
+}
+
+func (m *sdkmanManager) InstallWarning() string {
+	if m.config != nil && m.config.DismissSDKInstallWarning {
+		return ""
+	}
+
+	return "Warning: SDKMAN installation may update both your current Java version and the default."
 }
 
 func (m *sdkmanManager) Available() ([]jdk.Version, error) {

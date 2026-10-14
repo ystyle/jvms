@@ -35,6 +35,10 @@ func configCommand(config *appcfg.Config) *cli.Command {
 				Usage: "set the HTTPS SDKMAN installer URL",
 			},
 			cli.StringFlag{
+				Name:  appcfg.DismissSDKInstallWarningFlag,
+				Usage: "dismiss the SDKMAN install warning (true or false)",
+			},
+			cli.StringFlag{
 				Name:  appcfg.CacheToggleFlag,
 				Usage: "enable or disable the JDK catalog cache (true or false)",
 			},
@@ -64,6 +68,10 @@ func configFunc(config *appcfg.Config) func(*cli.Context) error {
 		}
 
 		if err := next.SetBool(c, appcfg.AllowAutoInstallFlag, &next.AllowAutoInstallSDKMAN); err != nil {
+			return err
+		}
+
+		if err := next.SetBool(c, appcfg.DismissSDKInstallWarningFlag, &next.DismissSDKInstallWarning); err != nil {
 			return err
 		}
 
@@ -102,6 +110,7 @@ func printConfig(w io.Writer, config *appcfg.Config) {
 	fmt.Fprintf(w, "  --%s=%s  (empty clears it)\n", appcfg.ProxyFlag, config.Proxy)
 	fmt.Fprintf(w, "  --%s=%t  (true | false)\n", appcfg.AllowAutoInstallFlag, config.AllowAutoInstallSDKMAN)
 	fmt.Fprintf(w, "  --%s=%s  (HTTPS URL)\n", appcfg.SDKMANInstallURLFlag, config.SDKMANInstallURL)
+	fmt.Fprintf(w, "  --%s=%t  (true | false)\n", appcfg.DismissSDKInstallWarningFlag, config.DismissSDKInstallWarning)
 	fmt.Fprintf(w, "  --%s=%t  (true | false)\n", appcfg.CacheToggleFlag, config.CacheEnabled)
 	fmt.Fprintf(w, "  --%s=%s  (duration, e.g. 30m or 24h)\n", appcfg.CacheTTLFlag, config.CacheTTL)
 }

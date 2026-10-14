@@ -23,12 +23,13 @@ const (
 var DefaultJavaHome = DefaultPlatformJavaHome()
 
 type Config struct {
-	JavaHome               string `json:"java_home"`
-	CurrentJDKVersion      string `json:"current_jdk_version"`
-	OriginalPath           string `json:"original_path"`
-	Proxy                  string `json:"proxy"`
-	AllowAutoInstallSDKMAN bool   `json:"allow_auto_install_sdkman"`
-	SDKMANInstallURL       string `json:"sdkman_install_url"`
+	JavaHome                 string `json:"java_home"`
+	CurrentJDKVersion        string `json:"current_jdk_version"`
+	OriginalPath             string `json:"original_path"`
+	Proxy                    string `json:"proxy"`
+	AllowAutoInstallSDKMAN   bool   `json:"allow_auto_install_sdkman"`
+	SDKMANInstallURL         string `json:"sdkman_install_url"`
+	DismissSDKInstallWarning bool   `json:"dismiss_sdk_install_warning"`
 
 	CacheEnabled bool   `json:"cache_enabled"`
 	CacheTTL     string `json:"cache_ttl"`

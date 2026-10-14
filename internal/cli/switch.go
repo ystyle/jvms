@@ -92,11 +92,15 @@ func switchExactVersionWithOutput(config *appcfg.Config, manager platform.Provid
 
 		fmt.Fprintf(output, "Version %s is not installed. Installing now...\n", version)
 		fmt.Fprintf(output, "Installing JDK %s with %s ...\n", version, manager.Name())
+		if warning := installWarning(manager); warning != "" {
+			fmt.Fprintln(output, warning)
+		}
+
 		if err := manager.Install(version); err != nil {
 			return err
 		}
 
-		fmt.Fprintf(output, "Installed JDK %s. Use `jvms switch %s` to activate it.\n", version, version)
+		fmt.Fprintf(output, "Installed JDK %s.\n", version)
 	}
 
 	if err := manager.Switch(version); err != nil {

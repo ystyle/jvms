@@ -91,8 +91,19 @@ func (m *service) Install(version string) error {
 		return err
 	}
 
-	_, err := m.run(true, "install", "java", version)
-	return err
+	_, installErr := m.run(true, "install", "java", version)
+
+	// SDKMAN can select a default while installing, even if the command later fails.
+	current, err := m.current()
+	if err != nil {
+		return errors.Join(installErr, fmt.Errorf("read current Java version after SDKMAN installation: %w", err))
+	}
+
+	if m.config != nil {
+		m.config.CurrentJDKVersion = current
+	}
+
+	return installErr
 }
 
 func (m *service) Remove(version string) error {

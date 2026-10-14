@@ -55,14 +55,15 @@ func TestConfigRoundTripAndRepeatedLoad(t *testing.T) {
 	for _, legacy := range []bool{false, true} {
 		path := isolateConfig(t)
 		want := Config{
-			JavaHome:          "C:/Java/current",
-			CurrentJDKVersion: "21",
-			OriginalPath:      "https://example.com/index.json",
-			SDKMANInstallURL:  DefaultSDKMANInstallURL,
-			CacheEnabled:      false,
-			CacheTTL:          "45m",
-			Store:             "test-store",
-			Download:          "test-download",
+			JavaHome:                 "C:/Java/current",
+			CurrentJDKVersion:        "21",
+			OriginalPath:             "https://example.com/index.json",
+			SDKMANInstallURL:         DefaultSDKMANInstallURL,
+			DismissSDKInstallWarning: !legacy,
+			CacheEnabled:             false,
+			CacheTTL:                 "45m",
+			Store:                    "test-store",
+			Download:                 "test-download",
 		}
 		data, err := json.Marshal(want)
 		if err != nil {
@@ -113,7 +114,7 @@ func TestConfigRoundTripAndRepeatedLoad(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if len(saved) != 8 || saved["Store"] != nil || saved["store"] != nil || saved["Download"] != nil || saved["download"] != nil {
+		if len(saved) != 9 || saved["Store"] != nil || saved["store"] != nil || saved["Download"] != nil || saved["download"] != nil {
 			t.Fatalf("unexpected persisted fields: %v", saved)
 		}
 	}

@@ -25,7 +25,7 @@ func configContext(t *testing.T, cfg *appcfg.Config, args ...string) *cli.Contex
 }
 
 func TestConfigRejectsAllChangesWhenAnyOptionIsInvalid(t *testing.T) {
-	for _, invalidOption := range []string{"--cache_toggle=bad", "--cache_ttl=-1h"} {
+	for _, invalidOption := range []string{"--cache_toggle=bad", "--cache_ttl=-1h", "--dismiss-sdk-install-warning=bad"} {
 		t.Run(invalidOption, func(t *testing.T) {
 			cfg := appcfg.NewConfig()
 			cfg.JavaHome = "test-original-java-home"

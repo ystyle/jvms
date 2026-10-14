@@ -28,10 +28,28 @@ func tui(config *appcfg.Config, manager platform.Provider) *cli.Command {
 
 func tuiFuncUse(config *appcfg.Config, manager platform.Provider) func(c *cli.Context) error {
 	return func(c *cli.Context) error {
+		warning := installWarning(manager)
+		installedVersions := make(map[string]bool)
+		if warning != "" {
+			installed, err := manager.Installed()
+			if err != nil {
+				return err
+			}
+
+			for _, version := range installed {
+				installedVersions[version.Version] = true
+			}
+		}
+
 		return apptui.RunStreamingJdkPicker(config, manager.StreamAvailable(), apptui.Action{
 			Title: "Use JDK/Install JDK",
 			ConfirmText: func(v jdk.JdkVersion) string {
-				return fmt.Sprintf("Use %s?", v.Version)
+				text := fmt.Sprintf("Use %s?", v.Version)
+				if warning != "" && !installedVersions[v.Version] {
+					text += "\n\n" + warning
+				}
+
+				return text
 			},
 			Execute: func(config *appcfg.Config, v jdk.JdkVersion) error {
 				return switchExactVersion(config, manager, v.Version, true)
@@ -77,7 +95,12 @@ func tuiFunc(config *appcfg.Config, manager platform.Provider) func(*cli.Context
 			return apptui.RunStreamingJdkPicker(config, manager.StreamAvailable(), apptui.Action{
 				Title: "Install JDK",
 				ConfirmText: func(v jdk.JdkVersion) string {
-					return fmt.Sprintf("Install %s?", v.Version)
+					text := fmt.Sprintf("Install %s?", v.Version)
+					if warning := installWarning(manager); warning != "" {
+						text += "\n\n" + warning
+					}
+
+					return text
 				},
 				Execute: func(config *appcfg.Config, v jdk.JdkVersion) error {
 					return installVersion(manager, v.Version)

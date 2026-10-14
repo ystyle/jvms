@@ -15,6 +15,14 @@ With SDKMAN installed, run `jvms init` and use the same JDK management commands
 with SDKMAN's Java version identifiers. Requires `bash`, `curl`, `zip`, and
 `unzip`; run as your regular user without `sudo`.
 
+SDKMAN installation may change your default/current Java version. JVMS shows
+this warning in the install picker and CLI install output, and records SDKMAN's
+actual current selection after installation. To hide the warning:
+
+```shell
+jvms config --dismiss-sdk-install-warning=true
+```
+
 To let JVMS install SDKMAN automatically (disabled by default):
 
 ```shell
