@@ -9,13 +9,15 @@ the host platform.
 Requires `bash`, `curl`, `zip`, and `unzip` on `PATH`. Run as your regular user
 without `sudo`. JVMS uses `SDKMAN_DIR` if set, otherwise `~/.sdkman`.
 
-Download and extract the matching ZIP from the
+Download and extract the matching `.tar.gz` archive from the
 [releases page](https://github.com/ystyle/jvms/releases). Archive names
 start with `jvms_<version>_` and end with:
 
 Platform | Archive suffixes
-Linux | `linux_amd64.zip`, `linux_386.zip`, `linux_armv6.zip`, `linux_arm64.zip`
-macOS | `darwin_amd64.zip` (Intel), `darwin_arm64.zip` (Apple Silicon)
+Linux | `linux_amd64.tar.gz`, `linux_386.tar.gz`, `linux_armv6.tar.gz`, `linux_arm64.tar.gz`
+macOS | `darwin_amd64.tar.gz` (Intel), `darwin_arm64.tar.gz` (Apple Silicon)
+
+Extract the archive with `tar -xzf <archive>`.
 
 The ARMv6 binary also supports ARMv7 and ARMv8 in 32 bit mode. Place `jvms` in
 a directory on your `PATH`, such as `~/.local/bin`, and make it executable with

@@ -37,7 +37,7 @@ jobs:
           zip -j "jvms_${RELEASE_TAG}_amd64.zip" build/windows-amd64/jvms.exe
           zip -j "jvms_${RELEASE_TAG}_386.zip"   build/windows-386/jvms.exe
 
-      - name: Build and zip Linux binaries
+      - name: Build and package Linux binaries
         shell: bash
         run: |
           flag="-s -w -X main.version=${RELEASE_TAG}"
@@ -46,24 +46,24 @@ jobs:
           GOOS=linux GOARCH=arm GOARM=6 go build -mod=readonly -trimpath -ldflags "$flag" -o build/linux-armv6/jvms
           GOOS=linux GOARCH=arm64       go build -mod=readonly -trimpath -ldflags "$flag" -o build/linux-arm64/jvms
 
-          zip -j "jvms_${RELEASE_TAG}_linux_amd64.zip" build/linux-amd64/jvms
-          zip -j "jvms_${RELEASE_TAG}_linux_386.zip"   build/linux-386/jvms
-          zip -j "jvms_${RELEASE_TAG}_linux_armv6.zip" build/linux-armv6/jvms
-          zip -j "jvms_${RELEASE_TAG}_linux_arm64.zip" build/linux-arm64/jvms
+          tar -czf "jvms_${RELEASE_TAG}_linux_amd64.tar.gz" -C build/linux-amd64 jvms
+          tar -czf "jvms_${RELEASE_TAG}_linux_386.tar.gz"   -C build/linux-386 jvms
+          tar -czf "jvms_${RELEASE_TAG}_linux_armv6.tar.gz" -C build/linux-armv6 jvms
+          tar -czf "jvms_${RELEASE_TAG}_linux_arm64.tar.gz" -C build/linux-arm64 jvms
 
-      - name: Build and zip macOS binaries
+      - name: Build and package macOS binaries
         shell: bash
         run: |
           flag="-s -w -X main.version=${RELEASE_TAG}"
           GOOS=darwin GOARCH=amd64 go build -mod=readonly -trimpath -ldflags "$flag" -o build/darwin-amd64/jvms
           GOOS=darwin GOARCH=arm64 go build -mod=readonly -trimpath -ldflags "$flag" -o build/darwin-arm64/jvms
 
-          zip -j "jvms_${RELEASE_TAG}_darwin_amd64.zip" build/darwin-amd64/jvms
-          zip -j "jvms_${RELEASE_TAG}_darwin_arm64.zip" build/darwin-arm64/jvms
+          tar -czf "jvms_${RELEASE_TAG}_darwin_amd64.tar.gz" -C build/darwin-amd64 jvms
+          tar -czf "jvms_${RELEASE_TAG}_darwin_arm64.tar.gz" -C build/darwin-arm64 jvms
 
       - name: Upload release binaries
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-        run: gh release upload "$RELEASE_TAG" jvms_*.zip --clobber
+        run: gh release upload "$RELEASE_TAG" jvms_*.zip jvms_*.tar.gz --clobber
