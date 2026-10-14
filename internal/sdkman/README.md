@@ -10,7 +10,7 @@ Requires `bash`, `curl`, `zip`, and `unzip` on `PATH`. Run as your regular user
 without `sudo`. JVMS uses `SDKMAN_DIR` if set, otherwise `~/.sdkman`.
 
 Download and extract the matching ZIP from the
-[releases page](https://github.com/renniemaharaj/jvms/releases). Archive names
+[releases page](https://github.com/ystyle/jvms/releases). Archive names
 start with `jvms_<version>_` and end with:
 
 | Platform | Archive suffixes |

@@ -118,7 +118,7 @@ between system reboots, so you only need to use jvms when you want to make a cha
 
 Overall, this project brings together some ideas, a few battle-hardened pieces of other modules, and support for newer versions of JDK.
 
-I also wrote a simple [data feed](http://github.com/ystyle/jvms) containing a list of jdk versions. It's free for anyone to use.
+I also wrote a simple [data feed](https://github.com/ystyle/jvms) containing a list of jdk versions. It's free for anyone to use.
 
 ### Configuration flags
 
