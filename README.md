@@ -10,65 +10,10 @@ bleeding edge version without uninstalling the stable version of JDK, this utili
 
 ### Linux and macOS support
 
-JVMS now supports Linux and macOS through [SDKMAN!](https://sdkman.io/install/).
-With SDKMAN installed, run `jvms init` and use the same JDK management commands
-with SDKMAN's Java version identifiers. Requires `bash`, `curl`, `zip`, and
-`unzip`; run as your regular user without `sudo`.
+JVMS supports Linux and macOS through SDKMAN. See the
+[SDKMAN provider guide](internal/sdkman/README.md) for setup and usage.
 
-SDKMAN installation may change your default/current Java version. JVMS shows
-this warning in the install picker and CLI install output, and records SDKMAN's
-actual current selection after installation. To hide the warning:
-
-```shell
-jvms config --dismiss-sdk-install-warning=true
-```
-
-To let JVMS install SDKMAN automatically (disabled by default):
-
-```shell
-jvms config --allow-auto-install-sdkman=true
-jvms init
-```
-
-### Release binaries
-
-Each published release includes ZIP archives for these platforms:
-
-| Platform | Architecture | Archive suffix |
-| --- | --- | --- |
-| Linux | x86-64 | `linux_amd64.zip` |
-| Linux | x86 (32 bit) | `linux_386.zip` |
-| Linux | ARM32 (ARMv6, ARMv7, ARMv8 in 32 bit mode) | `linux_armv6.zip` |
-| Linux | ARM64 | `linux_arm64.zip` |
-| macOS | Intel | `darwin_amd64.zip` |
-| macOS | Apple Silicon | `darwin_arm64.zip` |
-| Windows | x86-64 | `amd64.zip` |
-| Windows | x86 (32 bit) | `386.zip` |
-
-Linux and macOS targets follow the architectures recognized by the
-[SDKMAN installer](https://get.sdkman.io). Available JDK distributions and
-versions are supplied by SDKMAN for the host platform.
-
-### Installation on Linux and macOS
-
-Download and extract the matching archive from the
-[releases page](https://github.com/ystyle/jvms/releases), then place `jvms` in a
-directory on your `PATH`, such as `~/.local/bin`. Ensure it is executable with
-`chmod +x ~/.local/bin/jvms`.
-
-Install SDKMAN using its [installation instructions](https://sdkman.io/install/),
-or let JVMS run its installation script:
-
-```sh
-jvms config --allow-auto-install-sdkman=true
-jvms init
-```
-
-Open a new terminal after SDKMAN installation so its shell setup takes effect.
-Run `jvms rls` to see Java identifiers available for your platform, or `jvms tui`
-to open the picker. Run these commands as your regular user without `sudo`.
-
-### Installation on Windows
+### Installation
 - [Download Now](https://github.com/ystyle/jvms/releases)
 - decompression zip and copy jvms.exe to a path what you want
 - run cmd or powershell as administrator
@@ -233,19 +178,6 @@ Existing folder names containing spaces also work: quote the name, for example
 - add this zip file link to index.json
 
 
-## Continuous integration
-
-The `Build and tests` workflow runs only when manually started. In GitHub,
-open Actions, select Build and tests, then choose Run workflow and the branch
-to check. The workflow file must be on the default branch to enable manual runs.
-It checks Go formatting, runs tests on Linux, macOS, and Windows, and
-builds all eight release targets. Tests use `-short` to skip live SDKMAN checks
-that depend on an existing installation and network access.
-
-This workflow has read-only repository permissions and does not upload release
-assets. The separate `Release binaries` workflow builds and uploads ZIP archives
-only after a GitHub release is published.
-
 ## Development: install the Git hook
 
 From the repository root, tell Git to use the hooks included in this checkout:
@@ -259,10 +191,6 @@ On macOS or Linux, ensure the hook is executable:
 ```sh
 chmod +x .githooks/pre-commit
 ```
-
-The hook checks Go formatting, runs tests on the current platform, and builds
-Linux amd64/386/armv6/arm64, macOS amd64/arm64, and Windows amd64/386. Build
-outputs use a temporary directory that is removed when the hook exits.
 
 ## License
 
