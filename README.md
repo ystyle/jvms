@@ -233,6 +233,17 @@ Existing folder names containing spaces also work: quote the name, for example
 - add this zip file link to index.json
 
 
+## Continuous integration
+
+The `Build and tests` workflow runs on branch pushes, pull requests, and manual
+runs. It checks Go formatting, runs tests on Linux, macOS, and Windows, and
+builds all eight release targets. Tests use `-short` to skip live SDKMAN checks
+that depend on an existing installation and network access.
+
+This workflow has read-only repository permissions and does not upload release
+assets. The separate `Release binaries` workflow builds and uploads ZIP archives
+only after a GitHub release is published.
+
 ## Development: install the Git hook
 
 From the repository root, tell Git to use the hooks included in this checkout:
